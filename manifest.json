@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "MyEfrei Custom Interface",
+  "version": "1.0",
+  "description": "Amélioration et personnalisation de l'interface de MyEfrei.",
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.efrei.fr/*",
+        "*://*.myefrei.fr/*"
+      ],
+      "css": ["style.css"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "img/logoEfrei.png",
+        "img/Campus.png",
+        "img/tourAssas.png",
+        "Police/Alliance No.2 Bold.otf",
+        "Police/Alliance No.2 Regular.otf"
+      ],
+      "matches": ["*://*.efrei.fr/*", "*://*.myefrei.fr/*"]
+    }
+  ],
+  "action": {
+    "default_title": "MyEfrei Custom Interface"
+  }
+}
