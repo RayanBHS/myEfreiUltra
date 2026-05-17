@@ -336,3 +336,213 @@
     font-size: 15px;
   }
 }
+
+/* ══════════════════════════════════════
+   HEADER PERSONNALISÉ
+   ══════════════════════════════════════ */
+#mye-custom-header-wrapper {
+  position: relative;
+  z-index: 2147483647 !important;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
+}
+
+#mye-custom-header {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  height: 60px;
+  background-color: #1d3b64; /* Bleu foncé MyEfrei */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  color: white;
+}
+
+.mye-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.mye-logo {
+  height: 35px;
+  filter: brightness(0) invert(1); /* Rendre le logo blanc */
+}
+
+app-header, .app-header, header, 
+mat-toolbar, .mat-toolbar, nav.top-nav, .top-bar,
+.mat-tab-nav-panel {
+  /* display: none bloquerait les clics JS. On utilise position absolute et opacity 0 */
+  position: absolute !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  z-index: -100 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+.mye-header-nav {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.mye-nav-item {
+  color: white;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  user-select: none;
+}
+
+.mye-nav-item:hover, .mye-nav-item.active {
+  background-color: #ff3385; /* Rose MyEfrei */
+}
+
+.mye-header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.mye-icon-btn {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  color: white;
+}
+
+.mye-icon-btn:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.mye-icon-btn mat-icon, .mye-icon-btn svg, .mye-icon-btn i {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mye-profile-pill {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 999px;
+  padding: 4px 4px 4px 15px;
+  gap: 15px;
+  cursor: pointer;
+  color: #1d3b64;
+  height: 40px;
+}
+
+.mye-profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+}
+
+.mye-profile-first {
+  font-size: 11px;
+  font-weight: 400;
+  color: #666;
+}
+
+.mye-profile-last {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+}
+
+.mye-profile-avatar-container {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mye-profile-avatar-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* MENUS DÉROULANTS */
+.mye-dropdown-menu {
+  position: absolute;
+  top: 80px; /* Valeur par défaut avant JS */
+  background-color: white;
+  border: 2px solid #1d3b64;
+  border-radius: 20px;
+  padding: 15px 0;
+  min-width: 280px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -10px);
+  transition: all 0.2s ease-out;
+  z-index: 2147483647 !important;
+}
+
+.mye-dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.mye-dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 25px;
+  color: #666;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.mye-dropdown-link:hover {
+  background-color: #f0f4f8;
+  color: #1d3b64;
+}
+
+.mye-link-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+.mye-link-icon mat-icon, .mye-link-icon svg, .mye-link-icon i {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

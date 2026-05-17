@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test MyEfrei</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Simulation of the React App's original white header that loads after 1 second */
+    app-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: white;
+      z-index: 100000; /* Extremely high z-index, blocking everything underneath */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      font-family: sans-serif;
+      font-weight: bold;
+      color: #666;
+    }
+    body {
+      margin: 0;
+      padding-top: 100px;
+      height: 2000px;
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- This will be injected dynamically by the page after 1 second to simulate React -->
+  <div id="react-root"></div>
+
+  <script src="content.js"></script>
+  <script>
+    // Simulate React loading the original header after 1 second
+    setTimeout(() => {
+      document.getElementById('react-root').innerHTML = `
+        <app-header>
+          <div>ACCUEIL</div>
+          <div>PLANNING</div>
+          <div>SCOLARITÉ ⌄</div>
+          <div>L'ÉCOLE ⌄</div>
+        </app-header>
+      `;
+    }, 1000);
+
+    // Run the extension's initialization as if it were injected
+    init();
+  </script>
+</body>
+</html>
