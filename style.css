@@ -372,19 +372,6 @@
   filter: brightness(0) invert(1); /* Rendre le logo blanc */
 }
 
-app-header, .app-header, header, 
-mat-toolbar, .mat-toolbar, nav.top-nav, .top-bar,
-.mat-tab-nav-panel {
-  /* display: none bloquerait les clics JS. On utilise position absolute et opacity 0 */
-  position: absolute !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  z-index: -100 !important;
-  height: 0 !important;
-  overflow: hidden !important;
-}
-
 .mye-header-nav {
   display: flex;
   gap: 5px;
@@ -424,7 +411,7 @@ mat-toolbar, .mat-toolbar, nav.top-nav, .top-bar,
   color: white;
 }
 
-.mye-icon-btn:hover {
+.mye-icon-btn:hover, .mye-icon-btn.active {
   background-color: rgba(255,255,255,0.1);
 }
 
@@ -545,4 +532,198 @@ mat-toolbar, .mat-toolbar, nav.top-nav, .top-bar,
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* POPUPS D'ORIGINE (NOTIFICATIONS ET PROFIL) */
+.MuiPopperUnstyled-root {
+  z-index: 2147483648 !important; /* Toujours au-dessus de notre header */
+  /* Ajustement de la position pour qu'elle descende un peu et ne chevauche pas le header */
+  margin-top: 15px !important;
+}
+
+/* LA VRAIE BARRE DE RECHERCHE D'ORIGINE */
+.searchBar {
+  /* On la laisse normale dans le DOM pour ne pas casser React, mais invisible par défaut */
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  transition: opacity 0.2s ease-out;
+}
+
+/* Quand on clique sur l'icône, on l'affiche et on lui donne notre style */
+.searchBar.mye-search-active {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+
+  /* L'habillage */
+  background-color: white !important;
+  border: 2px solid #1d3b64 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+  overflow: visible !important;
+  padding: 5px !important;
+
+  /* Animation */
+  animation: mye-popup-anim-search 0.2s ease-out forwards !important;
+}
+
+.searchBar.mye-search-active .MuiFormControl-root {
+  margin: 0 !important;
+}
+
+.searchBar.mye-search-active .MuiOutlinedInput-root {
+  border-radius: 15px !important;
+  background-color: #f0f4f8 !important;
+}
+
+.searchBar.mye-search-active .MuiOutlinedInput-notchedOutline {
+  border: none !important; /* Enlever la bordure d'origine */
+}
+
+.searchBar.mye-search-active input {
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 15px !important;
+  padding: 15px 20px !important;
+  color: #1d3b64 !important;
+  width: 100% !important; /* Prendre toute la place */
+}
+
+/* STYLISATION DU POPUP DES RESULTATS (AUTOCOMPLETE) */
+/* Ce popper apparaîtra automatiquement sous la vraie barre, on le style juste. */
+.MuiAutocomplete-popper {
+  z-index: 2147483649 !important;
+  /* Material-UI gère le top/left automatiquement par rapport à sa barre parente */
+  margin-top: 10px !important;
+}
+
+.MuiAutocomplete-popper .MuiPaper-root {
+  background-color: white !important;
+  border: 2px solid #1d3b64 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+  overflow: hidden !important;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
+  padding: 10px 0 !important;
+}
+
+@keyframes mye-popup-anim-search {
+  from { opacity: 0 !important; transform: translateY(-10px) !important; }
+  to { opacity: 1 !important; transform: translateY(0) !important; }
+}
+
+.MuiAutocomplete-listbox {
+  padding: 0 !important;
+}
+
+.MuiAutocomplete-option {
+  padding: 12px 25px !important;
+  color: #666 !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  transition: background-color 0.2s, color 0.2s !important;
+}
+
+.MuiAutocomplete-option[aria-selected="true"], .MuiAutocomplete-option:hover {
+  background-color: #f0f4f8 !important;
+  color: #1d3b64 !important;
+}
+
+/* STYLISATION DU POPUP DE NOTIFICATIONS ORIGINAL */
+#simple-popper-efrei .MuiPaper-root {
+  background-color: white !important;
+  border: 2px solid #1d3b64 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+  overflow: hidden !important;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
+
+  /* L'animation personnalisée de nos propres menus */
+  animation: mye-popup-anim-notif 0.2s ease-out forwards !important;
+}
+
+@keyframes mye-popup-anim-notif {
+  from {
+    opacity: 0 !important;
+    transform: translateY(-10px) !important;
+  }
+  to {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+}
+
+#simple-popper-efrei .MuiTypography-root:first-child {
+  /* En-tête "Notifications" */
+  background-color: white !important;
+  color: #1d3b64 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  padding: 15px 25px !important;
+  border-bottom: 1px solid #eee !important;
+}
+
+#simple-popper-efrei > div > div > div:nth-child(2) {
+  /* Le contenu (ex: "Vous n'avez aucune notification") */
+  padding: 20px 25px !important;
+  color: #666 !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+/* STYLISATION DU POPUP DE PROFIL ORIGINAL */
+/* On cible le conteneur Popper et on désactive le transform en ligne de React */
+[role="dropDownMenu"].MuiPopperUnstyled-root .MuiPaper-root {
+  background-color: white !important;
+  border: 2px solid #1d3b64 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+  overflow: hidden !important;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
+  padding: 15px 0 !important;
+
+  /* L'animation personnalisée de nos propres menus */
+  animation: mye-popup-anim-profil 0.2s ease-out forwards !important;
+}
+
+/*
+  Material UI utilise 'opacity' et 'transform' en style in-line.
+  Le !important permet d'écraser ça pour forcer notre animation.
+*/
+@keyframes mye-popup-anim-profil {
+  from {
+    opacity: 0 !important;
+    /* On ajoute le scale(1) pour écraser complètement la logique React qui a tendance à réécrire la propriété transform */
+    transform: translateY(-10px) scale(1) !important;
+  }
+  to {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1) !important;
+  }
+}
+
+[role="dropDownMenu"] .MuiMenuItem-root {
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+  padding: 12px 25px !important;
+  color: #666 !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  transition: background-color 0.2s, color 0.2s !important;
+}
+
+[role="dropDownMenu"] .MuiMenuItem-root:hover {
+  background-color: #f0f4f8 !important;
+  color: #1d3b64 !important;
+}
+
+[role="dropDownMenu"] .MuiMenuItem-root .MuiSvgIcon-root {
+  color: #888 !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+[role="dropDownMenu"] .MuiMenuItem-root:hover .MuiSvgIcon-root {
+  color: #1d3b64 !important;
 }
