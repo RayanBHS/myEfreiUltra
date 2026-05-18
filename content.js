@@ -205,7 +205,6 @@ function getHeaderHTML() {
       <div class="mye-header-right">
         <!-- RECHERCHE : Juste l'icône loupe -->
         <div class="mye-icon-btn" id="mye-custom-search-btn"></div>
-        
         <div class="mye-icon-btn" id="mye-custom-notif-btn"></div>
         <div class="mye-profile-pill" id="mye-profile-btn">
           <div class="mye-profile-info">
@@ -214,13 +213,18 @@ function getHeaderHTML() {
           </div>
           <div class="mye-profile-avatar-container" id="mye-custom-avatar"></div>
         </div>
+        <div class="mye-hamburger-btn" id="mye-hamburger-btn">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </div>
 
     <!-- Menus déroulants (Popups) -->
     <div class="mye-dropdown-menu" id="mye-dropdown-scolarite">
       <a href="/portal/student/grades" class="mye-dropdown-link">
-         <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72l5 2.73 5-2.73v3.72z"/></svg></span>Notes
+         <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72l5 2.73 5-2.73v-3.72z"/></svg></span>Notes
       </a>
       <a href="/portal/student/absences" class="mye-dropdown-link">
          <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></span>Absences et retards
@@ -317,6 +321,124 @@ function getHeaderHTML() {
         <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.22C21 6.73 16.74 3 12 3c-4.69 0-9 3.65-9 9.28C2.4 12.62 2 13.26 2 14v2c0 1.1.9 2 2 2h1v-6.1c0-3.87 3.13-7 7-7s7 3.13 7 7V19h-8v2h8c1.1 0 2-.9 2-2v-1.22c.59-.31 1-.92 1-1.64v-2.3c0-.7-.41-1.31-1-1.62z"/></svg></span>Incidents et Demandes
       </a>
     </div>
+
+    <!-- Tiroir Mobile (Drawer) -->
+    <div id="mye-mobile-drawer" class="mye-mobile-drawer">
+      <div class="mye-drawer-header">
+        <button class="mye-drawer-close" id="mye-drawer-close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <div class="mye-drawer-profile" id="mye-drawer-profile-btn">
+        <div class="mye-drawer-avatar" id="mye-drawer-avatar"></div>
+        <span class="mye-drawer-name" id="mye-drawer-name">Prénom Nom</span>
+        <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      
+      <div class="mye-drawer-nav">
+        <!-- Accueil -->
+        <a href="/portal/student/home" class="mye-drawer-item mye-drawer-active">Accueil</a>
+        
+        <!-- Planning -->
+        <a href="/portal/student/planning" class="mye-drawer-item">Planning</a>
+        
+        <!-- Scolarité (Collapsible) -->
+        <div class="mye-drawer-collapsible">
+          <div class="mye-drawer-item mye-drawer-trigger">
+            <span>Scolarité</span>
+            <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mye-drawer-submenu">
+            <a href="/portal/student/grades" class="mye-drawer-subitem">Notes</a>
+            <a href="/portal/student/absences" class="mye-drawer-subitem">Absences et retards</a>
+            <a href="/portal/student/surveys" class="mye-drawer-subitem">Répondre à mes enquêtes Efrei</a>
+            <a href="https://www.myefrei.fr/portal/student/moodle-courses" class="mye-drawer-subitem">Mes espaces Moodle</a>
+            <a href="/portal/student/lxp" class="mye-drawer-subitem">Learning XP</a>
+            <a href="/portal/student/documents" class="mye-drawer-subitem">Mes documents</a>
+          </div>
+        </div>
+        
+        <!-- L'École (Collapsible) -->
+        <div class="mye-drawer-collapsible">
+          <div class="mye-drawer-item mye-drawer-trigger">
+            <span>L'école</span>
+            <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mye-drawer-submenu">
+            <a href="https://www.myefrei.fr/portal/common/news" class="mye-drawer-subitem">Actualités</a>
+            <a href="https://www.myefrei.fr/portal/student/campus" class="mye-drawer-subitem">Nos campus</a>
+            <a href="https://www.efrei-alumni.org/" class="mye-drawer-subitem" target="_blank">Efrei Alumni</a>
+            <a href="https://internationalmobility.efrei.fr/" class="mye-drawer-subitem" target="_blank">Portail international</a>
+            <a href="https://www.myefrei.fr/portal/student/available-rooms" class="mye-drawer-subitem">Salles de cours libres</a>
+          </div>
+        </div>
+        
+        <!-- Vie étudiante (Collapsible) -->
+        <div class="mye-drawer-collapsible">
+          <div class="mye-drawer-item mye-drawer-trigger">
+            <span>Vie étudiante</span>
+            <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mye-drawer-submenu">
+            <a href="https://www.myefrei.fr/portal/common/calendars" class="mye-drawer-subitem">Calendriers</a>
+            <a href="https://www.myefrei.fr/portal/common/resources/categories/65ae98ef1211ad59481ac7a5" class="mye-drawer-subitem">Innovation LAB</a>
+            <a href="https://efrei.glyps.fr/portal" class="mye-drawer-subitem" target="_blank">Plateforme des Associations (Glyps)</a>
+            <a href="https://www.myefrei.fr/portal/common/resources/categories/67e12844821661185dde6c01" class="mye-drawer-subitem">Bons Plans</a>
+          </div>
+        </div>
+        
+        <!-- Outils (Collapsible) -->
+        <div class="mye-drawer-collapsible">
+          <div class="mye-drawer-item mye-drawer-trigger">
+            <span>Outils</span>
+            <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mye-drawer-submenu">
+            <a href="https://teams.microsoft.com/" class="mye-drawer-subitem" target="_blank">Teams</a>
+            <a href="https://moodle.myefrei.fr/my/" class="mye-drawer-subitem" target="_blank">Moodle</a>
+            <a href="https://www.office.com/?auth=2" class="mye-drawer-subitem" target="_blank">Office 365</a>
+            <a href="https://app.sowesign.com/login" class="mye-drawer-subitem" target="_blank">SoWeSign</a>
+            <a href="https://univ.scholarvox.com/" class="mye-drawer-subitem" target="_blank">Scholarvox</a>
+            <a href="https://efrei.studapart.com/" class="mye-drawer-subitem" target="_blank">Studapart</a>
+            <a href="https://www.myefrei.fr/public/mobile/telechargement" class="mye-drawer-subitem" target="_blank">Application myEfrei</a>
+          </div>
+        </div>
+        
+        <!-- Stages et alternances (Collapsible) -->
+        <div class="mye-drawer-collapsible">
+          <div class="mye-drawer-item mye-drawer-trigger">
+            <span>Stages et alternances</span>
+            <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mye-drawer-submenu">
+            <a href="https://www.izia-efrei.com/login" class="mye-drawer-subitem" target="_blank">Izia by Efrei</a>
+            <a href="https://online.goinglobal.com/?0=ip_login_no_cache%3D9f8c7c095da7645fe4391123d2aa74d0" class="mye-drawer-subitem" target="_blank">GoinGlobal</a>
+          </div>
+        </div>
+        
+        <!-- Aides (Collapsible) -->
+        <div class="mye-drawer-collapsible">
+          <div class="mye-drawer-item mye-drawer-trigger">
+            <span>Aides</span>
+            <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mye-drawer-submenu">
+            <a href="https://www.myefrei.fr/portal/common/resources" class="mye-drawer-subitem">Ressources</a>
+            <a href="https://www.myefrei.fr/portal/student/contacts" class="mye-drawer-subitem">Contacts</a>
+            <a href="https://assas-universite.signalement.net/entreprises" class="mye-drawer-subitem" target="_blank">#ReagirAssas</a>
+            <a href="https://my.medaviz.io/onboarding/organization/efrei" class="mye-drawer-subitem" target="_blank">Plateforme de Soin (Medaviz)</a>
+            <a href="https://efreiparis.myfreshworks.com/login" class="mye-drawer-subitem" target="_blank">Incidents et Demandes</a>
+          </div>
+        </div>
+        
+        <!-- SI Scolarité Neo -->
+        <a href="/portal/student/neo" class="mye-drawer-item">SI Scolarité Neo</a>
+      </div>
+    </div>
+
+    <!-- Arrière-plan transparent sombre pour le tiroir -->
+    <div id="mye-drawer-overlay" class="mye-drawer-overlay"></div>
   `;
 }
 
@@ -449,6 +571,210 @@ function initCustomHeaderEvents() {
             console.error("Bouton de profil original introuvable.");
         }
     });
+
+    // TIROIR MOBILE (DRAWER) ÉVÉNEMENTS
+    const hamburgerBtn = document.getElementById('mye-hamburger-btn');
+    const mobileDrawer = document.getElementById('mye-mobile-drawer');
+    const drawerOverlay = document.getElementById('mye-drawer-overlay');
+    const drawerClose = document.getElementById('mye-drawer-close');
+
+    if (hamburgerBtn && mobileDrawer && drawerOverlay) {
+        hamburgerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            mobileDrawer.classList.add('active');
+            drawerOverlay.classList.add('active');
+        });
+    }
+
+    const closeDrawer = () => {
+        if (mobileDrawer) mobileDrawer.classList.remove('active');
+        if (drawerOverlay) drawerOverlay.classList.remove('active');
+    };
+
+    if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+    if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
+
+    // Accordéons (Collapsible triggers) dans le tiroir mobile
+    document.querySelectorAll('.mye-drawer-trigger').forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const collapsible = trigger.closest('.mye-drawer-collapsible');
+            if (collapsible) {
+                // Fermer les autres accordéons
+                document.querySelectorAll('.mye-drawer-collapsible').forEach(c => {
+                    if (c !== collapsible) c.classList.remove('expanded');
+                });
+                // Toggle l'actuel
+                collapsible.classList.toggle('expanded');
+            }
+        });
+    });
+
+    // Clic sur le profil dans le tiroir mobile (fait la même action que le profil bureau)
+    const drawerProfileBtn = document.getElementById('mye-drawer-profile-btn');
+    if (drawerProfileBtn) {
+        drawerProfileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeDrawer();
+            let origProfileBtn = document.querySelector('.MuiAvatar-root');
+            if (!origProfileBtn) {
+                origProfileBtn = document.querySelector('div[data-tutorial="profile"]');
+            }
+            if (origProfileBtn) origProfileBtn.click();
+        });
+    }
+}
+
+function updateCustomAvatar(src) {
+    const avatarContainer = document.getElementById('mye-custom-avatar');
+    const drawerAvatar = document.getElementById('mye-drawer-avatar');
+    let updated = false;
+
+    if (avatarContainer && src) {
+        const currentImg = avatarContainer.querySelector('img');
+        if (!currentImg || currentImg.src !== src) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.borderRadius = '50%';
+            img.style.objectFit = 'cover';
+            avatarContainer.innerHTML = '';
+            avatarContainer.appendChild(img);
+            updated = true;
+        }
+    }
+    
+    if (drawerAvatar && src) {
+        const currentDImg = drawerAvatar.querySelector('img');
+        if (!currentDImg || currentDImg.src !== src) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.borderRadius = '50%';
+            img.style.objectFit = 'cover';
+            drawerAvatar.innerHTML = '';
+            drawerAvatar.appendChild(img);
+            updated = true;
+        }
+    }
+    return updated;
+}
+
+function updateCustomName(firstName, lastName) {
+    const myeFirstNameEl = document.getElementById('mye-first-name');
+    const myeLastNameEl = document.getElementById('mye-last-name');
+    const drawerName = document.getElementById('mye-drawer-name');
+    let updated = false;
+
+    if (myeFirstNameEl && firstName && myeFirstNameEl.innerText !== firstName) {
+        myeFirstNameEl.innerText = firstName;
+        updated = true;
+    }
+    if (myeLastNameEl && lastName && myeLastNameEl.innerText !== lastName) {
+        myeLastNameEl.innerText = lastName;
+        updated = true;
+    }
+    if (drawerName && firstName && lastName) {
+        const fullName = `${firstName} ${lastName}`;
+        if (drawerName.innerText !== fullName) {
+            drawerName.innerText = fullName;
+            updated = true;
+        }
+    }
+    return updated;
+}
+
+function handleMainContact(mainContact) {
+    if (!mainContact) return;
+    const firstName = mainContact.firstName || '';
+    const lastName = mainContact.lastName || '';
+    updateCustomName(firstName, lastName);
+
+    if (mainContact.azureId) {
+        const avatarUrl = `/api/rest/student/profile/picture/${mainContact.azureId}`;
+        fetch(avatarUrl)
+            .then(res => {
+                if (res.ok) return res.text();
+                throw new Error("Photo fetch failed");
+            })
+            .then(photoData => {
+                if (photoData && photoData.length > 50) {
+                    const src = photoData.startsWith('data:') ? photoData : `data:image/jpeg;base64,${photoData}`;
+                    updateCustomAvatar(src);
+                } else {
+                    updateCustomAvatar(avatarUrl);
+                }
+            })
+            .catch(() => {
+                updateCustomAvatar(avatarUrl);
+            });
+    }
+}
+
+function injectMainWorldBridge() {
+    window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'MYE_PORTAL_CONTACT') {
+            handleMainContact(event.data.contact);
+        }
+    });
+
+    const script = document.createElement('script');
+    script.textContent = `
+        (function() {
+            function checkContact() {
+                const contact = window.mainContact || (window.__INITIAL_STATE__ && window.__INITIAL_STATE__.mainContact);
+                if (contact) {
+                    window.postMessage({ type: 'MYE_PORTAL_CONTACT', contact: contact }, '*');
+                    return true;
+                }
+                return false;
+            }
+            if (!checkContact()) {
+                let attempts = 0;
+                const interval = setInterval(() => {
+                    attempts++;
+                    if (checkContact() || attempts > 20) clearInterval(interval);
+                }, 200);
+            }
+        })();
+    `;
+    (document.head || document.documentElement).appendChild(script);
+    script.remove();
+}
+
+function fetchProfileFromAPI() {
+    fetch('/api/rest/student/profile')
+        .then(res => {
+            if (res.ok) return res.json();
+            throw new Error("Profile API failed");
+        })
+        .then(profile => {
+            if (profile) handleMainContact(profile);
+        })
+        .catch(err => console.log("Profile API error:", err));
+}
+
+function startDOMScraping() {
+    let attempts = 0;
+    const interval = setInterval(() => {
+        attempts++;
+        const nameEl = document.querySelector('h6[role="userName"]');
+        if (nameEl && nameEl.innerText.trim()) {
+            const parts = nameEl.innerText.trim().split(' ');
+            const firstName = parts[0] || '';
+            const lastName = parts.slice(1).join(' ') || '';
+            updateCustomName(firstName, lastName);
+        }
+
+        const origAvatarImg = document.querySelector('app-user-avatar img, .user-avatar-container img, [alt*="avatar"], [src*="avatar"]');
+        if (origAvatarImg && origAvatarImg.src) {
+            updateCustomAvatar(origAvatarImg.src);
+        }
+
+        if (attempts > 30) clearInterval(interval);
+    }, 500);
 }
 
 function extractOriginalAssets() {
@@ -463,42 +789,14 @@ function extractOriginalAssets() {
     if (searchContainer && searchContainer.innerHTML === '') searchContainer.innerHTML = fallbackSearchIcon;
 
     const avatarContainer = document.getElementById('mye-custom-avatar');
-    if (avatarContainer && avatarContainer.innerHTML === '') {
-        const origAvatarImg = document.querySelector('app-user-avatar img, .user-avatar-container img, [alt*="avatar"], [src*="avatar"]');
-        if (origAvatarImg && origAvatarImg.src) {
-            const img = document.createElement('img');
-            img.src = origAvatarImg.src;
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.borderRadius = '50%';
-            img.style.objectFit = 'cover';
-            avatarContainer.appendChild(img);
-        } else {
-            avatarContainer.innerHTML = fallbackAvatar;
-        }
-    }
+    if (avatarContainer && avatarContainer.innerHTML === '') avatarContainer.innerHTML = fallbackAvatar;
 
-    // Tâche légère pour récupérer le nom généré tardivement par React
-    let nameAttempts = 0;
-    const checkName = setInterval(() => {
-        nameAttempts++;
-        const nameEl = document.querySelector('h6[role="userName"]');
-        if (nameEl && nameEl.innerText.trim()) {
-            const parts = nameEl.innerText.trim().split(' ');
-            const firstName = parts[0] || '';
-            const lastName = parts.slice(1).join(' ') || '';
+    const drawerAvatar = document.getElementById('mye-drawer-avatar');
+    if (drawerAvatar && drawerAvatar.innerHTML === '') drawerAvatar.innerHTML = fallbackAvatar;
 
-            const myeFirstNameEl = document.getElementById('mye-first-name');
-            const myeLastNameEl = document.getElementById('mye-last-name');
-
-            if (myeFirstNameEl) myeFirstNameEl.innerText = firstName;
-            if (myeLastNameEl) myeLastNameEl.innerText = lastName;
-
-            clearInterval(checkName);
-        }
-        // On arrête après 3 secondes (30 * 100ms) pour ne pas ralentir le navigateur
-        if (nameAttempts > 30) clearInterval(checkName);
-    }, 100);
+    startDOMScraping();
+    injectMainWorldBridge();
+    fetchProfileFromAPI();
 }
 
 function injectCustomHeader() {
