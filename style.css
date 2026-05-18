@@ -887,6 +887,10 @@
   background-color: #f8fafc !important;
 }
 
+.mye-drawer-profile:hover .mye-drawer-name {
+  color: #FF2A6D !important;
+}
+
 .mye-drawer-avatar {
   width: 40px;
   height: 40px;
@@ -913,12 +917,24 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.2s ease !important;
 }
 
 .mye-drawer-profile .mye-chevron-icon {
   width: 16px;
   height: 16px;
   color: #64748b !important;
+  transition: transform 0.2s ease, color 0.2s ease !important;
+}
+
+/* Colorer le bloc de profil en rose quand accordéon ouvert */
+.mye-drawer-collapsible.expanded .mye-drawer-profile .mye-drawer-name {
+  color: #FF2A6D !important;
+}
+
+.mye-drawer-collapsible.expanded .mye-drawer-profile .mye-chevron-icon {
+  transform: rotate(180deg) !important;
+  color: #FF2A6D !important;
 }
 
 /* Drawer Navigation List */

@@ -330,10 +330,17 @@ function getHeaderHTML() {
         </button>
       </div>
       
-      <div class="mye-drawer-profile" id="mye-drawer-profile-btn">
-        <div class="mye-drawer-avatar" id="mye-drawer-avatar"></div>
-        <span class="mye-drawer-name" id="mye-drawer-name">Prénom Nom</span>
-        <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      <!-- Section profil transformée en accordéon pour mobile -->
+      <div class="mye-drawer-collapsible">
+        <div class="mye-drawer-profile mye-drawer-trigger" id="mye-drawer-profile-btn">
+          <div class="mye-drawer-avatar" id="mye-drawer-avatar"></div>
+          <span class="mye-drawer-name" id="mye-drawer-name">Prénom Nom</span>
+          <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="mye-drawer-submenu">
+          <div class="mye-drawer-subitem" style="cursor:pointer;" id="mye-mob-account">Gérer mon compte</div>
+          <div class="mye-drawer-subitem" style="cursor:pointer;" id="mye-mob-logout">Se déconnecter</div>
+        </div>
       </div>
       
       <div class="mye-drawer-nav">
@@ -558,11 +565,25 @@ function initCustomHeaderEvents() {
         if (origNotifBtn) origNotifBtn.click();
     });
 
-    // Procuration de clics pour le Profil
-    document.getElementById('mye-profile-btn').addEventListener('click', () => {
+    // Procuration de clics pour le Profil (bureau)
+    const triggerOriginalProfileClick = () => {
         let origProfileBtn = document.querySelector('.MuiAvatar-root');
         if (!origProfileBtn) {
             origProfileBtn = document.querySelector('div[data-tutorial="profile"]');
+        }
+        
+        // Parfois sur mobile, l'avatar n'est pas .MuiAvatar-root ou data-tutorial
+        // Essayons de trouver le bouton contenant l'image de profil
+        if (!origProfileBtn) {
+            const imgs = document.querySelectorAll('img[alt*="avatar"], img[src*="avatar"]');
+            for (let img of imgs) {
+                // Remonter vers le bouton parent
+                const btn = img.closest('button, div[role="button"], [role="dropDownMenu"]');
+                if (btn && window.getComputedStyle(btn).display !== 'none') {
+                    origProfileBtn = btn;
+                    break;
+                }
+            }
         }
 
         if (origProfileBtn) {
@@ -570,7 +591,9 @@ function initCustomHeaderEvents() {
         } else {
             console.error("Bouton de profil original introuvable.");
         }
-    });
+    };
+
+    document.getElementById('mye-profile-btn').addEventListener('click', triggerOriginalProfileClick);
 
     // TIROIR MOBILE (DRAWER) ÉVÉNEMENTS
     const hamburgerBtn = document.getElementById('mye-hamburger-btn');
@@ -610,17 +633,37 @@ function initCustomHeaderEvents() {
         });
     });
 
-    // Clic sur le profil dans le tiroir mobile (fait la même action que le profil bureau)
-    const drawerProfileBtn = document.getElementById('mye-drawer-profile-btn');
-    if (drawerProfileBtn) {
-        drawerProfileBtn.addEventListener('click', (e) => {
+    // Clic procuration pour les boutons du sous-menu profil mobile
+    const clickOriginalByText = (searchText) => {
+        const elements = document.querySelectorAll('span, p, h6, a');
+        for (const el of elements) {
+            if (el.textContent.trim().toLowerCase().includes(searchText.toLowerCase())) {
+                // Ignorer les éléments qui font partie de notre extension
+                if (el.closest('#mye-custom-header-wrapper')) continue;
+                
+                const btn = el.closest('button, [role="button"], .MuiButtonBase-root, .MuiMenuItem-root') || el;
+                btn.click();
+                return;
+            }
+        }
+        console.error("Option originale non trouvée pour :", searchText);
+    };
+
+    const mobAccountBtn = document.getElementById('mye-mob-account');
+    if (mobAccountBtn) {
+        mobAccountBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             closeDrawer();
-            let origProfileBtn = document.querySelector('.MuiAvatar-root');
-            if (!origProfileBtn) {
-                origProfileBtn = document.querySelector('div[data-tutorial="profile"]');
-            }
-            if (origProfileBtn) origProfileBtn.click();
+            setTimeout(() => clickOriginalByText("Gérer mon compte"), 350);
+        });
+    }
+
+    const mobLogoutBtn = document.getElementById('mye-mob-logout');
+    if (mobLogoutBtn) {
+        mobLogoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeDrawer();
+            setTimeout(() => clickOriginalByText("Se déconnecter"), 350);
         });
     }
 }
@@ -668,18 +711,21 @@ function updateCustomName(firstName, lastName) {
     const drawerName = document.getElementById('mye-drawer-name');
     let updated = false;
 
-    if (myeFirstNameEl && firstName && myeFirstNameEl.innerText !== firstName) {
-        myeFirstNameEl.innerText = firstName;
+    // Accepter la mise à jour même si firstName ou lastName est vide (mais pas les deux)
+    if (!firstName && !lastName) return false;
+
+    if (myeFirstNameEl && myeFirstNameEl.textContent !== firstName) {
+        myeFirstNameEl.textContent = firstName || '';
         updated = true;
     }
-    if (myeLastNameEl && lastName && myeLastNameEl.innerText !== lastName) {
-        myeLastNameEl.innerText = lastName;
+    if (myeLastNameEl && myeLastNameEl.textContent !== lastName) {
+        myeLastNameEl.textContent = lastName || '';
         updated = true;
     }
-    if (drawerName && firstName && lastName) {
-        const fullName = `${firstName} ${lastName}`;
-        if (drawerName.innerText !== fullName) {
-            drawerName.innerText = fullName;
+    if (drawerName) {
+        const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+        if (fullName && drawerName.textContent !== fullName) {
+            drawerName.textContent = fullName;
             updated = true;
         }
     }
@@ -760,12 +806,35 @@ function startDOMScraping() {
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
+        let nameFound = false;
+
+        // Scraper pour le nom sur le header de bureau
         const nameEl = document.querySelector('h6[role="userName"]');
-        if (nameEl && nameEl.innerText.trim()) {
-            const parts = nameEl.innerText.trim().split(' ');
+        if (nameEl && nameEl.textContent.trim()) {
+            const parts = nameEl.textContent.trim().split(' ');
             const firstName = parts[0] || '';
             const lastName = parts.slice(1).join(' ') || '';
-            updateCustomName(firstName, lastName);
+            if (updateCustomName(firstName, lastName)) {
+                nameFound = true;
+            }
+        }
+        
+        // Scraper pour le nom sur le menu mobile (basé sur la structure)
+        if (!nameFound) {
+            const summaries = document.querySelectorAll('.MuiAccordionSummary-content');
+            for (const summary of summaries) {
+                const avatar = summary.querySelector('.MuiAvatar-root');
+                const nameP = summary.querySelector('p');
+                if (avatar && nameP && nameP.textContent.trim()) {
+                    const parts = nameP.textContent.trim().split(' ');
+                    const firstName = parts[0] || '';
+                    const lastName = parts.slice(1).join(' ') || '';
+                    if (updateCustomName(firstName, lastName)) {
+                        nameFound = true;
+                        break; 
+                    }
+                }
+            }
         }
 
         const origAvatarImg = document.querySelector('app-user-avatar img, .user-avatar-container img, [alt*="avatar"], [src*="avatar"]');
@@ -773,7 +842,9 @@ function startDOMScraping() {
             updateCustomAvatar(origAvatarImg.src);
         }
 
-        if (attempts > 30) clearInterval(interval);
+        if (nameFound || attempts > 30) {
+            clearInterval(interval);
+        }
     }, 500);
 }
 
