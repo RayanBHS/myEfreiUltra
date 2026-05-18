@@ -178,8 +178,7 @@
 }
 
 /* Champs */
-#mye-username,
-#mye-password {
+#mye-username {
   display: block;
   width: 100%;
   box-sizing: border-box;
@@ -195,6 +194,28 @@
   margin-bottom: 14px;
 }
 
+#mye-password-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+#mye-password {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #e8e8e8;
+  border: none;
+  border-radius: 999px;
+  padding: 17px 60px 17px 30px; /* Espace à droite pour l'icône de l'œil */
+  font-size: 16px;
+  color: #333;
+  outline: none;
+  transition: background-color 0.2s;
+  font-family: inherit;
+  margin-bottom: 0;
+}
+
 #mye-username::placeholder,
 #mye-password::placeholder {
   color: #666;
@@ -203,6 +224,35 @@
 #mye-username:focus,
 #mye-password:focus {
   background-color: #dcdcdc;
+}
+
+#mye-toggle-password {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, transform 0.1s;
+}
+
+#mye-toggle-password:hover {
+  color: #1a7fd4; /* Bleu Efrei */
+}
+
+#mye-toggle-password:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+#mye-toggle-password svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Bouton */

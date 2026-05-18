@@ -36,6 +36,18 @@
   <!-- This will be injected dynamically by the page after 1 second to simulate React -->
   <div id="react-root"></div>
 
+  <script>
+    // Simuler chrome.runtime.getURL pour les images locales
+    if (typeof chrome === 'undefined') {
+      window.chrome = {
+        runtime: {
+          getURL: function(path) {
+            return path;
+          }
+        }
+      };
+    }
+  </script>
   <script src="content.js"></script>
   <script>
     // Simulate React loading the original header after 1 second
@@ -51,7 +63,7 @@
     }, 1000);
 
     // Run the extension's initialization as if it were injected
-    init();
+    injectCustomHeader();
   </script>
 </body>
 </html>
