@@ -606,13 +606,13 @@
   pointer-events: auto !important;
   visibility: visible !important;
 
-  /* L'habillage */
-  background-color: white !important;
-  border: 2px solid #1d3b64 !important;
+  /* L'habillage unique du conteneur */
+  background-color: #f0f4f8 !important; /* Le fond gris clair */
+  border: 2px solid #1d3b64 !important;  /* La bordure bleue */
   border-radius: 20px !important;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-  overflow: visible !important;
-  padding: 5px !important;
+  overflow: hidden !important;
+  padding: 0 !important; /* Plus de padding pour coller parfaitement */
 
   /* Animation */
   animation: mye-popup-anim-search 0.2s ease-out forwards !important;
@@ -620,11 +620,17 @@
 
 .searchBar.mye-search-active .MuiFormControl-root {
   margin: 0 !important;
+  width: 100% !important;
 }
 
 .searchBar.mye-search-active .MuiOutlinedInput-root {
-  border-radius: 15px !important;
-  background-color: #f0f4f8 !important;
+  border-radius: 0 !important; /* Plus besoin d'arrondi interne */
+  background-color: transparent !important; /* Fond transparent pour voir celui du parent */
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 16px !important; /* Padding horizontal propre */
+  min-height: 48px !important; /* Hauteur harmonisée */
 }
 
 .searchBar.mye-search-active .MuiOutlinedInput-notchedOutline {
@@ -634,9 +640,18 @@
 .searchBar.mye-search-active input {
   font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
   font-size: 15px !important;
-  padding: 15px 20px !important;
+  padding: 12px 0 !important; /* Centrage vertical parfait */
   color: #1d3b64 !important;
   width: 100% !important; /* Prendre toute la place */
+  height: auto !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box !important;
+}
+
+.searchBar.mye-search-active .MuiAutocomplete-endAdornment {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  right: 15px !important;
 }
 
 /* STYLISATION DU POPUP DES RESULTATS (AUTOCOMPLETE) */
