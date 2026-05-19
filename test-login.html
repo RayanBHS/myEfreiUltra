@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Connexion MyEfrei</title>
+  <link rel="stylesheet" href="login.css">
+  <style>
+    /* Permettre aux assets chrome.runtime.getURL de charger localement */
+    :root {
+      --tour-assas-url: url('img/tourAssas.png');
+    }
+  </style>
+</head>
+<body style="margin: 0; background: #0c0c0c;">
+  
+  <!-- Formulaire d'origine simulé pour déclencher buildOverlay() -->
+  <form id="original-form" style="display:none;">
+    <input type="text" name="username">
+    <input type="password" name="password">
+    <button type="submit">Se connecter</button>
+  </form>
+
+  <script>
+    // Simuler chrome.runtime.getURL pour les images locales
+    if (typeof chrome === 'undefined') {
+      window.chrome = {
+        runtime: {
+          getURL: function(path) {
+            return path;
+          }
+        }
+      };
+    }
+  </script>
+  <script src="login.js"></script>
+  <script>
+    // Déclencher le build de l'overlay manuellement pour le test
+    buildOverlay();
+  </script>
+</body>
+</html>

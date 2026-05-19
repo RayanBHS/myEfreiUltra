@@ -1,186 +1,7 @@
-console.log("🚀 Extension MyEfrei v8 — Final");
+console.log("🚀 Extension MyEfrei v8 — Portail");
 
 // URLs des assets (scope global pour être accessibles partout)
-const LOGO_URL     = chrome.runtime.getURL('img/logoEfrei.png');
-const CAMPUS_URL   = chrome.runtime.getURL('img/Campus.png');
-const TOURASSAS_URL = chrome.runtime.getURL('img/tourAssas.png');
-
-// Injecter les variables CSS globales (nécessaire pour les pseudo-éléments ::after)
-document.documentElement.style.setProperty('--tour-assas-url', `url('${TOURASSAS_URL}')`);
-
-// Icones d'œil pour la visibilité du mot de passe
-const EYE_OPEN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-const EYE_CLOSED = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-
-// ──────────────────────────────────────────────
-// Utilitaire React
-// ──────────────────────────────────────────────
-function setReactInputValue(input, value) {
-    if (!input) return;
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-    if (setter) {
-        setter.call(input, value);
-        input.dispatchEvent(new Event('input',  { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-}
-
-// ──────────────────────────────────────────────
-// HTML de l'interface principale
-// ──────────────────────────────────────────────
-function getMainHTML(errorMsg = '') {
-    const originalImgEl = document.getElementById('background-image');
-    const fallbackUrl   = (originalImgEl && originalImgEl.src)
-        ? originalImgEl.src
-        : 'https://auth.myefrei.fr/static/media/background.354e2a8d.jpg';
-
-    return `
-    <div id="mye-left">
-      <img id="mye-bg-img"
-        src="${CAMPUS_URL}"
-        onerror="this.src='${fallbackUrl}'"
-        alt="Campus Efrei">
-    </div>
-    <div id="mye-right">
-      <img id="mye-logo"
-        src="${LOGO_URL}"
-        onerror="this.src='https://www.efrei.fr/wp-content/uploads/2022/01/LOGO_EFREI-PRINT_EFREI-WEB.png'"
-        alt="Efrei">
-      <h1 id="mye-title">Connexion</h1>
-      <p id="mye-legal">
-        En me connectant, j'accepte les
-        <a href="https://www.myefrei.fr/public/sso/donnees-personnelles" target="_blank">conditions d'utilisations</a>
-        du service SSO Efrei notamment en matière de données personnelles.
-        Protection par reCAPTCHA ·
-        <a href="https://policies.google.com/privacy" target="_blank">Confidentialité</a> ·
-        <a href="https://policies.google.com/terms" target="_blank">Conditions</a>.
-        Identifiants oubliés ? <a href="tel:+33188289250">Contactez-le +33 188 289 250</a>
-      </p>
-      <input id="mye-username" type="text"     placeholder="Identifiant"  autocomplete="username">
-      <div id="mye-password-wrapper">
-        <input id="mye-password" type="password" placeholder="Mot de passe" autocomplete="current-password">
-        <button id="mye-toggle-password" type="button" aria-label="Afficher le mot de passe">
-          ${EYE_OPEN}
-        </button>
-      </div>
-      <button id="mye-submit" type="button">Se Connecter</button>
-      ${errorMsg ? `<div id="mye-error-popup"><span id="mye-error-icon">⚠️</span>${errorMsg}</div>` : '<p id="mye-error"></p>'}
-    </div>
-  `;
-}
-
-// ──────────────────────────────────────────────
-// Écran de chargement
-// ──────────────────────────────────────────────
-function showLoadingScreen() {
-    const overlay = document.getElementById('myefrei-overlay');
-    if (!overlay) return;
-    overlay.innerHTML = `
-    <div id="mye-loading">
-      <img id="mye-loading-logo"
-        src="${LOGO_URL}"
-        onerror="this.src='https://www.efrei.fr/wp-content/uploads/2022/01/LOGO_EFREI-PRINT_EFREI-WEB.png'"
-        alt="Efrei">
-      <div id="mye-spinner"></div>
-    </div>
-  `;
-}
-
-// ──────────────────────────────────────────────
-// Restaurer l'overlay avec un message d'erreur
-// ──────────────────────────────────────────────
-function restoreOverlayWithError(msg) {
-    // Re-masquer le contenu original
-    document.querySelectorAll('body > *:not(#myefrei-overlay)').forEach(el => {
-        el.style.visibility = 'hidden';
-    });
-
-    const overlay = document.getElementById('myefrei-overlay');
-    if (!overlay) return;
-
-    overlay.innerHTML = getMainHTML(msg);
-    attachFormEvents();
-}
-
-// ──────────────────────────────────────────────
-// Gestion de la soumission
-// ──────────────────────────────────────────────
-function handleSubmit() {
-    const login     = document.getElementById('mye-username').value.trim();
-    const password  = document.getElementById('mye-password').value;
-
-    if (!login || !password) {
-        restoreOverlayWithError('Veuillez remplir tous les champs.');
-        return;
-    }
-
-    const realUser = document.querySelector('form input[type="text"], form input:not([type="password"]):not([type="hidden"])');
-    const realPass = document.querySelector('form input[type="password"]');
-    const realBtn  = document.querySelector('form button[type="submit"], form button');
-
-    setReactInputValue(realUser, login);
-    setReactInputValue(realPass, password);
-
-    // Afficher l'écran de chargement
-    showLoadingScreen();
-
-    // Rendre la page originale visible pour que le formulaire puisse soumettre
-    document.querySelectorAll('body > *:not(#myefrei-overlay)').forEach(el => {
-        el.style.visibility = '';
-    });
-
-    setTimeout(() => {
-        if (realBtn) realBtn.click();
-
-        // Si on est encore sur auth après 5s → les identifiants sont mauvais
-        setTimeout(() => {
-            if (window.location.hostname.startsWith('auth.')) {
-                restoreOverlayWithError('Identifiant ou mot de passe incorrect.');
-            }
-        }, 5000);
-    }, 200);
-}
-
-// ──────────────────────────────────────────────
-// Attacher les événements au formulaire
-// ──────────────────────────────────────────────
-function attachFormEvents() {
-    const submitBtn = document.getElementById('mye-submit');
-    const overlay   = document.getElementById('myefrei-overlay');
-    if (submitBtn) submitBtn.addEventListener('click', handleSubmit);
-    if (overlay)   overlay.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
-
-    const toggleBtn = document.getElementById('mye-toggle-password');
-    const passwordInput = document.getElementById('mye-password');
-    if (toggleBtn && passwordInput) {
-        toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            toggleBtn.innerHTML = isPassword ? EYE_CLOSED : EYE_OPEN;
-        });
-    }
-}
-
-// ──────────────────────────────────────────────
-// Construction initiale de l'overlay
-// ──────────────────────────────────────────────
-function buildOverlay() {
-    if (document.getElementById('myefrei-overlay')) return;
-    if (!document.querySelector('form')) return;
-
-    const overlay = document.createElement('div');
-    overlay.id = 'myefrei-overlay';
-    overlay.innerHTML = getMainHTML();
-    document.body.appendChild(overlay);
-
-    // Masquer le contenu original
-    document.querySelectorAll('body > *:not(#myefrei-overlay)').forEach(el => {
-        el.style.visibility = 'hidden';
-    });
-
-    attachFormEvents();
-}
+const LOGO_URL = chrome.runtime.getURL('img/logoEfrei.png');
 
 // ──────────────────────────────────────────────
 // HEADER PERSONNALISÉ
@@ -220,7 +41,7 @@ function getHeaderHTML() {
         </div>
       </div>
     </div>
-
+ 
     <!-- Menus déroulants (Popups) -->
     <div class="mye-dropdown-menu" id="mye-dropdown-scolarite">
       <a href="/portal/student/grades" class="mye-dropdown-link">
@@ -321,7 +142,7 @@ function getHeaderHTML() {
         <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.22C21 6.73 16.74 3 12 3c-4.69 0-9 3.65-9 9.28C2.4 12.62 2 13.26 2 14v2c0 1.1.9 2 2 2h1v-6.1c0-3.87 3.13-7 7-7s7 3.13 7 7V19h-8v2h8c1.1 0 2-.9 2-2v-1.22c.59-.31 1-.92 1-1.64v-2.3c0-.7-.41-1.31-1-1.62z"/></svg></span>Incidents et Demandes
       </a>
     </div>
-
+ 
     <!-- Tiroir Mobile (Drawer) -->
     <div id="mye-mobile-drawer" class="mye-mobile-drawer">
       <div class="mye-drawer-header">
@@ -443,7 +264,7 @@ function getHeaderHTML() {
         <a href="/portal/student/neo" class="mye-drawer-item">SI Scolarité Neo</a>
       </div>
     </div>
-
+ 
     <!-- Arrière-plan transparent sombre pour le tiroir -->
     <div id="mye-drawer-overlay" class="mye-drawer-overlay"></div>
   `;
@@ -522,7 +343,7 @@ function initCustomHeaderEvents() {
                     const rect = searchBtn.getBoundingClientRect();
                     const searchWidth = 550; // Plus large (550px au lieu de 450px)
 
-                    // On applique le style via setProperty pour forcer le !important avec JS, ou on laisse le CSS le faire.
+                    // On applique le style via setProperty pour forcer le !important avec JS
                     origSearchBar.style.setProperty('position', 'fixed', 'important');
                     origSearchBar.style.setProperty('top', '70px', 'important');
                     origSearchBar.style.setProperty('width', `${searchWidth}px`, 'important');
@@ -557,13 +378,16 @@ function initCustomHeaderEvents() {
     }, 50);
 
     // Procuration de clics pour les Notifications
-    document.getElementById('mye-custom-notif-btn').addEventListener('click', () => {
-        let origNotifBtn = document.querySelector('button[aria-controls="simple-popper-efrei"]');
-        if (!origNotifBtn) {
-            origNotifBtn = document.querySelector('button[aria-label*="notif"], button[aria-label*="bell"]');
-        }
-        if (origNotifBtn) origNotifBtn.click();
-    });
+    const notifBtn = document.getElementById('mye-custom-notif-btn');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', () => {
+            let origNotifBtn = document.querySelector('button[aria-controls="simple-popper-efrei"]');
+            if (!origNotifBtn) {
+                origNotifBtn = document.querySelector('button[aria-label*="notif"], button[aria-label*="bell"]');
+            }
+            if (origNotifBtn) origNotifBtn.click();
+        });
+    }
 
     // Procuration de clics pour le Profil (bureau)
     const triggerOriginalProfileClick = () => {
@@ -593,7 +417,10 @@ function initCustomHeaderEvents() {
         }
     };
 
-    document.getElementById('mye-profile-btn').addEventListener('click', triggerOriginalProfileClick);
+    const profileBtn = document.getElementById('mye-profile-btn');
+    if (profileBtn) {
+        profileBtn.addEventListener('click', triggerOriginalProfileClick);
+    }
 
     // TIROIR MOBILE (DRAWER) ÉVÉNEMENTS
     const hamburgerBtn = document.getElementById('mye-hamburger-btn');
@@ -912,15 +739,8 @@ function injectCustomHeader() {
 // ──────────────────────────────────────────────
 function tryBuild() {
     const host = window.location.hostname;
-
-    if (host.startsWith('auth.')) {
-        if (document.querySelector('form')) {
-            buildOverlay();
-        } else {
-            setTimeout(tryBuild, 300);
-        }
-    } else if (host === 'www.myefrei.fr') {
-        // Injecter le header personnalisé sur toutes les pages du portail
+    // Condition de précaution pour n'injecter que sur le portail
+    if (host === 'www.myefrei.fr' || host === 'localhost' || host === '127.0.0.1') {
         injectCustomHeader();
     }
 }
