@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Landing page MyEfrei</title>
+  <link rel="stylesheet" href="portal.css">
+  <style>
+    /* Styles temporaires simulant la page d'accueil d'origine */
+    body {
+      background-color: #f7f9fc;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .original-container {
+      text-align: center;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .login-btn-orig {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #1a7fd4;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Simulation du site d'origine -->
+  <div class="original-container">
+    <h2>Bienvenue sur le portail MyEfrei</h2>
+    <p>Pour accéder à vos services et outils Efrei, veuillez vous connecter.</p>
+    <a href="https://auth.myefrei.fr/login-mock-sso" class="login-btn-orig" id="sso-trigger">Se connecter</a>
+  </div>
+
+  <script>
+    // Simuler chrome.runtime.getURL pour les images locales
+    if (typeof chrome === 'undefined') {
+      window.chrome = {
+        runtime: {
+          getURL: function(path) {
+            return path;
+          }
+        }
+      };
+    }
+  </script>
+  
+  <script src="portal.js"></script>
+  <script>
+    // Injecter manuellement l'overlay de test
+    // Le script portal.js s'exécutera automatiquement, mais cette fonction peut forcer l'affichage
+    if (typeof buildLandingOverlay === 'function') {
+      buildLandingOverlay();
+    }
+  </script>
+</body>
+</html>

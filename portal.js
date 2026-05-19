@@ -2,6 +2,8 @@ console.log("🚀 Extension MyEfrei v8 — Portail");
 
 // URLs des assets (scope global pour être accessibles partout)
 const LOGO_URL = chrome.runtime.getURL('img/logoEfrei.png');
+const LOGO_MYEFREI_URL = chrome.runtime.getURL('img/logoMyEfrei.png');
+const TOUR_ASSAS_URL = chrome.runtime.getURL('img/tourAssas.png');
 
 // ──────────────────────────────────────────────
 // HEADER PERSONNALISÉ
@@ -735,13 +737,137 @@ function injectCustomHeader() {
 }
 
 // ──────────────────────────────────────────────
+// PAGE D'ACCUEIL (LANDING PAGE) PERSONNALISÉE
+// ──────────────────────────────────────────────
+function buildLandingOverlay() {
+    if (document.getElementById('mye-landing-overlay')) return;
+
+    // Masquer le corps d'origine en ajoutant une balise style
+    const hideStyle = document.createElement('style');
+    hideStyle.innerHTML = `
+      body > :not(#mye-landing-overlay) {
+        display: none !important;
+      }
+      body {
+        background-color: #0c0c0c !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+      }
+    `;
+    document.head.appendChild(hideStyle);
+
+    // Essayer de trouver le bouton de connexion d'origine
+    let origBtn = null;
+    const findOrigBtn = () => {
+        const selectors = [
+            '#sso-trigger',
+            'a[href*="auth.myefrei.fr"]',
+            'a[href*="/sso/"]',
+            'a[href*="/login"]',
+            'a[href*="/portal"]',
+            'button.login-btn',
+            'button',
+            'a'
+        ];
+        
+        for (const sel of selectors) {
+            const elements = document.querySelectorAll(sel);
+            for (const el of elements) {
+                if (el.id === 'mye-landing-btn' || el.closest('#mye-landing-overlay')) continue;
+                
+                const txt = el.textContent.toLowerCase();
+                if (sel === '#sso-trigger' || sel.includes('auth.myefrei.fr') || sel.includes('/sso/') || 
+                    txt.includes('connecter') || txt.includes('connexion') || txt.includes('continuer') || txt.includes('entrer')) {
+                    return el;
+                }
+            }
+        }
+        const allLinks = document.querySelectorAll('a');
+        for (const el of allLinks) {
+            if (!el.closest('#mye-landing-overlay')) return el;
+        }
+        return null;
+    };
+
+    origBtn = findOrigBtn();
+
+    if (!origBtn) {
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            origBtn = findOrigBtn();
+            if (origBtn || attempts > 25) {
+                clearInterval(interval);
+            }
+        }, 200);
+    }
+
+    // Créer l'overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'mye-landing-overlay';
+    overlay.style.setProperty('--tour-assas-url', `url('${TOUR_ASSAS_URL}')`);
+    
+    overlay.innerHTML = `
+      <div class="mye-landing-header">
+        <img src="${LOGO_MYEFREI_URL}" alt="Efrei" class="mye-landing-logo" />
+        <span class="mye-landing-ultra">ULTRA</span>
+      </div>
+      <div class="mye-landing-card">
+        <div class="mye-landing-content">
+          <h1 class="mye-landing-title">Bienvenue dans myEfrei ULTRA</h1>
+          <p class="mye-landing-subtitle">Retrouvez les services de l'Efrei, mais en mieux</p>
+          <button class="mye-landing-btn" id="mye-landing-btn">Continuer</button>
+        </div>
+        <div class="mye-landing-footer">
+          © 2026 Efrei | Établissement d'enseignement supérieur technique privé - <a href="https://www.myefrei.fr/portal/donnees-personnelles" class="mye-landing-link" target="_blank">Données personnelles</a>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Événement Clic sur Continuer
+    const continueBtn = document.getElementById('mye-landing-btn');
+    if (continueBtn) {
+        continueBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (origBtn) {
+                origBtn.click();
+                if (origBtn.tagName === 'A' && origBtn.href) {
+                    setTimeout(() => {
+                        window.location.href = origBtn.href;
+                    }, 50);
+                }
+            } else {
+                window.location.href = 'https://auth.myefrei.fr/login';
+            }
+        });
+    }
+}
+
+function changeFavicon() {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+    }
+    link.href = chrome.runtime.getURL('img/logoEfreiDepInf.png');
+}
+
 // Point d'entrée
 // ──────────────────────────────────────────────
 function tryBuild() {
+    changeFavicon();
     const host = window.location.hostname;
-    // Condition de précaution pour n'injecter que sur le portail
+    const path = window.location.pathname;
     if (host === 'www.myefrei.fr' || host === 'localhost' || host === '127.0.0.1') {
-        injectCustomHeader();
+        if (path.includes('/portal/')) {
+            injectCustomHeader();
+        } else {
+            buildLandingOverlay();
+        }
     }
 }
 
@@ -750,3 +876,4 @@ if (document.readyState === 'loading') {
 } else {
     tryBuild();
 }
+

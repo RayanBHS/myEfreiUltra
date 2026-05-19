@@ -182,10 +182,20 @@ function buildOverlay() {
     attachFormEvents();
 }
 
-// ──────────────────────────────────────────────
+function changeFavicon() {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+    }
+    link.href = chrome.runtime.getURL('img/logoEfreiDepInf.png');
+}
+
 // Point d'entrée
 // ──────────────────────────────────────────────
 function tryBuild() {
+    changeFavicon();
     const host = window.location.hostname;
     // Condition de précaution si le script est injecté par erreur sur un autre domaine
     if (host.startsWith('auth.') || host === 'localhost' || host === '127.0.0.1') {
