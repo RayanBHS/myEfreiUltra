@@ -529,7 +529,15 @@
           <span class="mye-detail-separator">-</span>
           <span class="mye-detail-coef">Coef ${formatCoef(ev.coefficient)}</span>
         </div>
-        <div class="mye-detail-value">${formatGrade(ev.value)}</div>
+        <div class="mye-detail-right">
+          ${ev.examFile ? `
+          <a href="${getExamFileUrl(ev.examFile)}" onclick="window.myeOpenPdf(this.href, event)" class="mye-exam-file-link" title="Consulter la copie">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM13 9V3.5L18.5 9H13z"/>
+            </svg>
+          </a>` : ''}
+          <div class="mye-detail-value">${formatGrade(ev.value)}</div>
+        </div>
       </div>
     `).join('');
 
@@ -570,6 +578,117 @@
     }
     return val.toString().replace('.', ',');
   }
+
+  function getExamFileUrl(fileInfo) {
+    if (!fileInfo) return '#';
+    let path = '';
+    if (typeof fileInfo === 'string') path = fileInfo;
+    else if (fileInfo.pathname) path = fileInfo.pathname;
+    else if (fileInfo.path) path = fileInfo.path;
+    else if (fileInfo.url) return fileInfo.url;
+    
+    if (path) {
+      // Si l'API renvoie déjà une URL complète ou relative valide
+      if (path.startsWith('http') || path.startsWith('/api/')) return path;
+      
+      // Sinon on assume que c'est le pathname (ex: 2026\\05\\19\\...PDF)
+      // L'API utilise ce pathname en paramètre GET
+      return `/api/rest/student/exam/file?pathname=${encodeURIComponent(path)}`;
+    }
+    
+    return '#';
+  }
+
+  // Écouteur global pour intercepter les clics sur les liens de copie d'examen (nécessaire en Chrome Extension)
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('.mye-exam-file-link');
+    if (link) {
+      e.preventDefault();
+      e.stopPropagation();
+      myeOpenPdf(link.href);
+    }
+  });
+
+  async function myeOpenPdf(url) {
+    let overlay = document.getElementById('mye-pdf-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'mye-pdf-overlay';
+      overlay.className = 'mye-pdf-overlay';
+      overlay.innerHTML = `
+        <div class="mye-pdf-modal" onclick="event.stopPropagation()">
+          <div class="mye-pdf-header">
+            <h3 class="mye-pdf-title">Copie d'examen</h3>
+            <div class="mye-pdf-actions">
+              <a id="mye-pdf-download" class="mye-pdf-btn" href="#" target="_blank" download>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Télécharger
+              </a>
+              <button class="mye-pdf-btn mye-pdf-close" id="mye-pdf-close-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                Fermer
+              </button>
+            </div>
+          </div>
+          <div class="mye-pdf-body">
+            <iframe id="mye-pdf-iframe" class="mye-pdf-iframe" src=""></iframe>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      
+      // Ajout des écouteurs de fermeture
+      document.getElementById('mye-pdf-close-btn').addEventListener('click', myeClosePdf);
+      overlay.addEventListener('click', myeClosePdf);
+    }
+    
+    const iframe = document.getElementById('mye-pdf-iframe');
+    const downloadBtn = document.getElementById('mye-pdf-download');
+    
+    downloadBtn.href = url;
+    
+    // Afficher l'état de chargement
+    iframe.removeAttribute('src');
+    iframe.srcdoc = '<html style="height:100%;"><body style="display:flex;justify-content:center;align-items:center;height:100%;margin:0;font-family:sans-serif;color:#1d3b64;"><h3>Chargement de la copie en cours...</h3></body></html>';
+    
+    // Afficher la modale immédiatement
+    setTimeout(() => {
+      overlay.classList.add('mye-pdf-show');
+    }, 10);
+
+    // Télécharger le fichier via fetch pour contourner le téléchargement forcé de l'API
+    try {
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) throw new Error('Erreur réseau');
+      
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      const objectUrl = URL.createObjectURL(pdfBlob);
+      
+      iframe.removeAttribute('srcdoc');
+      iframe.src = objectUrl;
+      
+      // Stocker l'URL pour la nettoyer à la fermeture
+      overlay.dataset.objectUrl = objectUrl;
+    } catch (err) {
+      console.error("Erreur chargement PDF:", err);
+      iframe.srcdoc = '<html style="height:100%;"><body style="display:flex;justify-content:center;align-items:center;height:100%;margin:0;font-family:sans-serif;color:#ff3385;"><h3>Erreur : Impossible de charger la copie.</h3></body></html>';
+    }
+  };
+
+  window.myeClosePdf = function() {
+    let overlay = document.getElementById('mye-pdf-overlay');
+    if (overlay) {
+      overlay.classList.remove('mye-pdf-show');
+      if (overlay.dataset.objectUrl) {
+        URL.revokeObjectURL(overlay.dataset.objectUrl);
+        overlay.dataset.objectUrl = '';
+      }
+      setTimeout(() => {
+        document.getElementById('mye-pdf-iframe').removeAttribute('src');
+      }, 300); // Vider après l'animation de fermeture
+    }
+  };
 
   function escapeHTML(str) {
     if (!str) return '';
