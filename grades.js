@@ -256,15 +256,13 @@
       };
     });
 
-    // 2. On filtre pour ne garder que les UE ayant au moins 2 matières
-    ues = ues.filter(ue => ue.subjects.length >= 2);
-
-    // 3. On recalcule la moyenne générale uniquement avec ces UE
+    // 2. On recalcule la moyenne générale uniquement avec les UE ayant au moins 2 matières
     let totalWeightedSum = 0;
     let totalCoef = 0;
 
     ues.forEach(ue => {
-      if (ue.average != null) {
+      // On ne prend en compte que les UE qui ont au moins 2 matières pour le calcul
+      if (ue.subjects.length >= 2 && ue.average != null) {
         totalWeightedSum += ue.average * ue.originalCoef;
         totalCoef += ue.originalCoef;
       }
@@ -293,7 +291,7 @@
       }
       /* Fond de page */
       body {
-        background-color: #eef2f7 !important;
+        background-color: #F0F0F0 !important;
       }
     `;
     document.head.appendChild(hideStyle);
@@ -654,23 +652,33 @@
 
   // Démarrer après que le DOM soit prêt et que portal.js ait eu le temps de s'exécuter
   function waitAndInit() {
-    // Masquer TOUT le contenu principal Angular pour être sûr
+    // Masquer TOUT le contenu original pour ne laisser que l'extension
     const hideStyle = document.createElement('style');
+    hideStyle.id = 'mye-hide-all-style';
     hideStyle.innerHTML = `
-      body > app-root > div > mat-sidenav-container,
-      app-student-grades,
-      .student-grades-container,
-      .grades-wrapper {
+      body > *:not(#mye-custom-header-wrapper):not(#mye-grades-container):not(script):not(style):not(link) {
         display: none !important;
       }
+      html, body {
+        background-color: #F0F0F0 !important;
+      }
     `;
+    
+    // Remplacer s'il existe déjà
+    const existingStyle = document.getElementById('mye-hide-all-style');
+    if (existingStyle) existingStyle.remove();
     document.head.appendChild(hideStyle);
+
+    // S'assurer que notre conteneur est visible s'il existait déjà
+    const container = document.getElementById('mye-grades-container');
+    if (container) container.style.display = 'block';
+
     // Attendre que le header personnalisé soit injecté par portal.js
     const checkHeader = setInterval(() => {
       if (document.getElementById('mye-custom-header-wrapper') || document.getElementById('mye-custom-header')) {
         clearInterval(checkHeader);
         // Petit délai supplémentaire pour laisser le DOM se stabiliser
-        setTimeout(init, 300);
+        if (!document.getElementById('mye-grades-container')) setTimeout(init, 300);
       }
     }, 200);
 
@@ -692,16 +700,32 @@
   }
 
   // ──────────────────────────────────────────────
-  // GESTION DU ROUTAGE ANGULAR (SPA)
+  // GESTION DU ROUTAGE ANGULAR (SPA) ET NETTOYAGE
   // ──────────────────────────────────────────────
   let lastGradesUrl = window.location.href;
   setInterval(() => {
     if (lastGradesUrl !== window.location.href) {
       lastGradesUrl = window.location.href;
+      
       if (window.location.pathname.includes('/portal/student/grades')) {
+        // On arrive ou on reste sur la page des notes
         if (!document.getElementById('mye-grades-container')) {
           waitAndInit();
+        } else {
+          // On s'assure qu'il est visible et que le masquage est actif
+          const hideStyle = document.getElementById('mye-hide-all-style');
+          if (!hideStyle) waitAndInit();
+          else document.getElementById('mye-grades-container').style.display = 'block';
         }
+      } else {
+        // CLEANUP : On quitte la page des notes !
+        // 1. On retire le style qui cache le site original
+        const hideStyle = document.getElementById('mye-hide-all-style');
+        if (hideStyle) hideStyle.remove();
+        
+        // 2. On cache notre interface des notes
+        const container = document.getElementById('mye-grades-container');
+        if (container) container.style.display = 'none';
       }
     }
   }, 500);

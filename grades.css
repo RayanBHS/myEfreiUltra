@@ -237,9 +237,21 @@
 
 /* ── Grille des matières dans un UE ── */
 .mye-ue-subjects {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 15px;
+}
+
+@media (max-width: 1300px) {
+  .mye-ue-subjects {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .mye-ue-subjects {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Carte matière ── */
@@ -250,8 +262,6 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  flex: 1 1 250px; /* Taille minimale */
-  min-width: 250px;
   overflow: hidden; /* Pour couper les coins du haut blanc */
 }
 
