@@ -531,7 +531,7 @@
         </div>
         <div class="mye-detail-right">
           ${ev.examFile ? `
-          <a href="${getExamFileUrl(ev.examFile)}" onclick="window.myeOpenPdf(this.href, event)" class="mye-exam-file-link" title="Consulter la copie">
+          <a href="${getExamFileUrl(ev.examFile)}" class="mye-exam-file-link" title="Consulter la copie">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM13 9V3.5L18.5 9H13z"/>
             </svg>
@@ -599,15 +599,20 @@
     return '#';
   }
 
-  // Écouteur global pour intercepter les clics sur les liens de copie d'examen (nécessaire en Chrome Extension)
+  // Écouteur global pour intercepter les clics sur les liens de copie d'examen
+  // On utilise la délégation d'événements car c'est le seul moyen fiable
+  // dans un content script (le monde isolé empêche les onclick inline)
   document.addEventListener('click', function(e) {
     const link = e.target.closest('.mye-exam-file-link');
     if (link) {
       e.preventDefault();
       e.stopPropagation();
-      myeOpenPdf(link.href);
+      const url = link.getAttribute('href') || link.href;
+      if (url && url !== '#') {
+        myeOpenPdf(url);
+      }
     }
-  });
+  }, true);
 
   async function myeOpenPdf(url) {
     let overlay = document.getElementById('mye-pdf-overlay');
@@ -616,18 +621,16 @@
       overlay.id = 'mye-pdf-overlay';
       overlay.className = 'mye-pdf-overlay';
       overlay.innerHTML = `
-        <div class="mye-pdf-modal" onclick="event.stopPropagation()">
+        <div class="mye-pdf-modal" id="mye-pdf-modal">
           <div class="mye-pdf-header">
+            <button class="mye-pdf-btn mye-pdf-close" id="mye-pdf-close-btn" title="Fermer">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
             <h3 class="mye-pdf-title">Copie d'examen</h3>
             <div class="mye-pdf-actions">
-              <a id="mye-pdf-download" class="mye-pdf-btn" href="#" target="_blank" download>
+              <a id="mye-pdf-download" class="mye-pdf-btn" href="#" target="_blank" download title="Télécharger">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                Télécharger
               </a>
-              <button class="mye-pdf-btn mye-pdf-close" id="mye-pdf-close-btn">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                Fermer
-              </button>
             </div>
           </div>
           <div class="mye-pdf-body">
@@ -637,8 +640,16 @@
       `;
       document.body.appendChild(overlay);
       
+      // Empêcher les clics sur la modale de la fermer (remplace le onclick inline)
+      document.getElementById('mye-pdf-modal').addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+      
       // Ajout des écouteurs de fermeture
-      document.getElementById('mye-pdf-close-btn').addEventListener('click', myeClosePdf);
+      document.getElementById('mye-pdf-close-btn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        myeClosePdf();
+      });
       overlay.addEventListener('click', myeClosePdf);
     }
     
@@ -676,8 +687,8 @@
     }
   };
 
-  window.myeClosePdf = function() {
-    let overlay = document.getElementById('mye-pdf-overlay');
+  function myeClosePdf() {
+    const overlay = document.getElementById('mye-pdf-overlay');
     if (overlay) {
       overlay.classList.remove('mye-pdf-show');
       if (overlay.dataset.objectUrl) {
@@ -685,10 +696,11 @@
         overlay.dataset.objectUrl = '';
       }
       setTimeout(() => {
-        document.getElementById('mye-pdf-iframe').removeAttribute('src');
+        const iframe = document.getElementById('mye-pdf-iframe');
+        if (iframe) iframe.removeAttribute('src');
       }, 300); // Vider après l'animation de fermeture
     }
-  };
+  }
 
   function escapeHTML(str) {
     if (!str) return '';
@@ -775,7 +787,7 @@
     const hideStyle = document.createElement('style');
     hideStyle.id = 'mye-hide-all-style';
     hideStyle.innerHTML = `
-      body > *:not(#mye-custom-header-wrapper):not(#mye-grades-container):not(script):not(style):not(link) {
+      body > *:not(#mye-custom-header-wrapper):not(#mye-grades-container):not(#mye-pdf-overlay):not(script):not(style):not(link) {
         display: none !important;
       }
       html, body {

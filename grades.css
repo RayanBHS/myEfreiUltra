@@ -458,6 +458,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-top: 70px;
+  box-sizing: border-box;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -476,7 +478,7 @@
   border: 4px solid #1d3b64;
   border-radius: 20px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   transform: translateY(20px);
@@ -490,43 +492,58 @@
 .mye-pdf-header {
   background-color: #1d3b64;
   color: white;
-  padding: 15px 25px;
+  padding: 20px 12px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  width: 60px;
+  min-width: 60px;
+  box-sizing: border-box;
 }
 
 .mye-pdf-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   margin: 0;
   font-family: inherit;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  letter-spacing: 0.5px;
 }
 
 .mye-pdf-actions {
   display: flex;
-  gap: 15px;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
 }
 
 .mye-pdf-btn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
-  padding: 8px 16px;
-  font-size: 14px;
+  padding: 10px;
+  font-size: 0;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: background 0.2s;
+  justify-content: center;
+  gap: 0;
+  transition: background 0.2s, transform 0.2s;
   font-family: inherit;
   text-decoration: none;
+  width: 38px;
+  height: 38px;
 }
 
 .mye-pdf-btn:hover {
   background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
 .mye-pdf-close {
@@ -539,8 +556,8 @@
 
 .mye-pdf-body {
   flex-grow: 1;
-  width: 100%;
   background: #fff;
+  min-width: 0;
 }
 
 .mye-pdf-iframe {
