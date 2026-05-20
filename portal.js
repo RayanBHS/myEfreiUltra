@@ -877,3 +877,15 @@ if (document.readyState === 'loading') {
     tryBuild();
 }
 
+// ──────────────────────────────────────────────
+// GESTION DU ROUTAGE ANGULAR (SPA)
+// ──────────────────────────────────────────────
+let lastUrl = window.location.href;
+setInterval(() => {
+    if (lastUrl !== window.location.href) {
+        lastUrl = window.location.href;
+        // Si on navigue, on s'assure que le header est bien là s'il doit l'être
+        tryBuild();
+    }
+}, 500);
+
