@@ -639,3 +639,398 @@
     padding: 12px 18px;
   }
 }
+
+/* =============================================
+   MYEFREI ULTRA — Simulateur de Notes (Modal & Est.)
+   ============================================= */
+.mye-simulator-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.mye-simulator-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mye-simulator-modal {
+  background-color: white;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  border-radius: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  font-family: inherit;
+}
+
+.mye-simulator-overlay.show .mye-simulator-modal {
+  transform: scale(1);
+}
+
+.mye-simulator-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.mye-simulator-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.mye-simulator-close:hover {
+  color: #475569;
+}
+
+.mye-simulator-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mye-simulator-subject-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.mye-simulator-ue-name {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+.mye-simulator-body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Status Box: Averages */
+.mye-sim-status-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.mye-sim-stat {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.mye-sim-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mye-sim-stat-values {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mye-sim-val-real {
+  font-size: 18px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.mye-sim-val-sep {
+  color: #cbd5e1;
+  font-size: 16px;
+}
+
+.mye-sim-val-sim {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1d3b64;
+}
+
+.mye-sim-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-align: center;
+}
+
+/* Badge colors */
+.mye-badge-valid {
+  background-color: #e8f8f0;
+  color: #2ecc71;
+}
+
+.mye-badge-compensated {
+  background-color: #fef5e7;
+  color: #f39c12;
+}
+
+.mye-badge-invalid {
+  background-color: #fdf2f2;
+  color: #ef4444;
+}
+
+/* Required box */
+.mye-sim-req-box {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mye-sim-req-box.mye-sim-req-comp {
+  background-color: #fffbeb;
+  border-color: #fef3c7;
+}
+
+.mye-sim-req-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #166534;
+  margin: 0;
+}
+
+.mye-sim-req-comp .mye-sim-req-title {
+  color: #92400e;
+}
+
+.mye-sim-req-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: #14532d;
+}
+
+.mye-sim-req-comp .mye-sim-req-list {
+  color: #78350f;
+}
+
+.mye-sim-req-list li {
+  line-height: 1.4;
+}
+
+/* Eval list */
+.mye-sim-eval-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mye-sim-eval-list h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mye-sim-eval-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 15px;
+}
+
+.mye-sim-eval-row:last-child {
+  border-bottom: none;
+}
+
+.mye-sim-eval-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mye-sim-eval-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mye-sim-eval-coef {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.mye-sim-eval-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mye-sim-eval-input {
+  width: 70px;
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.mye-sim-eval-input:focus {
+  border-color: #1d3b64;
+}
+
+.mye-sim-eval-input.simulated {
+  background-color: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.mye-sim-eval-input.placeholder-sim {
+  border-style: dashed;
+}
+
+.mye-sim-eval-input:disabled {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.mye-sim-eval-max {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.mye-simulator-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+  background-color: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mye-sim-btn-reset {
+  background-color: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mye-sim-btn-reset:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+/* Secondary solid arc for simulated average */
+.mye-grade-arc-sim {
+  fill: none;
+  stroke: #10b981; /* Emerald green */
+  stroke-width: 14;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease-out;
+}
+
+/* Double circular labels */
+.mye-grade-circle-value-real {
+  font-size: 40px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.1;
+}
+
+.mye-grade-circle-value-sim {
+  font-size: 40px;
+  font-weight: 700;
+  color: #10b981;
+  line-height: 1.1;
+}
+
+/* Main UI additions */
+.mye-subject-card-est-avg {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2ecc71;
+  background-color: #e8f8f0;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+.mye-subject-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.mye-subject-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+
+.mye-subject-card.has-sim {
+  border-color: #10b981 !important;
+}
+
+@media (max-width: 600px) {
+  .mye-sim-status-box {
+    grid-template-columns: 1fr;
+  }
+}
+
