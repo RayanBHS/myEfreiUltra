@@ -859,10 +859,10 @@ function changeFavicon() {
 // Point d'entrée
 // ──────────────────────────────────────────────
 function tryBuild() {
-    changeFavicon();
     const host = window.location.hostname;
     const path = window.location.pathname;
     if (host === 'www.myefrei.fr' || host === 'localhost' || host === '127.0.0.1') {
+        changeFavicon();
         if (path.includes('/portal/')) {
             injectCustomHeader();
         } else {
