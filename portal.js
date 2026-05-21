@@ -391,87 +391,84 @@ function initCustomHeaderEvents() {
             popper.style.setProperty('transform', 'none', 'important');
         }
 
-        // Repositionner le popper de notifications près du bouton custom
-        const notifPopper = document.getElementById('simple-popper-efrei');
-        if (notifPopper && notifPopper.offsetParent !== null) {
-            const customNotifBtn = document.getElementById('mye-custom-notif-btn');
-            if (customNotifBtn) {
-                const btnRect = customNotifBtn.getBoundingClientRect();
-                notifPopper.style.setProperty('position', 'fixed', 'important');
-                notifPopper.style.setProperty('top', `${btnRect.bottom + 10}px`, 'important');
-                notifPopper.style.setProperty('left', `${btnRect.left - 150}px`, 'important');
-                notifPopper.style.setProperty('z-index', '2147483649', 'important');
-                notifPopper.style.setProperty('transform', 'none', 'important');
-            }
-        }
+        // Repositionner les popovers MUI ou Angular (profil) près du bouton profil custom
+        // On cible spécifiquement role="dropDownMenu" pour ne pas capturer l'autocomplete de la barre de recherche !
+        document.querySelectorAll('.MuiPopover-root, .cdk-overlay-pane, .MuiPopperUnstyled-root[role="dropDownMenu"]').forEach(popover => {
+            // Ignorer l'autocomplete de la recherche si jamais il est intercepté
+            if (popover.querySelector('[role="listbox"]') || popover.classList.contains('MuiAutocomplete-popper')) return;
 
-        // Repositionner les popovers MUI (profil) près du bouton profil custom
-        document.querySelectorAll('.MuiPopover-root').forEach(popover => {
-            const paper = popover.querySelector('.MuiPopover-paper, .MuiPaper-root');
-            if (paper && popover.style.display !== 'none') {
+            const paper = popover.querySelector('.MuiPopover-paper, .MuiPaper-root, .mat-menu-panel') || popover;
+            if (paper && popover.style.display !== 'none' && popover.style.visibility !== 'hidden') {
                 const customProfileBtn = document.getElementById('mye-profile-btn');
                 if (customProfileBtn) {
                     const btnRect = customProfileBtn.getBoundingClientRect();
+                    const paperWidth = paper.offsetWidth || 200;
+                    
+                    // Transmettre les coordonnées à nos variables CSS protégées au lieu du style en ligne
+                    document.body.style.setProperty('--mye-profile-top', `${btnRect.bottom}px`);
+                    document.body.style.setProperty('--mye-profile-left', `${Math.max(10, btnRect.right - paperWidth)}px`);
+                    
+                    // Optionnel: On peut garder le z-index en ligne au cas où, mais le CSS gère le reste
                     popover.style.setProperty('z-index', '2147483649', 'important');
-                    paper.style.setProperty('position', 'fixed', 'important');
-                    paper.style.setProperty('top', `${btnRect.bottom + 10}px`, 'important');
-                    paper.style.setProperty('left', `${btnRect.right - 200}px`, 'important');
-                    paper.style.setProperty('transform', 'none', 'important');
                 }
             }
         });
+
+        // Repositionner le menu de notifications
+        const notifPopper = document.getElementById('simple-popper-efrei');
+        if (notifPopper && notifPopper.style.display !== 'none') {
+            const customNotifBtn = document.getElementById('mye-custom-notif-btn');
+            if (customNotifBtn) {
+                const btnRect = customNotifBtn.getBoundingClientRect();
+                
+                // Transmettre les coordonnées aux variables CSS protégées
+                document.body.style.setProperty('--mye-notif-top', `${btnRect.bottom}px`);
+                document.body.style.setProperty('--mye-notif-left', `${btnRect.left - 150}px`);
+                
+                notifPopper.style.setProperty('z-index', '2147483649', 'important');
+            }
+        }
     }, 50);
 
     // Procuration de clics pour les Notifications
     const notifBtn = document.getElementById('mye-custom-notif-btn');
     if (notifBtn) {
-        notifBtn.addEventListener('click', () => {
+        notifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             let origNotifBtn = findOriginalHeaderButton('button[aria-controls="simple-popper-efrei"]');
             if (!origNotifBtn) {
                 origNotifBtn = findOriginalHeaderButton('button[aria-label*="notif"], button[aria-label*="bell"]');
             }
-            if (origNotifBtn) origNotifBtn.click();
+            if (origNotifBtn) {
+                const event = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+                origNotifBtn.dispatchEvent(event);
+            }
         });
     }
 
     // Procuration de clics pour le Profil (bureau)
     const triggerOriginalProfileClick = () => {
-        // Chercher le vrai bouton cliquable du profil (pas juste l'avatar)
-        let clickTarget = null;
-
-        // 1. data-tutorial="profile" est le wrapper le plus fiable
-        clickTarget = document.querySelector('div[data-tutorial="profile"]');
+        // Le HTML d'Efrei utilise aria-labelledby="composition-button" pour le menu profil
+        let clickTarget = document.getElementById('composition-button') || document.querySelector('div[data-tutorial="profile"]');
         
-        // 2. Chercher le bouton/IconButton qui contient l'avatar
         if (!clickTarget) {
-            const avatar = document.querySelector('.MuiAvatar-root');
+            const nameEl = document.querySelector('h6[role="userName"]');
+            if (nameEl) {
+                clickTarget = nameEl.closest('button, .MuiButtonBase-root, .MuiIconButton-root, div[role="button"], [role="dropDownMenu"]') || nameEl.parentElement;
+            }
+        }
+        
+        if (!clickTarget) {
+            const avatar = document.querySelector('.MuiAvatar-root, app-user-avatar, .user-avatar-container, img[alt*="avatar"]');
             if (avatar) {
-                clickTarget = avatar.closest('button, .MuiButtonBase-root, .MuiIconButton-root, div[role="button"], [role="dropDownMenu"]');
-                if (!clickTarget) clickTarget = avatar; // fallback à l'avatar directement
+                clickTarget = avatar.closest('button, .MuiButtonBase-root, .MuiIconButton-root, div[role="button"], [role="dropDownMenu"]') || avatar;
             }
         }
 
         if (clickTarget) {
-            // Temporairement réactiver les pointer-events sur toute la chaîne de parents
-            const parentsToRestore = [];
-            let el = clickTarget;
-            while (el && el !== document.body) {
-                const style = window.getComputedStyle(el);
-                if (style.pointerEvents === 'none') {
-                    el.style.setProperty('pointer-events', 'auto', 'important');
-                    parentsToRestore.push(el);
-                }
-                el = el.parentElement;
-            }
-
-            // Dispatch un vrai MouseEvent (React le capte mieux que .click())
+            // Un SEUL événement propre, sans toucher à la visibilité pour ne pas déclencher la fermeture automatique de React
             const event = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
             clickTarget.dispatchEvent(event);
-
-            // Restaurer pointer-events après un petit délai
-            setTimeout(() => {
-                parentsToRestore.forEach(p => p.style.removeProperty('pointer-events'));
-            }, 100);
         } else {
             console.error("Bouton de profil original introuvable.");
         }
@@ -479,7 +476,10 @@ function initCustomHeaderEvents() {
 
     const profileBtn = document.getElementById('mye-profile-btn');
     if (profileBtn) {
-        profileBtn.addEventListener('click', triggerOriginalProfileClick);
+        profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            triggerOriginalProfileClick();
+        });
     }
 
     // TIROIR MOBILE (DRAWER) ÉVÉNEMENTS

@@ -220,8 +220,26 @@
 /* POPUPS D'ORIGINE (NOTIFICATIONS ET PROFIL) */
 .MuiPopperUnstyled-root {
   z-index: 2147483648 !important; /* Toujours au-dessus de notre header */
-  /* Ajustement de la position pour qu'elle descende un peu et ne chevauche pas le header */
   margin-top: 15px !important;
+}
+
+/* IMMUNITÉ ANTI-SCROLL : Popper.js efface le style en scrollant, on force la position via CSS */
+#simple-popper-efrei {
+  position: fixed !important;
+  transform: none !important;
+  top: var(--mye-notif-top, 70px) !important;
+  left: var(--mye-notif-left, auto) !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+.MuiPopperUnstyled-root[role="dropDownMenu"] {
+  position: fixed !important;
+  transform: none !important;
+  top: var(--mye-profile-top, 70px) !important;
+  left: var(--mye-profile-left, auto) !important;
+  right: auto !important;
+  bottom: auto !important;
 }
 
 /* LA VRAIE BARRE DE RECHERCHE D'ORIGINE */
@@ -240,6 +258,9 @@
   visibility: visible !important;
 
   /* L'habillage unique du conteneur */
+  background-color: #f0f4f8 !important; /* Le fond gris clair */
+  border: 2px solid #1d3b64 !important;  /* La bordure bleue */
+  border-radius: 20px !important;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
   overflow: hidden !important;
   padding: 0 !important; /* Plus de padding pour coller parfaitement */
@@ -265,6 +286,15 @@ body.mye-clean-screen > *:not(#mye-custom-header-wrapper):not(.mye-page-containe
   pointer-events: none !important;
 }
 
+app-header, .app-header, header, 
+    mat-toolbar, .mat-toolbar, nav.top-nav, .top-bar,
+    .mat-tab-nav-panel {
+      position: absolute !important;
+      top: -9999px !important;
+      left: -9999px !important;
+      transform: none !important;
+    }
+
 body.mye-clean-screen {
   background-color: #F0F0F0 !important;
 }
@@ -274,12 +304,19 @@ body.mye-clean-screen {
   width: 100% !important;
 }
 
-.searchBar.mye-search-active .MuiOutlinedInput-root {
+.searchBar.mye-search-active .MuiOutlinedInput-root,
+.searchBar.mye-search-active .MuiInputBase-root,
+.searchBar.mye-search-active input,
+.searchBar.mye-search-active fieldset {
   border-radius: 0 !important; /* Plus besoin d'arrondi interne */
   background-color: transparent !important; /* Fond transparent pour voir celui du parent */
   border: none !important;
+  box-shadow: none !important;
   display: flex !important;
   align-items: center !important;
+}
+
+.searchBar.mye-search-active .MuiOutlinedInput-root {
   padding: 0 16px !important; /* Padding horizontal propre */
   min-height: 48px !important; /* Hauteur harmonisée */
 }
