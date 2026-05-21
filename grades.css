@@ -654,6 +654,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 100px 20px 40px 20px; /* Espace réservé pour le header du site */
+  box-sizing: border-box;
   z-index: 2000;
   opacity: 0;
   visibility: hidden;
@@ -667,17 +669,17 @@
 
 .mye-simulator-modal {
   background-color: white;
-  width: 90%;
+  width: 100%;
   max-width: 600px;
-  max-height: 90vh;
-  border-radius: 24px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-height: 100%; /* Prendra au maximum la place disponible dans le padding de l'overlay */
+  border-radius: 20px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   transform: scale(0.95);
-  transition: transform 0.3s ease;
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 2px solid #1d3b64;
   font-family: inherit;
 }
 
@@ -687,7 +689,8 @@
 
 .mye-simulator-header {
   padding: 20px 24px;
-  border-bottom: 1px solid #f1f5f9;
+  background-color: #1d3b64;
+  border-bottom: none;
   display: flex;
   flex-direction: row-reverse;
   justify-content: space-between;
@@ -695,18 +698,22 @@
 }
 
 .mye-simulator-close {
-  background: none;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
-  font-size: 28px;
-  color: #94a3b8;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 24px;
+  color: white;
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
 }
 
 .mye-simulator-close:hover {
-  color: #475569;
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .mye-simulator-header-text {
@@ -716,15 +723,15 @@
 }
 
 .mye-simulator-subject-name {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  color: #1e293b;
+  color: white;
   margin: 0;
 }
 
 .mye-simulator-ue-name {
   font-size: 13px;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
   font-weight: 500;
 }
@@ -737,6 +744,27 @@
   gap: 20px;
 }
 
+/* Scrollbar personnalisée pour la popup */
+.mye-simulator-body::-webkit-scrollbar {
+  width: 16px; /* Grosse barre visible */
+}
+
+.mye-simulator-body::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 20px;
+  margin: 15px 0;
+}
+
+.mye-simulator-body::-webkit-scrollbar-thumb {
+  background-color: #1d3b64; /* D.A du site */
+  border-radius: 20px;
+  border: 4px solid #f8fafc; /* Effet de marge interne */
+}
+
+.mye-simulator-body::-webkit-scrollbar-thumb:hover {
+  background-color: #0f172a; /* Bleu plus sombre au survol */
+}
+
 /* Status Box: Averages */
 .mye-sim-status-box {
   display: grid;
@@ -745,20 +773,21 @@
 }
 
 .mye-sim-stat {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 16px;
+  background-color: #1d3b64;
+  border: none;
+  border-radius: 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .mye-sim-stat-label {
   font-size: 11px;
   font-weight: 700;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -772,18 +801,213 @@
 .mye-sim-val-real {
   font-size: 18px;
   font-weight: 600;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .mye-sim-val-sep {
-  color: #cbd5e1;
+  color: rgba(255, 255, 255, 0.3);
   font-size: 16px;
 }
 
 .mye-sim-val-sim {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
-  color: #1d3b64;
+  color: white;
+}
+
+.mye-sim-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-align: center;
+}
+
+/* Badge colors */
+.mye-badge-valid {
+  background-color: #e8f8f0;
+  color: #2ecc71;
+}
+
+.mye-badge-compensated {
+  background-color: #fef5e7;
+  color: #f39c12;
+}
+
+.mye-badge-invalid {
+  background-color: #fdf2f2;
+  color: #ef4444;
+}
+
+/* Required box */
+.mye-sim-req-box {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mye-sim-req-box.mye-sim-req-comp {
+  background-color: #fffbeb;
+  border-color: #fef3c7;
+}
+
+.mye-sim-req-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #166534;
+  margin: 0;
+}
+
+.mye-sim-req-comp .mye-sim-req-title {
+  color: #92400e;
+}
+
+.mye-sim-req-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: #14532d;
+}
+
+.mye-sim-req-comp .mye-sim-req-list {
+  color: #78350f;
+}
+
+.mye-sim-req-list li {
+  line-height: 1.4;
+}
+
+/* Eval list */
+.mye-sim-eval-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mye-sim-eval-list h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mye-sim-eval-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 15px;
+}
+
+.mye-sim-eval-row:last-child {
+  border-bottom: none;
+}
+
+.mye-sim-eval-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mye-sim-eval-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mye-sim-eval-coef {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.mye-sim-eval-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mye-sim-eval-input {
+  width: 70px;
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.mye-sim-eval-input:focus {
+  border-color: #1d3b64;
+}
+
+.mye-sim-eval-input.simulated {
+  background-color: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.mye-sim-eval-input.placeholder-sim {
+  border-style: dashed;
+}
+
+.mye-sim-eval-input:disabled {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.mye-sim-eval-max {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.mye-simulator-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+  background-color: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mye-sim-btn-reset {
+  background-color: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.mye-sim-val-sep {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 16px;
+}
+
+.mye-sim-val-sim {
+  font-size: 26px;
+  font-weight: 700;
+  color: white;
 }
 
 .mye-sim-status-badge {
@@ -1034,3 +1258,49 @@
   }
 }
 
+/* Nouvelle carte Moyenne Estimée (design rectangulaire compact) */
+.mye-grade-sim-card {
+  background-color: white;
+  border-radius: 20px;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 20px;
+}
+
+.mye-grade-sim-label {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 15px;
+}
+
+.mye-grade-sim-value {
+  font-size: 52px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 25px;
+  line-height: 1.1;
+}
+
+.mye-grade-sim-track {
+  width: 100%;
+  max-width: 260px;
+  height: 20px;
+  background-color: #d1d5db; /* Gris clair */
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.mye-grade-sim-progress {
+  height: 100%;
+  width: 0%;
+  background-color: #16a34a;
+  border-radius: 999px;
+  transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.5s ease;
+}

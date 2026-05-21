@@ -27,6 +27,35 @@
   };
 
   // ──────────────────────────────────────────────
+  // SAUVEGARDE & CHARGEMENT DES SIMULATIONS
+  // ──────────────────────────────────────────────
+
+  function saveSimulatedGrades() {
+    if (!state.currentSchoolYear || !state.currentPeriod) return;
+    const key = `mye_simulated_${state.currentSchoolYear}_${state.currentPeriod}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(state.simulated));
+    } catch (e) {
+      console.error('📊 MyEfrei ULTRA — Erreur de sauvegarde du simulateur:', e);
+    }
+  }
+
+  function loadSimulatedGrades() {
+    if (!state.currentSchoolYear || !state.currentPeriod) {
+      state.simulated = {};
+      return;
+    }
+    const key = `mye_simulated_${state.currentSchoolYear}_${state.currentPeriod}`;
+    try {
+      const saved = localStorage.getItem(key);
+      state.simulated = saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      console.error('📊 MyEfrei ULTRA — Erreur de chargement du simulateur:', e);
+      state.simulated = {};
+    }
+  }
+
+  // ──────────────────────────────────────────────
   // UTILITAIRES
   // ──────────────────────────────────────────────
 
@@ -272,6 +301,7 @@
       });
     }
 
+    const isWeighted = sumCoef > 0;
     let realWeightedSum = 0;
     let realCoefSum = 0;
     let simWeightedSum = 0;
@@ -279,7 +309,7 @@
     let hasSimulation = false;
 
     evals.forEach((ev, evIdx) => {
-      const coef = (ev.coefficient != null && ev.coefficient > 0) ? ev.coefficient : 1.0;
+      const coef = isWeighted ? (ev.coefficient || 0) : 1.0;
 
       // Note réelle
       if (ev.value != null) {
@@ -289,6 +319,13 @@
 
       // Note simulée
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
+      
+      // Si une vraie note est apparue à la place d'une note simulée, on l'écrase
+      if (ev.value != null && state.simulated[simKey] !== undefined) {
+        delete state.simulated[simKey];
+        saveSimulatedGrades();
+      }
+
       const simVal = state.simulated[simKey];
       if (simVal !== undefined) {
         if (simVal !== null) {
@@ -303,7 +340,11 @@
     });
 
     const realAvg = sub.average != null ? sub.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
-    const simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
+    let simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
+    
+    if (simAvg == null && realAvg != null) {
+      simAvg = realAvg;
+    }
 
     return {
       realAverage: realAvg,
@@ -343,7 +384,10 @@
     });
 
     const realAvg = ue.average != null ? ue.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
-    const simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
+    let simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
+    if (simAvg == null && realAvg != null) {
+      simAvg = realAvg;
+    }
 
     return {
       realAverage: realAvg,
@@ -383,7 +427,10 @@
     });
 
     const realAvg = state.grades.average != null ? state.grades.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
-    const simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
+    let simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
+    if (simAvg == null && realAvg != null) {
+      simAvg = realAvg;
+    }
 
     return {
       realAverage: realAvg,
@@ -447,16 +494,11 @@
           </div>
           <div class="mye-grade-disclaimer">Les notes ne sont pas définitives</div>
         </div>
-        <div class="mye-grade-circle-container mye-grade-circle-container-sim" id="mye-grade-circle-container-sim" style="display:none; margin-top:20px;">
-          <div class="mye-grade-label" style="color:#10b981;">Moyenne Estimée</div>
-          <div class="mye-grade-circle">
-            <svg viewBox="0 0 200 200">
-              <circle class="mye-grade-circle-bg" cx="100" cy="100" r="${CIRCLE_RADIUS}" />
-              <circle class="mye-grade-circle-fill" id="mye-grade-arc-sim" cx="100" cy="100" r="${CIRCLE_RADIUS}"
-                stroke-dasharray="${CIRCLE_CIRCUMFERENCE}"
-                stroke-dashoffset="${CIRCLE_CIRCUMFERENCE}" style="stroke:#10b981;" />
-            </svg>
-            <div class="mye-grade-circle-value" id="mye-grade-value-sim" style="color:#10b981;">—</div>
+        <div class="mye-grade-sim-card" id="mye-grade-circle-container-sim" style="display:none;">
+          <div class="mye-grade-sim-label">Moyenne Estimée</div>
+          <div class="mye-grade-sim-value" id="mye-grade-value-sim">—</div>
+          <div class="mye-grade-sim-track">
+            <div class="mye-grade-sim-progress" id="mye-grade-arc-sim"></div>
           </div>
         </div>
       </div>
@@ -530,7 +572,7 @@
 
     state.currentPeriod = sem.period;
     state.currentSchoolYear = sem.schoolYear;
-    state.simulated = {}; // Réinitialiser le simulateur au changement de semestre
+    loadSimulatedGrades(); // Charger le simulateur du semestre sélectionné
 
     document.getElementById('mye-semester-label').textContent = sem.label;
     populateSemesterDropdown();
@@ -613,15 +655,27 @@
 
     const { realAverage, simulatedAverage, hasSimulation } = getGlobalAverages();
 
+    // Couleur selon la moyenne
+    const getGradeColor = (val) => {
+      if (val == null || isNaN(val)) return '#1d3b64';
+      const n = parseFloat(val);
+      if (n < 10) return '#ef4444';       // Rouge
+      if (n < 13) return '#f59e0b';       // Orange
+      if (n < 15) return '#84cc16';       // Vert clair
+      return '#16a34a';                   // Vert foncé
+    };
+
     // 1. Moyenne Réelle
     if (realAverage == null || isNaN(realAverage)) {
       arc.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
+      arc.style.stroke = '#1d3b64';
       valueEl.innerHTML = '—';
     } else {
       const ratio = Math.min(realAverage / 20, 1);
       const offset = CIRCLE_CIRCUMFERENCE * (1 - ratio);
       arc.style.strokeDashoffset = offset;
-      valueEl.innerHTML = `<div class="mye-grade-circle-value-real">${formatGrade(realAverage)}</div>`;
+      arc.style.stroke = getGradeColor(realAverage);
+      valueEl.innerHTML = `<div class="mye-grade-circle-value-real" style="color:#111">${formatGrade(realAverage)}</div>`;
     }
 
     // 2. Moyenne Estimée (dans un second cercle en dessous)
@@ -630,9 +684,9 @@
         containerSim.style.display = 'block';
         if (arcSim && valueSimEl) {
           const ratioSim = Math.min(simulatedAverage / 20, 1);
-          const offsetSim = CIRCLE_CIRCUMFERENCE * (1 - ratioSim);
-          arcSim.style.strokeDashoffset = offsetSim;
-          valueSimEl.innerHTML = `<div class="mye-grade-circle-value-sim">${formatGrade(simulatedAverage)}</div>`;
+          arcSim.style.width = `${ratioSim * 100}%`;
+          arcSim.style.backgroundColor = getGradeColor(simulatedAverage);
+          valueSimEl.innerHTML = formatGrade(simulatedAverage);
         }
       } else {
         containerSim.style.display = 'none';
@@ -691,10 +745,22 @@
     const { realAverage, simulatedAverage, hasSimulation } = getSubjectAverages(ueIdx, subIdx);
     const hasSimClass = hasSimulation ? ' has-sim' : '';
 
-    let gradeHTML = `<div class="mye-subject-grade">${formatGrade(realAverage)}</div>`;
+    // Couleur selon la moyenne
+    const getGradeColor = (val) => {
+      if (val == null || isNaN(val)) return '#1d3b64'; // Couleur par défaut
+      const n = parseFloat(val);
+      if (n < 10) return '#ef4444';       // Rouge
+      if (n < 13) return '#f59e0b';       // Orange
+      if (n < 15) return '#84cc16';       // Vert clair
+      return '#16a34a';                   // Vert foncé
+    };
+
+    const gradeColor = getGradeColor(realAverage);
+
+    let gradeHTML = `<div class="mye-subject-grade" style="color:${gradeColor}">${formatGrade(realAverage)}</div>`;
     if (hasSimulation && simulatedAverage != null) {
       gradeHTML = `
-        <div class="mye-subject-grade" style="display:flex; align-items:baseline; gap:6px;">
+        <div class="mye-subject-grade" style="display:flex; align-items:baseline; gap:6px; color:${gradeColor}">
           <span class="mye-subject-grade-val">${formatGrade(realAverage)}</span>
           <span class="mye-subject-grade-sim" style="font-size:14px; color:#10b981; font-weight:700; background-color:#e8f8f0; padding:2px 6px; border-radius:6px; white-space:nowrap;">${formatGrade(simulatedAverage)} Est.</span>
         </div>
@@ -820,6 +886,7 @@
         isVirtual: true
       });
     }
+    const isWeighted = sumCoef > 0;
 
     const missingEvals = evals.filter((ev, evIdx) => {
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
@@ -842,37 +909,35 @@
       sumUECoef += coef;
       if (otherIdx !== parseInt(subIdx, 10)) {
         const { simulatedAverage } = getSubjectAverages(ueIdx, otherIdx);
-        if (simulatedAverage != null) {
-          sumUEWeightedVal += simulatedAverage * coef;
-        }
+        // Si la matière n'a pas encore de moyenne, on suppose qu'elle aura 10
+        const avg = simulatedAverage != null ? simulatedAverage : 10;
+        sumUEWeightedVal += avg * coef;
       }
     });
 
-    let T_ue = (10 * sumUECoef - sumUEWeightedVal) / thisSubCoef;
+    let T_ue = thisSubCoef > 0 ? (10 * sumUECoef - sumUEWeightedVal) / thisSubCoef : 10;
     if (T_ue < 0) T_ue = 0;
 
     let otherSubsFailedNames = [];
     ue.subjects.forEach((otherSub, otherIdx) => {
       if (otherIdx !== parseInt(subIdx, 10)) {
         const { simulatedAverage } = getSubjectAverages(ueIdx, otherIdx);
-        if (simulatedAverage != null && simulatedAverage < 8) {
+        if (simulatedAverage != null && simulatedAverage < 6) {
           otherSubsFailedNames.push(otherSub.name);
         }
       }
     });
 
     const isCompensationPossible = otherSubsFailedNames.length === 0;
-    const T_direct = Math.max(8, T_ue);
-    const T_comp = Math.max(6, T_ue);
+    const T_direct = Math.max(6, T_ue);
 
-    let sumECoef = evals.reduce((sum, ev) => sum + (ev.coefficient || (sumCoef === 0 ? 1.0 : 0)), 0);
-    if (sumCoef === 0) sumECoef = evals.length;
+    let sumECoef = evals.reduce((sum, ev) => sum + (isWeighted ? (ev.coefficient || 0) : 1.0), 0);
 
     let sumKWeighted = 0;
     let sumMCoef = 0;
 
     evals.forEach((ev, evIdx) => {
-      const coef = ev.coefficient != null ? ev.coefficient : 1.0;
+      const coef = isWeighted ? (ev.coefficient || 0) : 1.0;
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
       const simVal = state.simulated[simKey];
 
@@ -893,28 +958,30 @@
       if (!isCompensationPossible) {
         reqBox.className = 'mye-sim-req-box mye-sim-req-comp';
         html = `
-          <h5 class="mye-sim-req-title">⚠️ Compensation non disponible</h5>
-          <p style="margin: 0; font-size: 13px; color: #78350f;">La matière <strong>${escapeHTML(otherSubsFailedNames.join(', '))}</strong> est en dessous de 8. Vous ne pouvez pas compenser.</p>
+          <h5 class="mye-sim-req-title">⚠️ Validation de l'UE compromise</h5>
+          <p style="margin: 0; font-size: 13px; color: #78350f;">La matière <strong>${escapeHTML(otherSubsFailedNames.join(', '))}</strong> est en dessous de 6. L'UE ne peut pas être validée.</p>
           <ul class="mye-sim-req-list">
-            <li>Pour valider le module : il vous faut au moins <strong>${G_direct > 20 ? 'Impossible' : (G_direct <= 0 ? 'Déjà atteint' : G_direct.toFixed(2).replace('.', ','))}/20</strong> aux évaluations restantes.</li>
+            <li>Pour compenser cette matière, il faudrait d'abord la remonter à 6 minimum.</li>
           </ul>
         `;
       } else {
         reqBox.className = 'mye-sim-req-box';
-        const G_comp = (T_comp * sumECoef - sumKWeighted) / sumMCoef;
 
         const formatReqGrade = (g) => {
           if (g > 20) return '<span style="color:#ef4444; font-weight:700;">Impossible (>20)</span>';
-          if (g <= 0) return '<span style="color:#2ecc71; font-weight:700;">Déjà atteint (0/20)</span>';
-          return `au moins <strong>${g.toFixed(2).replace('.', ',')}/20</strong>`;
+          if (g <= 0) return '<span style="color:#2ecc71; font-weight:700;">Déjà atteint</span>';
+          return `<strong style="font-size: 15px;">${g.toFixed(2).replace('.', ',')}/20</strong>`;
         };
 
+        let explanationText = `<p style="margin: 0; font-size: 13.5px; color: #166534; line-height: 1.5;">Pour assurer la moyenne de <strong>10/20 à l'UE</strong>, vous devez obtenir au moins ${formatReqGrade(G_direct)} aux évaluations restantes dans cette matière.</p>`;
+        
+        if (T_ue < 6) {
+          explanationText = `<p style="margin: 0; font-size: 13.5px; color: #166534; line-height: 1.5;">Pour valider cette matière (minimum <strong>6/20</strong> requis), vous devez obtenir au moins ${formatReqGrade(G_direct)} aux évaluations restantes.<br><span style="font-size: 12px; opacity: 0.85;">(Votre moyenne d'UE est déjà sécurisée au-dessus de 10)</span></p>`;
+        }
+
         html = `
-          <h5 class="mye-sim-req-title">🎯 Notes minimales requises</h5>
-          <ul class="mye-sim-req-list">
-            <li><strong>Validation directe (Matière &ge; ${T_direct.toFixed(1).replace('.', ',')}) :</strong> ${formatReqGrade(G_direct)}</li>
-            <li><strong>Validation par compensation (Matière &ge; ${T_comp.toFixed(1).replace('.', ',')}) :</strong> ${formatReqGrade(G_comp)}</li>
-          </ul>
+          <h5 class="mye-sim-req-title" style="margin-bottom: 8px; font-size: 15px;">🎯 Objectif pour valider l'UE</h5>
+          ${explanationText}
         `;
       }
     } else {
@@ -943,7 +1010,7 @@
     ue.subjects.forEach((otherSub, otherIdx) => {
       if (otherIdx !== parseInt(subIdx, 10)) {
         const { simulatedAverage } = getSubjectAverages(ueIdx, otherIdx);
-        if (simulatedAverage != null && simulatedAverage < 8) {
+        if (simulatedAverage != null && simulatedAverage < 6) {
           otherSubsFailedCount++;
         }
       }
@@ -952,12 +1019,9 @@
     if (subSimAvg == null) {
       subStatusEl.textContent = 'Aucune note';
       subStatusEl.className = 'mye-sim-status-badge';
-    } else if (subSimAvg >= 8) {
+    } else if (subSimAvg >= 10 || (subSimAvg >= 6 && ueSimAvg != null && ueSimAvg >= 10)) {
       subStatusEl.textContent = 'Validée';
       subStatusEl.className = 'mye-sim-status-badge mye-badge-valid';
-    } else if (subSimAvg >= 6 && otherSubsFailedCount === 0 && ueSimAvg != null && ueSimAvg >= 10) {
-      subStatusEl.textContent = 'Compensée';
-      subStatusEl.className = 'mye-sim-status-badge mye-badge-compensated';
     } else {
       subStatusEl.textContent = 'Non validée';
       subStatusEl.className = 'mye-sim-status-badge mye-badge-invalid';
@@ -965,16 +1029,14 @@
 
     let ueValid = false;
     if (ueSimAvg != null && ueSimAvg >= 10) {
-      let under8Count = 0;
       let under6Count = 0;
       ue.subjects.forEach((otherSub, idx) => {
         const { simulatedAverage } = getSubjectAverages(ueIdx, idx);
-        if (simulatedAverage != null) {
-          if (simulatedAverage < 6) under6Count++;
-          else if (simulatedAverage < 8) under8Count++;
+        if (simulatedAverage != null && simulatedAverage < 6) {
+          under6Count++;
         }
       });
-      if (under6Count === 0 && under8Count <= 1) {
+      if (under6Count === 0) {
         ueValid = true;
       }
     }
@@ -1014,6 +1076,7 @@
       });
     }
 
+    const isHorsUE = (ue.name || '').toLowerCase().includes('hors');
     let evalRowsHTML = evals.map((ev, evIdx) => {
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
       const simVal = state.simulated[simKey];
@@ -1023,6 +1086,9 @@
       const disabledAttr = isDefinitive ? 'disabled' : '';
       const inputClass = isSimulated ? 'simulated' : (ev.value == null ? 'placeholder-sim' : '');
 
+      const maxAttr = isHorsUE ? '' : 'max="20"';
+      const maxText = isHorsUE ? '' : '<span class="mye-sim-eval-max">/20</span>';
+
       return `
         <div class="mye-sim-eval-row">
           <div class="mye-sim-eval-info">
@@ -1030,13 +1096,13 @@
             <span class="mye-sim-eval-coef">Coef ${formatCoef(ev.coefficient)}</span>
           </div>
           <div class="mye-sim-eval-input-container">
-            <input type="number" step="0.25" min="0" max="20"
+            <input type="number" step="0.25" min="0" ${maxAttr}
                    class="mye-sim-eval-input ${inputClass}"
-                   data-ue-idx="${ueIdx}" data-sub-idx="${subIdx}" data-eval-idx="${evIdx}"
+                   data-ue-idx="${ueIdx}" data-sub-idx="${subIdx}" data-eval-idx="${evIdx}" data-is-hors-ue="${isHorsUE}"
                    value="${currentVal !== null && currentVal !== undefined ? currentVal : ''}"
                    placeholder="${ev.value == null ? 'Simuler' : ''}"
                    ${disabledAttr}>
-            <span class="mye-sim-eval-max">/20</span>
+            ${maxText}
           </div>
         </div>
       `;
@@ -1122,13 +1188,16 @@
           let val = parseFloat(valStr.replace(',', '.'));
           if (isNaN(val)) val = 0;
           if (val < 0) val = 0;
-          if (val > 20) val = 20;
+          
+          const isHorsUE = input.getAttribute('data-is-hors-ue') === 'true';
+          if (!isHorsUE && val > 20) val = 20;
 
           state.simulated[simKey] = val;
           input.classList.add('simulated');
           input.classList.remove('placeholder-sim');
         }
 
+        saveSimulatedGrades();
         updateModalStatuses(ueIdx, subIdx);
         updateModalRequiredGrades(ueIdx, subIdx);
         updateMainPageGrades();
@@ -1150,6 +1219,7 @@
         }
       });
 
+      saveSimulatedGrades();
       updateModalStatuses(ueIdx, subIdx);
       updateModalRequiredGrades(ueIdx, subIdx);
       updateMainPageGrades();
@@ -1310,6 +1380,7 @@
       const current = state.semesters[state.semesters.length - 1];
       state.currentPeriod = current.period;
       state.currentSchoolYear = current.schoolYear;
+      loadSimulatedGrades();
 
       document.getElementById('mye-semester-label').textContent = current.label;
       populateSemesterDropdown();
