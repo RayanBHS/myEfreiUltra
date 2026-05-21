@@ -1262,7 +1262,7 @@
 .mye-grade-sim-card {
   background-color: white;
   border-radius: 20px;
-  padding: 30px 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1276,20 +1276,19 @@
   font-size: 28px;
   font-weight: 700;
   color: #111;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .mye-grade-sim-value {
   font-size: 52px;
   font-weight: 700;
   color: #111;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   line-height: 1.1;
 }
 
 .mye-grade-sim-track {
   width: 100%;
-  max-width: 260px;
   height: 20px;
   background-color: #d1d5db; /* Gris clair */
   border-radius: 999px;

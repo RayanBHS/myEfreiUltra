@@ -240,15 +240,33 @@
   visibility: visible !important;
 
   /* L'habillage unique du conteneur */
-  background-color: #f0f4f8 !important; /* Le fond gris clair */
-  border: 2px solid #1d3b64 !important;  /* La bordure bleue */
-  border-radius: 20px !important;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
   overflow: hidden !important;
   padding: 0 !important; /* Plus de padding pour coller parfaitement */
 
   /* Animation */
   animation: mye-popup-anim-search 0.2s ease-out forwards !important;
+}
+
+@keyframes mye-popup-anim-search {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   NETTOYAGE GLOBAL DE LA PAGE (Masquer l'ancien site)
+   ========================================================= */
+body.mye-clean-screen > *:not(#mye-custom-header-wrapper):not(.mye-page-container):not(#mye-pdf-overlay):not(#mye-simulator-overlay):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper):not(.MuiPopperUnstyled-root):not(.cdk-overlay-container):not(.mat-menu-panel) {
+  visibility: hidden !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+body.mye-clean-screen {
+  background-color: #F0F0F0 !important;
 }
 
 .searchBar.mye-search-active .MuiFormControl-root {

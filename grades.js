@@ -471,6 +471,7 @@
 
     const container = document.createElement('div');
     container.id = 'mye-grades-container';
+    container.className = 'mye-page-container';
 
     container.innerHTML = `
       <div class="mye-grades-left">
@@ -1408,25 +1409,7 @@
   }
 
   function waitAndInit() {
-    const hideStyle = document.createElement('style');
-    hideStyle.id = 'mye-hide-all-style';
-    hideStyle.innerHTML = `
-      body > *:not(#mye-custom-header-wrapper):not(#mye-grades-container):not(#mye-pdf-overlay):not(#mye-simulator-overlay):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper) {
-        visibility: hidden !important;
-        position: absolute !important;
-        width: 0 !important;
-        height: 0 !important;
-        overflow: hidden !important;
-        pointer-events: none !important;
-      }
-      html, body {
-        background-color: #F0F0F0 !important;
-      }
-    `;
-    
-    const existingStyle = document.getElementById('mye-hide-all-style');
-    if (existingStyle) existingStyle.remove();
-    document.head.appendChild(hideStyle);
+    document.body.classList.add('mye-clean-screen');
 
     const container = document.getElementById('mye-grades-container');
     if (container) container.style.display = 'block';
@@ -1468,8 +1451,7 @@
           else document.getElementById('mye-grades-container').style.display = 'block';
         }
       } else {
-        const hideStyle = document.getElementById('mye-hide-all-style');
-        if (hideStyle) hideStyle.remove();
+        document.body.classList.remove('mye-clean-screen');
         const container = document.getElementById('mye-grades-container');
         if (container) container.style.display = 'none';
       }

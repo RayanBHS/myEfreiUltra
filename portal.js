@@ -810,13 +810,12 @@ function injectCustomHeader() {
 function buildLandingOverlay() {
     if (document.getElementById('mye-landing-overlay')) return;
 
-    // Masquer le corps d'origine en ajoutant une balise style
+    document.body.classList.add('mye-clean-screen');
+
+    // Garder le fond noir pour le landing
     const hideStyle = document.createElement('style');
     hideStyle.innerHTML = `
-      body > :not(#mye-landing-overlay) {
-        display: none !important;
-      }
-      body {
+      body.mye-clean-screen {
         background-color: #0c0c0c !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -874,6 +873,7 @@ function buildLandingOverlay() {
     // Créer l'overlay
     const overlay = document.createElement('div');
     overlay.id = 'mye-landing-overlay';
+    overlay.className = 'mye-page-container';
     overlay.style.setProperty('--tour-assas-url', `url('${TOUR_ASSAS_URL}')`);
     
     overlay.innerHTML = `

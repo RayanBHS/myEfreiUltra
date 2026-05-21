@@ -145,25 +145,12 @@
     const existing = document.getElementById('mye-planning-container');
     if (existing) return;
 
-    // Injecter un style pour masquer le contenu original
-    const hideStyle = document.createElement('style');
-    hideStyle.id = 'mye-planning-hide-style';
-    hideStyle.innerHTML = `
-      body > *:not(#mye-custom-header-wrapper):not(#mye-planning-container):not(#mye-pdf-overlay):not(script):not(style):not(link) {
-        display: none !important;
-      }
-      body {
-        background-color: #F0F0F0 !important;
-      }
-    `;
-    
-    const oldStyle = document.getElementById('mye-planning-hide-style');
-    if (oldStyle) oldStyle.remove();
-    document.head.appendChild(hideStyle);
+    document.body.classList.add('mye-clean-screen');
 
     // Conteneur principal
     const container = document.createElement('div');
     container.id = 'mye-planning-container';
+    container.className = 'mye-page-container';
     container.innerHTML = `
       <div class="mye-planning-left">
         <!-- Sélecteur de date / semaine -->
@@ -463,20 +450,7 @@
 
   // Attendre Angular et démarrer si on est sur la bonne page
   function waitAndInit() {
-    // Masquage temporaire immédiat du corps pour éviter les sauts visuels
-    const style = document.createElement('style');
-    style.id = 'mye-planning-hide-all-style';
-    style.innerHTML = `
-      body > *:not(#mye-custom-header-wrapper):not(#mye-planning-container):not(#mye-pdf-overlay):not(script):not(style):not(link) {
-        display: none !important;
-      }
-      html, body {
-        background-color: #F0F0F0 !important;
-      }
-    `;
-    const oldStyle = document.getElementById('mye-planning-hide-all-style');
-    if (oldStyle) oldStyle.remove();
-    document.head.appendChild(style);
+    document.body.classList.add('mye-clean-screen');
 
     const container = document.getElementById('mye-planning-container');
     if (container) container.style.display = 'flex';
@@ -518,14 +492,12 @@
         if (!document.getElementById('mye-planning-container')) {
           waitAndInit();
         } else {
-          const hideStyle = document.getElementById('mye-planning-hide-all-style');
-          if (!hideStyle) waitAndInit();
-          else document.getElementById('mye-planning-container').style.display = 'flex';
+          document.body.classList.add('mye-clean-screen');
+          document.getElementById('mye-planning-container').style.display = 'flex';
         }
       } else {
         // Cleanup : masquer et restaurer
-        const hideStyle = document.getElementById('mye-planning-hide-all-style');
-        if (hideStyle) hideStyle.remove();
+        document.body.classList.remove('mye-clean-screen');
         const container = document.getElementById('mye-planning-container');
         if (container) container.style.display = 'none';
       }
