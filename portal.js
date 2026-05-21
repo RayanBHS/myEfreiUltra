@@ -297,18 +297,17 @@ function initCustomHeaderEvents() {
                     if (nav.classList.contains('searchBar')) nav.classList.remove('mye-search-active');
                 }
             });
-
             // Toggle
             menu.classList.toggle('show');
             item.classList.toggle('active');
-
-            // Positionnement sous le bouton
-            if (menu.classList.contains('show')) {
-                const rect = item.getBoundingClientRect();
-                menu.style.left = `${rect.left + (rect.width / 2)}px`;
-                menu.style.top = '60px'; // Sous le header
-            }
         });
+        
+        // Empêcher la propagation si on clique dans le menu pour ne pas le fermer accidentellement
+        const targetId = item.getAttribute('data-target');
+        const menu = document.getElementById(targetId);
+        if (menu) {
+            menu.addEventListener('click', (ev) => ev.stopPropagation());
+        }
     });
 
     // Fermer les dropdowns quand on clique ailleurs
@@ -706,6 +705,16 @@ function injectCustomHeader() {
     wrapper.id = 'mye-custom-header-wrapper';
     wrapper.innerHTML = getHeaderHTML();
     document.body.prepend(wrapper);
+
+    // Déplacer les menus déroulants dans leurs boutons respectifs
+    document.querySelectorAll('.mye-has-dropdown').forEach(item => {
+        const targetId = item.getAttribute('data-target');
+        const menu = document.getElementById(targetId);
+        if (menu) {
+            item.appendChild(menu);
+            item.style.position = 'relative';
+        }
+    });
 
     initCustomHeaderEvents();
 

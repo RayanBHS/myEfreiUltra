@@ -156,8 +156,11 @@
 /* MENUS DÉROULANTS */
 .mye-dropdown-menu {
   position: absolute;
-  top: 75px; /* Valeur par défaut avant JS */
+  top: calc(100% + 15px);
+  left: 50%;
   background-color: white;
+  color: initial;
+  cursor: default;
   border: 2px solid #1d3b64;
   border-radius: 20px;
   padding: 15px 0;
