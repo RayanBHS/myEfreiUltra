@@ -327,12 +327,26 @@ function initCustomHeaderEvents() {
         }
     });
 
+    // Fonction sécurisée pour trouver les boutons du header
+    const findOriginalHeaderButton = (selectors) => {
+        let found = null;
+        document.querySelectorAll(selectors).forEach(el => {
+            // On ignore tout ce qui est dans le contenu principal des notes ou du dashboard
+            if (!found && !el.closest('app-student-grades') && !el.closest('#mye-grades-container') && !el.closest('app-student-home')) {
+                found = el;
+            }
+        });
+        // Si on n'a rien trouvé, on prend le premier (comportement par défaut)
+        if (!found) found = document.querySelector(selectors);
+        return found;
+    };
+
     // Clic sur l'icône de recherche : Ouvre la VRAIE barre de recherche
     const searchBtn = document.getElementById('mye-custom-search-btn');
     if (searchBtn) {
         searchBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const origSearchBar = document.querySelector('.searchBar');
+            const origSearchBar = findOriginalHeaderButton('.searchBar');
             if (origSearchBar) {
                 const isActive = origSearchBar.classList.toggle('mye-search-active');
                 if (isActive) {
@@ -363,7 +377,7 @@ function initCustomHeaderEvents() {
     }
 
     // Tâche de fond pour forcer la position des résultats de recherche sous la barre
-    // Ceci contrecarre la logique de Popper.js d'Efrei qui se perd quand on met en position fixed
+    // et repositionner les popups de notification/profil près des boutons custom
     setInterval(() => {
         const origSearchBar = document.querySelector('.searchBar.mye-search-active');
         const popper = document.querySelector('.MuiAutocomplete-popper');
@@ -376,15 +390,45 @@ function initCustomHeaderEvents() {
             popper.style.setProperty('width', `${rect.width}px`, 'important');
             popper.style.setProperty('transform', 'none', 'important');
         }
+
+        // Repositionner le popper de notifications près du bouton custom
+        const notifPopper = document.getElementById('simple-popper-efrei');
+        if (notifPopper && notifPopper.offsetParent !== null) {
+            const customNotifBtn = document.getElementById('mye-custom-notif-btn');
+            if (customNotifBtn) {
+                const btnRect = customNotifBtn.getBoundingClientRect();
+                notifPopper.style.setProperty('position', 'fixed', 'important');
+                notifPopper.style.setProperty('top', `${btnRect.bottom + 10}px`, 'important');
+                notifPopper.style.setProperty('left', `${btnRect.left - 150}px`, 'important');
+                notifPopper.style.setProperty('z-index', '2147483649', 'important');
+                notifPopper.style.setProperty('transform', 'none', 'important');
+            }
+        }
+
+        // Repositionner les popovers MUI (profil) près du bouton profil custom
+        document.querySelectorAll('.MuiPopover-root').forEach(popover => {
+            const paper = popover.querySelector('.MuiPopover-paper, .MuiPaper-root');
+            if (paper && popover.style.display !== 'none') {
+                const customProfileBtn = document.getElementById('mye-profile-btn');
+                if (customProfileBtn) {
+                    const btnRect = customProfileBtn.getBoundingClientRect();
+                    popover.style.setProperty('z-index', '2147483649', 'important');
+                    paper.style.setProperty('position', 'fixed', 'important');
+                    paper.style.setProperty('top', `${btnRect.bottom + 10}px`, 'important');
+                    paper.style.setProperty('left', `${btnRect.right - 200}px`, 'important');
+                    paper.style.setProperty('transform', 'none', 'important');
+                }
+            }
+        });
     }, 50);
 
     // Procuration de clics pour les Notifications
     const notifBtn = document.getElementById('mye-custom-notif-btn');
     if (notifBtn) {
         notifBtn.addEventListener('click', () => {
-            let origNotifBtn = document.querySelector('button[aria-controls="simple-popper-efrei"]');
+            let origNotifBtn = findOriginalHeaderButton('button[aria-controls="simple-popper-efrei"]');
             if (!origNotifBtn) {
-                origNotifBtn = document.querySelector('button[aria-label*="notif"], button[aria-label*="bell"]');
+                origNotifBtn = findOriginalHeaderButton('button[aria-label*="notif"], button[aria-label*="bell"]');
             }
             if (origNotifBtn) origNotifBtn.click();
         });
@@ -392,9 +436,9 @@ function initCustomHeaderEvents() {
 
     // Procuration de clics pour le Profil (bureau)
     const triggerOriginalProfileClick = () => {
-        let origProfileBtn = document.querySelector('.MuiAvatar-root');
+        let origProfileBtn = findOriginalHeaderButton('.MuiAvatar-root');
         if (!origProfileBtn) {
-            origProfileBtn = document.querySelector('div[data-tutorial="profile"]');
+            origProfileBtn = findOriginalHeaderButton('div[data-tutorial="profile"]');
         }
         
         // Parfois sur mobile, l'avatar n'est pas .MuiAvatar-root ou data-tutorial

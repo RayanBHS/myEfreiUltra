@@ -400,11 +400,18 @@
     const hideStyle = document.createElement('style');
     hideStyle.id = 'mye-grades-hide-style';
     hideStyle.innerHTML = `
+      /* Au lieu de display: none, on utilise une méthode qui préserve l'existence dans le DOM 
+         afin que les boutons d'origine (Recherche, Profil, Notifs) puissent toujours calculer leurs coordonnées */
       app-student-grades,
-      app-student-home,
-      .mat-tab-nav-panel,
-      mat-sidenav-container > mat-sidenav-content > :not(app-header):not(#mye-custom-header-wrapper):not(#mye-grades-container):not(#mye-pdf-overlay):not(#mye-simulator-overlay) {
-        display: none !important;
+      app-student-home {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
       }
       body {
         background-color: #F0F0F0 !important;
@@ -1333,8 +1340,13 @@
     const hideStyle = document.createElement('style');
     hideStyle.id = 'mye-hide-all-style';
     hideStyle.innerHTML = `
-      body > *:not(#mye-custom-header-wrapper):not(#mye-grades-container):not(#mye-pdf-overlay):not(#mye-simulator-overlay):not(script):not(style):not(link) {
-        display: none !important;
+      body > *:not(#mye-custom-header-wrapper):not(#mye-grades-container):not(#mye-pdf-overlay):not(#mye-simulator-overlay):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper) {
+        visibility: hidden !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
       }
       html, body {
         background-color: #F0F0F0 !important;
