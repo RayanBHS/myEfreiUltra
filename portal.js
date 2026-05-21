@@ -436,27 +436,42 @@ function initCustomHeaderEvents() {
 
     // Procuration de clics pour le Profil (bureau)
     const triggerOriginalProfileClick = () => {
-        let origProfileBtn = findOriginalHeaderButton('.MuiAvatar-root');
-        if (!origProfileBtn) {
-            origProfileBtn = findOriginalHeaderButton('div[data-tutorial="profile"]');
-        }
+        // Chercher le vrai bouton cliquable du profil (pas juste l'avatar)
+        let clickTarget = null;
+
+        // 1. data-tutorial="profile" est le wrapper le plus fiable
+        clickTarget = document.querySelector('div[data-tutorial="profile"]');
         
-        // Parfois sur mobile, l'avatar n'est pas .MuiAvatar-root ou data-tutorial
-        // Essayons de trouver le bouton contenant l'image de profil
-        if (!origProfileBtn) {
-            const imgs = document.querySelectorAll('img[alt*="avatar"], img[src*="avatar"]');
-            for (let img of imgs) {
-                // Remonter vers le bouton parent
-                const btn = img.closest('button, div[role="button"], [role="dropDownMenu"]');
-                if (btn && window.getComputedStyle(btn).display !== 'none') {
-                    origProfileBtn = btn;
-                    break;
-                }
+        // 2. Chercher le bouton/IconButton qui contient l'avatar
+        if (!clickTarget) {
+            const avatar = document.querySelector('.MuiAvatar-root');
+            if (avatar) {
+                clickTarget = avatar.closest('button, .MuiButtonBase-root, .MuiIconButton-root, div[role="button"], [role="dropDownMenu"]');
+                if (!clickTarget) clickTarget = avatar; // fallback à l'avatar directement
             }
         }
 
-        if (origProfileBtn) {
-            origProfileBtn.click();
+        if (clickTarget) {
+            // Temporairement réactiver les pointer-events sur toute la chaîne de parents
+            const parentsToRestore = [];
+            let el = clickTarget;
+            while (el && el !== document.body) {
+                const style = window.getComputedStyle(el);
+                if (style.pointerEvents === 'none') {
+                    el.style.setProperty('pointer-events', 'auto', 'important');
+                    parentsToRestore.push(el);
+                }
+                el = el.parentElement;
+            }
+
+            // Dispatch un vrai MouseEvent (React le capte mieux que .click())
+            const event = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+            clickTarget.dispatchEvent(event);
+
+            // Restaurer pointer-events après un petit délai
+            setTimeout(() => {
+                parentsToRestore.forEach(p => p.style.removeProperty('pointer-events'));
+            }, 100);
         } else {
             console.error("Bouton de profil original introuvable.");
         }
