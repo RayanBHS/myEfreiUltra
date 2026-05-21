@@ -1,441 +1,534 @@
 /* =============================================
-   MYEFREI ULTRA — Page du Planning (Hebdomadaire Horizontal)
+   MYEFREI ULTRA — Page du Planning (Apple Calendar Style)
    ============================================= */
 
 /* ── Layout principal ── */
 #mye-planning-container {
   display: flex;
-  gap: 25px;
-  padding: 90px 25px 25px 25px;
-  min-height: 100vh;
+  height: 100vh;
+  padding-top: 70px; /* Espace pour le header portal */
   box-sizing: border-box;
-  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
-  background-color: #F0F0F0;
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1d1d1f;
+  overflow: hidden;
 }
 
 /* ══════════════════════════════════════
-   PANNEAU GAUCHE (fixe au défilement)
+   SIDEBAR GAUCHE
    ══════════════════════════════════════ */
-.mye-planning-left {
-  position: sticky;
-  top: 90px;
-  width: 320px;
-  min-width: 320px;
-  max-height: calc(100vh - 110px);
+.mac-cal-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background-color: #f5f5f7;
+  border-right: 1px solid #d2d2d7;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  align-self: flex-start;
+  padding: 20px 0;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-/* ── Sélecteur de semaine ── */
-.mye-week-card {
-  background-color: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-sizing: border-box;
+.mac-cal-sidebar-section {
+  padding: 0 20px;
+}
+
+.mac-cal-sidebar-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #86868b;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.mac-cal-filter-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: 100%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
 
-.mye-week-nav {
+.mac-cal-filter-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #1d1d1f;
+  cursor: default;
+}
+
+.mac-cal-filter-item input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  margin-right: 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mac-cal-filter-item input[type="checkbox"]:checked {
+  background-color: currentColor;
+}
+
+.mac-cal-filter-item input[type="checkbox"]:checked::after {
+  content: '';
+  width: 3px;
+  height: 7px;
+  border: solid white;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+  position: absolute;
+  top: 1px;
+}
+
+/* Couleurs des checkboxes */
+.mac-cal-filter-item:nth-child(1) input[type="checkbox"] { color: #ff3385; }
+.mac-cal-filter-item:nth-child(2) input[type="checkbox"] { color: #34c759; }
+.mac-cal-filter-item:nth-child(3) input[type="checkbox"] { color: #007aff; }
+.mac-cal-filter-item:nth-child(4) input[type="checkbox"] { color: #ff9500; }
+.mac-cal-filter-item:nth-child(5) input[type="checkbox"] { color: #af52de; }
+.mac-cal-filter-item:nth-child(6) input[type="checkbox"] { color: #8e8e93; }
+
+.mac-cal-color-dot {
+  display: none;
+}
+
+/* Mini Calendar */
+.mac-cal-minical {
+  padding: 0 20px;
+  margin-top: 30px;
+}
+
+.mac-minical-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.mac-minical-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.mac-minical-nav {
   display: flex;
   gap: 8px;
-  justify-content: space-between;
 }
 
-.mye-week-nav-btn {
+.mac-minical-nav button {
   background: none;
-  border: 2px solid #1d3b64;
+  border: none;
+  color: #86868b;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.mac-minical-nav button:hover {
+  color: #1d1d1f;
+}
+
+.mac-minical-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.mac-minical-dow {
+  font-size: 10px;
+  color: #86868b;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.mac-minical-day {
+  font-size: 12px;
+  color: #1d1d1f;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
-  color: #1d3b64;
-  width: 38px;
-  height: 38px;
+  margin: 0 auto;
+}
+
+.mac-minical-day.empty {
+  background: transparent;
+}
+
+.mac-minical-day.today {
+  background-color: #ff3b30;
+  color: white;
+  font-weight: 600;
+}
+
+.mac-minical-day.selected-week {
+  background-color: rgba(0,0,0,0.08);
+}
+.mac-minical-day.selected-week.today {
+  background-color: #ff3b30;
+}
+
+/* ══════════════════════════════════════
+   PANNEAU PRINCIPAL
+   ══════════════════════════════════════ */
+.mac-cal-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: #ffffff;
+}
+
+.mac-cal-toolbar {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid #d2d2d7;
+}
+
+.mac-cal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.mac-cal-view-toggles {
+  display: flex;
+  background-color: #f5f5f7;
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.mac-cal-toggle-btn {
+  background: none;
+  border: none;
+  padding: 4px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1d1d1f;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.mac-cal-toggle-btn.active {
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.mac-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mac-cal-icon-btn {
+  background: none;
+  border: none;
+  color: #86868b;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: #f5f5f7;
 }
 
-.mye-week-nav-btn:hover {
-  background-color: #f0f4f8;
-  transform: scale(1.05);
+.mac-cal-icon-btn:hover {
+  background-color: #e5e5ea;
 }
 
-.mye-week-today-btn {
-  flex-grow: 1;
-  background-color: white;
-  border: 2px solid #1d3b64;
-  border-radius: 999px;
-  color: #1d3b64;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.mye-week-today-btn:hover {
-  background-color: #f0f4f8;
-}
-
-.mye-week-label {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1d3b64;
-  text-align: center;
-  padding: 5px 0;
-  border-top: 1px solid #e0e5eb;
-  padding-top: 12px;
-}
-
-/* ── Carte statistiques de planning ── */
-.mye-planning-stats {
-  background-color: white;
-  border-radius: 20px;
-  padding: 25px 20px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  gap: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-}
-
-.mye-stats-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #111;
-  width: 100%;
-  text-align: left;
-}
-
-.mye-stats-circle-container {
-  position: relative;
-  width: 130px;
-  height: 130px;
-}
-
-.mye-stats-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.mye-stats-circle-bg {
-  fill: none;
-  stroke: #e0e5eb;
-  stroke-width: 10;
-}
-
-.mye-stats-circle-fill {
-  fill: none;
-  stroke: #2ecc71;
-  stroke-width: 10;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1s ease-out;
-}
-
-.mye-stats-value {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 28px;
-  font-weight: 700;
-  color: #111;
-}
-
-.mye-stats-summary {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid #e0e5eb;
-  padding-top: 15px;
-}
-
-.mye-stat-row {
-  display: flex;
-  justify-content: space-between;
+.mac-cal-today-btn {
+  background-color: #f5f5f7;
+  border: none;
+  padding: 6px 12px;
   font-size: 13px;
-  color: #666;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #1d1d1f;
 }
 
-.mye-stat-row strong {
-  color: #111;
+.mac-cal-today-btn:hover {
+  background-color: #e5e5ea;
+}
+
+.mac-cal-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
 }
 
 /* ══════════════════════════════════════
-   PANNEAU DROIT (7 Colonnes Hebdomadaires)
+   CALENDRIER APPLE GRILLE
    ══════════════════════════════════════ */
-.mye-planning-right {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 15px;
-  align-items: start;
-  min-width: 0;
-}
-
-/* ── Bloc Jour (Colonne) ── */
-.mye-day-block {
-  background-color: white;
-  border-radius: 20px;
-  padding: 15px 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-  border: 2px solid transparent;
-  transition: border-color 0.2s, box-shadow 0.2s;
+.mac-apple-calendar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-height: 480px;
-  box-sizing: border-box;
+  height: 100%;
 }
 
-/* Mise en évidence d'aujourd'hui */
-.mye-day-block.mye-today {
-  border-color: #1d3b64;
-  box-shadow: 0 4px 18px rgba(29, 59, 100, 0.08);
-  background-color: #fcfdfe;
+.mac-cal-header {
+  display: flex;
+  border-bottom: 1px solid #d2d2d7;
+  background-color: #ffffff;
+  z-index: 10;
+  padding-right: 8px;
 }
 
-.mye-day-header {
+.mac-cal-time-col-header {
+  width: 50px;
+  min-width: 50px;
+  flex-shrink: 0;
+  border-right: 1px solid #d2d2d7;
+}
+
+.mac-cal-day-header {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-bottom: 2px solid #f0f4f8;
-  padding-bottom: 8px;
-  margin-bottom: 5px;
-  gap: 3px;
-  text-align: center;
+  justify-content: center;
+  padding: 8px 0;
+  border-right: 1px solid #f5f5f7;
 }
 
-.mye-day-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1d3b64;
-  margin: 0;
+.mac-cal-day-header:last-child {
+  border-right: none;
 }
 
-.mye-day-date {
+.mac-cal-day-name {
   font-size: 11px;
-  color: #888;
+  font-weight: 500;
+  color: #86868b;
+  margin-bottom: 2px;
+}
+
+.mac-cal-day-num {
+  font-size: 20px;
+  font-weight: 400;
+  color: #1d1d1f;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.mac-cal-today .mac-cal-day-name {
+  color: #ff3b30;
+  font-weight: 600;
+}
+
+.mac-cal-today .mac-cal-day-num {
+  background-color: #ff3b30;
+  color: white;
+  font-weight: 600;
+}
+
+.mac-cal-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.mac-cal-body {
+  display: flex;
+  position: relative;
+}
+
+.mac-cal-time-col {
+  width: 50px;
+  min-width: 50px;
+  flex-shrink: 0;
+  border-right: 1px solid #d2d2d7;
+  background-color: #ffffff;
+  position: relative;
+  z-index: 2;
+}
+
+.mac-cal-time-slot {
+  position: relative;
+}
+
+.mac-cal-time-slot span {
+  position: absolute;
+  top: -7px;
+  right: 8px;
+  font-size: 10px;
+  color: #86868b;
   font-weight: 500;
 }
 
-.mye-day-courses {
+.mac-cal-grid {
+  flex: 1;
+  position: relative;
+}
+
+.mac-cal-grid-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+.mac-cal-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #f5f5f7;
+}
+
+.mac-cal-day-cols {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  z-index: 1;
+}
+
+.mac-cal-day-col {
+  flex: 1;
+  position: relative;
+  border-right: 1px solid #f5f5f7;
+}
+.mac-cal-day-col:last-child { border-right: none; }
+.mac-cal-today-col { background-color: rgba(255, 59, 48, 0.03); }
+
+/* Événements */
+.mac-cal-event {
+  position: absolute;
+  left: 1px;
+  right: 3px;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform 0.1s, z-index 0.1s;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  opacity: 0.9;
 }
 
-.mye-course-empty {
-  color: #bbb;
-  font-size: 12px;
-  font-style: italic;
-  text-align: center;
-  padding: 20px 5px;
+.mac-cal-event:hover {
+  z-index: 10;
+  opacity: 1;
 }
 
-/* ── Cartes de Cours (Verticales et Compactes) ── */
-.mye-course-card {
+.mac-cal-event-inner {
+  padding: 4px;
+  flex: 1;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  border-left: 5px solid #ccc;
-  padding: 10px;
-  gap: 8px;
-  box-sizing: border-box;
-  transition: transform 0.2s, background-color 0.2s;
+  gap: 1px;
+  border-left: 3px solid;
 }
 
-.mye-course-card:hover {
-  transform: translateY(-2px);
-  background-color: #f1f5f9;
-}
-
-/* Couleurs par type */
-.mye-course-examen {
-  border-left-color: #ff3385;
-}
-.mye-course-cm {
-  border-left-color: #2ecc71;
-}
-.mye-course-td {
-  border-left-color: #3498db;
-}
-.mye-course-tp {
-  border-left-color: #f39c12;
-}
-.mye-course-projet {
-  border-left-color: #9b59b6;
-}
-.mye-course-cours {
-  border-left-color: #1d3b64;
-}
-
-/* Horaires */
-.mye-course-time {
+.mac-cal-event-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  min-width: auto;
-  border-right: none;
-  border-bottom: 1px solid #e2e8f0;
-  padding-right: 0;
-  padding-bottom: 6px;
-  font-weight: 700;
-  font-size: 11px;
-  color: #111;
-}
-
-.mye-course-duration-arrow {
-  display: none;
-}
-
-/* Détails */
-.mye-course-details {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.mye-course-title-row {
-  display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 2px;
 }
 
-.mye-course-title {
-  font-size: 12px;
+.mac-cal-event-title {
+  font-size: 11px;
   font-weight: 600;
-  color: #111;
-  margin: 0;
-  line-height: 1.3;
-  width: 100%;
-  white-space: normal;
+  line-height: 1.2;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1;
 }
 
-.mye-course-badge {
-  font-size: 8px;
-  font-weight: 700;
-  text-transform: uppercase;
-  background-color: #e2e8f0;
-  color: #475569;
-  padding: 1px 6px;
-  border-radius: 999px;
-  white-space: nowrap;
+.mac-cal-event-btn {
+  font-size: 9px;
+  background-color: rgba(0,0,0,0.1);
+  padding: 1px 4px;
+  border-radius: 4px;
+  text-decoration: none;
+  flex-shrink: 0;
+  font-weight: 500;
+  color: inherit;
 }
+.mac-cal-event-btn:hover { background-color: rgba(0,0,0,0.2); }
 
-.mye-course-examen .mye-course-badge {
-  background-color: #ffe6f0;
-  color: #ff3385;
-}
-
-.mye-course-cm .mye-course-badge {
-  background-color: #e8f8f0;
-  color: #2ecc71;
-}
-
-.mye-course-td .mye-course-badge {
-  background-color: #e8f4fc;
-  color: #3498db;
-}
-
-.mye-course-tp .mye-course-badge {
-  background-color: #fef5e7;
-  color: #f39c12;
-}
-
-.mye-course-projet .mye-course-badge {
-  background-color: #f5eef8;
-  color: #9b59b6;
-}
-
-.mye-course-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.mye-course-meta-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: #666;
+.mac-cal-event-time, .mac-cal-event-room, .mac-cal-event-teacher {
+  font-size: 10px;
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.mye-course-meta-item svg {
-  color: #bbb;
-  flex-shrink: 0;
+/* Couleurs des événements Mac Calendar (Pastel bgs, strong left borders) */
+.mac-course-examen .mac-cal-event-inner { background-color: #ffe6f0; border-left-color: #ff3385; }
+.mac-course-examen .mac-cal-event-title, .mac-course-examen .mac-cal-event-time, .mac-course-examen .mac-cal-event-room { color: #cc1a60; }
+
+.mac-course-cm .mac-cal-event-inner { background-color: #e8f8f0; border-left-color: #34c759; }
+.mac-course-cm .mac-cal-event-title, .mac-course-cm .mac-cal-event-time, .mac-course-cm .mac-cal-event-room { color: #209952; }
+
+.mac-course-td .mac-cal-event-inner { background-color: #e8f4fc; border-left-color: #007aff; }
+.mac-course-td .mac-cal-event-title, .mac-course-td .mac-cal-event-time, .mac-course-td .mac-cal-event-room { color: #1e70a6; }
+
+.mac-course-tp .mac-cal-event-inner { background-color: #fff3e0; border-left-color: #ff9500; }
+.mac-course-tp .mac-cal-event-title, .mac-course-tp .mac-cal-event-time, .mac-course-tp .mac-cal-event-room { color: #b8750a; }
+
+.mac-course-projet .mac-cal-event-inner { background-color: #f5eef8; border-left-color: #af52de; }
+.mac-course-projet .mac-cal-event-title, .mac-course-projet .mac-cal-event-time, .mac-course-projet .mac-cal-event-room { color: #763b8d; }
+
+.mac-course-cours .mac-cal-event-inner { background-color: #f2f2f7; border-left-color: #8e8e93; }
+.mac-course-cours .mac-cal-event-title, .mac-course-cours .mac-cal-event-time, .mac-course-cours .mac-cal-event-room { color: #48484a; }
+
+/* Ligne de l'heure courante */
+.mac-cal-current-time {
+  position: absolute;
+  left: -50px;
+  right: 0;
+  height: 1px;
+  z-index: 5;
+  pointer-events: none;
 }
 
-/* Actions */
-.mye-course-actions {
-  margin-top: 4px;
-  width: 100%;
+.mac-cal-current-time-dot {
+  position: absolute;
+  left: 46px;
+  top: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #ff3b30;
 }
 
-.mye-course-btn {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 6px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 6px;
-  text-decoration: none;
-  text-align: center;
-  transition: background-color 0.2s, transform 0.1s;
+.mac-cal-current-time-line {
+  position: absolute;
+  left: 50px;
+  top: 0;
+  right: 0;
+  height: 1px;
+  background-color: #ff3b30;
 }
 
-.mye-course-btn:active {
-  transform: scale(0.97);
-}
-
-.mye-course-btn-teams {
-  background-color: #4f46e5;
-  color: white;
-}
-
-.mye-course-btn-teams:hover {
-  background-color: #4338ca;
-}
-
-.mye-course-btn-link {
-  background-color: #1d3b64;
-  color: white;
-}
-
-.mye-course-btn-link:hover {
-  background-color: #122844;
-}
-
-/* ══════════════════════════════════════
-   CHARGEMENT & ÉTATS SPÉCIAUX
-   ══════════════════════════════════════ */
+/* Loading & empty states */
 .mye-planning-loading, .mye-planning-error, .mye-planning-empty {
-  grid-column: span 7;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -443,10 +536,8 @@
   padding: 80px 20px;
   gap: 20px;
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  height: 100%;
 }
-
 .mye-planning-spinner {
   width: 48px;
   height: 48px;
@@ -455,162 +546,151 @@
   border-radius: 50%;
   animation: mye-planning-spin 0.8s linear infinite;
 }
-
 @keyframes mye-planning-spin {
   to { transform: rotate(360deg); }
 }
-
 .mye-planning-loading-text, .mye-planning-error-text, .mye-planning-empty-text {
   font-size: 16px;
   color: #666;
 }
-
 .mye-planning-error-icon, .mye-planning-empty-icon {
   font-size: 48px;
 }
 
 /* ══════════════════════════════════════
-   RESPONSIVE (Bascule sur le layout vertical)
+   CALENDRIER APPLE MOIS
    ══════════════════════════════════════ */
-@media (max-width: 1200px) {
-  .mye-planning-right {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .mye-day-block {
-    min-height: auto;
-    padding: 20px;
-  }
-
-  .mye-day-header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
-    border-bottom: 2px solid #f0f4f8;
-    padding-bottom: 12px;
-    margin-bottom: 15px;
-    text-align: left;
-  }
-
-  .mye-day-title {
-    font-size: 18px;
-  }
-
-  .mye-day-date {
-    font-size: 13px;
-  }
-
-  .mye-course-card {
-    flex-direction: row;
-    align-items: center;
-    padding: 15px;
-    gap: 15px;
-  }
-
-  .mye-course-time {
-    flex-direction: column;
-    border-right: 1px solid #e2e8f0;
-    border-bottom: none;
-    padding-right: 15px;
-    padding-bottom: 0;
-    min-width: 65px;
-    font-size: 14px;
-  }
-
-  .mye-course-duration-arrow {
-    display: inline;
-    font-size: 10px;
-    color: #888;
-    margin: 2px 0;
-  }
-
-  .mye-course-title-row {
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .mye-course-title {
-    font-size: 14px;
-    white-space: nowrap;
-  }
-
-  .mye-course-badge {
-    font-size: 9px;
-    padding: 2px 8px;
-  }
-
-  .mye-course-meta {
-    flex-direction: row;
-    gap: 15px;
-  }
-
-  .mye-course-meta-item {
-    font-size: 12px;
-  }
-
-  .mye-course-actions {
-    margin-top: 0;
-    width: auto;
-  }
-
-  .mye-course-btn {
-    width: auto;
-    padding: 8px 16px;
-    font-size: 12px;
-  }
+.mac-apple-calendar-month {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
+.mac-cal-month-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: right;
+  padding: 8px 8px 8px 0;
+  border-bottom: 1px solid #d2d2d7;
+  font-size: 11px;
+  font-weight: 500;
+  color: #86868b;
+  background-color: #ffffff;
+}
+.mac-cal-month-header div {
+  padding-right: 8px;
+}
+
+.mac-cal-month-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(80px, 1fr);
+  background-color: #d2d2d7; /* Gap color */
+  gap: 1px; /* Borders between cells */
+  border-bottom: 1px solid #d2d2d7;
+  overflow-y: auto;
+}
+
+.mac-cal-month-cell {
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.mac-cal-month-cell-dim .mac-cal-month-date {
+  color: #d2d2d7;
+}
+
+.mac-cal-month-date {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 4px;
+  padding-right: 4px;
+  padding-top: 2px;
+}
+
+.mac-cal-month-date.today {
+  color: #ff3b30;
+  font-weight: 600;
+}
+
+.mac-cal-month-events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  flex: 1;
+}
+.mac-cal-month-events::-webkit-scrollbar {
+  width: 4px;
+}
+.mac-cal-month-events::-webkit-scrollbar-thumb {
+  background-color: #d2d2d7;
+  border-radius: 4px;
+}
+
+.mac-cal-month-event {
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.mac-cal-month-event-inner {
+  padding: 2px 4px;
+  border-left: 2px solid;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.mac-cal-month-event-time {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.mac-cal-month-event-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* RESPONSIVE */
 @media (max-width: 900px) {
   #mye-planning-container {
     flex-direction: column;
-    padding: 90px 15px 15px 15px;
-    gap: 20px;
+    overflow-y: auto;
   }
-
-  .mye-planning-left {
-    position: relative;
-    top: auto;
+  .mac-cal-sidebar {
     width: 100%;
     min-width: auto;
-    max-height: none;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
+    border-right: none;
+    border-bottom: 1px solid #d2d2d7;
   }
-
-  .mye-week-card, .mye-planning-stats {
-    flex: 1 1 300px;
+  .mac-cal-main {
+    min-height: 600px;
   }
 }
 
 @media (max-width: 600px) {
-  .mye-course-card {
-    flex-direction: column;
-    align-items: stretch;
+  .mac-cal-scroll-area {
+    overflow-x: auto;
+  }
+  .mac-cal-body, .mac-cal-header {
+    min-width: 600px;
+  }
+  .mac-cal-toolbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px;
     gap: 10px;
   }
-
-  .mye-course-time {
-    flex-direction: row;
-    border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-    padding-right: 0;
-    padding-bottom: 8px;
-    justify-content: flex-start;
-    gap: 8px;
-    min-width: auto;
-  }
-
-  .mye-course-duration-arrow {
-    transform: rotate(-90deg);
-    margin: 0;
-  }
-
-  .mye-course-actions {
-    display: flex;
-    justify-content: flex-end;
-  }
+  .mac-cal-view-toggles { display: none; }
 }

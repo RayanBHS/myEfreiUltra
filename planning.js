@@ -11,8 +11,9 @@
   // ÉTAT GLOBAL
   // ──────────────────────────────────────────────
   let state = {
-    currentDate: new Date(), // Date de référence pour la semaine affichée
-    events: [],              // Cours de la semaine courante
+    currentDate: new Date(), // Date de référence affichée
+    currentView: 'week',     // 'day', 'week', 'month'
+    events: [],              // Cours de la période courante
     loading: true
   };
 
@@ -20,19 +21,31 @@
   // FONCTIONS DE DATES
   // ──────────────────────────────────────────────
 
-  // Trouver le lundi et le dimanche de la semaine de la date donnée
-  function getWeekRange(date) {
+  function getPeriodRange(date, view) {
     const current = new Date(date);
-    const day = current.getDay();
-    const diff = current.getDate() - day + (day === 0 ? -6 : 1); // Ajuster pour que la semaine commence le lundi
-    const monday = new Date(current.setDate(diff));
-    monday.setHours(0, 0, 0, 0);
+    let start, end;
 
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    sunday.setHours(23, 59, 59, 999);
+    if (view === 'day') {
+      start = new Date(current);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(current);
+      end.setHours(23, 59, 59, 999);
+    } else if (view === 'week') {
+      const day = current.getDay();
+      const diff = current.getDate() - day + (day === 0 ? -6 : 1);
+      start = new Date(current.setDate(diff));
+      start.setHours(0, 0, 0, 0);
+      end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+    } else if (view === 'month') {
+      start = new Date(current.getFullYear(), current.getMonth(), 1);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+      end.setHours(23, 59, 59, 999);
+    }
 
-    return { start: monday, end: sunday };
+    return { start, end };
   }
 
   function formatDateISO(date) {
@@ -51,12 +64,27 @@
   // RÉCUPÉRATION DES DONNÉES (DIRECT FETCH)
   // ──────────────────────────────────────────────
 
-  async function fetchPlanningForWeek(date) {
-    const { start, end } = getWeekRange(date);
+  async function fetchPlanningForPeriod(date) {
+    const { start, end } = getPeriodRange(date, state.currentView);
     
-    // Formater en ISO strict avec fuseau UTC (Z) comme attendu par l'API Efrei
-    const startDateVal = start.toISOString();
-    const endDateVal = end.toISOString();
+    let fetchStart = start;
+    let fetchEnd = end;
+
+    // Pour le mois, on a besoin de déborder sur la semaine complète précédente et suivante
+    if (state.currentView === 'month') {
+      const startDay = start.getDay();
+      const diffStart = start.getDate() - startDay + (startDay === 0 ? -6 : 1);
+      fetchStart = new Date(start.setDate(diffStart));
+      fetchStart.setHours(0,0,0,0);
+
+      const endDay = end.getDay();
+      const diffEnd = end.getDate() + (endDay === 0 ? 0 : 7 - endDay);
+      fetchEnd = new Date(end.setDate(diffEnd));
+      fetchEnd.setHours(23,59,59,999);
+    }
+
+    const startDateVal = fetchStart.toISOString();
+    const endDateVal = fetchEnd.toISOString();
 
     const url = new URL('/api/rest/student/planning', window.location.origin);
     url.searchParams.set('startDate', startDateVal);
@@ -65,7 +93,6 @@
     showSpinner();
 
     try {
-      console.log(`📡 [MyEfrei Ultra] Fetching planning: ${url.toString()}`);
       const res = await fetch(url.toString(), { credentials: 'include' });
       if (!res.ok) throw new Error('API planning failed');
       const data = await res.json();
@@ -76,11 +103,9 @@
     }
   }
 
-  // Traiter les données reçues de l'API
   function handlePlanningData(rawData) {
     state.loading = false;
     
-    // Extraire les événements
     let rawEvents = [];
     if (Array.isArray(rawData)) {
       rawEvents = rawData;
@@ -93,17 +118,11 @@
       }
     }
 
-    // Traduire dans notre format standardisé
     state.events = rawEvents.map(mapEvent).filter(ev => ev.start !== null);
-    
-    // Trier par date/heure
     state.events.sort((a, b) => a.start - b.start);
-
-    // Faire le rendu
     renderPlanning();
   }
 
-  // Standardiser un événement API
   function mapEvent(raw) {
     let title = raw.subject || raw.title || raw.name || raw.label || raw.summary || raw.matiere || 'Cours';
     if (typeof title === 'object') title = title.name || title.label || JSON.stringify(title);
@@ -138,7 +157,7 @@
   }
 
   // ──────────────────────────────────────────────
-  // STRUCTURE DE LA PAGE ET RENDU
+  // STRUCTURE DE LA PAGE
   // ──────────────────────────────────────────────
 
   function buildPageStructure() {
@@ -147,73 +166,194 @@
 
     document.body.classList.add('mye-clean-screen');
 
-    // Conteneur principal
     const container = document.createElement('div');
     container.id = 'mye-planning-container';
     container.className = 'mye-page-container';
+    
     container.innerHTML = `
-      <div class="mye-planning-left">
-        <!-- Sélecteur de date / semaine -->
-        <div class="mye-week-card">
-          <div class="mye-week-nav">
-            <button class="mye-week-nav-btn" id="mye-week-prev" title="Semaine précédente">◄</button>
-            <button class="mye-week-today-btn" id="mye-week-today">Aujourd'hui</button>
-            <button class="mye-week-nav-btn" id="mye-week-next" title="Semaine suivante">►</button>
+      <div class="mac-cal-sidebar">
+        <div class="mac-cal-sidebar-section">
+          <div class="mac-cal-sidebar-title">Calendriers MyEfrei</div>
+          <div class="mac-cal-filter-list">
+            <label class="mac-cal-filter-item">
+              <input type="checkbox" checked disabled>
+              <span class="mac-cal-color-dot" style="background-color: #ff3b30"></span>
+              Examen
+            </label>
+            <label class="mac-cal-filter-item">
+              <input type="checkbox" checked disabled>
+              <span class="mac-cal-color-dot" style="background-color: #34c759"></span>
+              CM (Cours Magistral)
+            </label>
+            <label class="mac-cal-filter-item">
+              <input type="checkbox" checked disabled>
+              <span class="mac-cal-color-dot" style="background-color: #007aff"></span>
+              TD (Travaux Dirigés)
+            </label>
+            <label class="mac-cal-filter-item">
+              <input type="checkbox" checked disabled>
+              <span class="mac-cal-color-dot" style="background-color: #ff9500"></span>
+              TP (Travaux Pratiques)
+            </label>
+            <label class="mac-cal-filter-item">
+              <input type="checkbox" checked disabled>
+              <span class="mac-cal-color-dot" style="background-color: #af52de"></span>
+              Projet
+            </label>
+            <label class="mac-cal-filter-item">
+              <input type="checkbox" checked disabled>
+              <span class="mac-cal-color-dot" style="background-color: #8e8e93"></span>
+              Autre Cours
+            </label>
           </div>
-          <div class="mye-week-label" id="mye-week-label">Chargement…</div>
         </div>
-
-        <!-- Statistiques de la semaine -->
-        <div class="mye-planning-stats">
-          <div class="mye-stats-title">Ma semaine</div>
-          <div class="mye-stats-circle-container">
-            <svg viewBox="0 0 200 200" class="mye-stats-svg">
-              <circle class="mye-stats-circle-bg" cx="100" cy="100" r="75" />
-              <circle class="mye-stats-circle-fill" id="mye-stats-arc" cx="100" cy="100" r="75"
-                stroke-dasharray="471.2"
-                stroke-dashoffset="471.2" />
-            </svg>
-            <div class="mye-stats-value" id="mye-stats-hours">0h</div>
-          </div>
-          <div class="mye-stats-summary" id="mye-stats-summary">
-            <!-- Rempli par JS -->
-          </div>
-        </div>
+        
+        <div class="mac-cal-minical" id="mac-cal-minical"></div>
       </div>
 
-      <div class="mye-planning-right" id="mye-planning-right">
-        <!-- Rempli par le chargement ou rendu -->
+      <div class="mac-cal-main">
+        <div class="mac-cal-toolbar">
+          <div class="mac-cal-title" id="mye-period-label">Chargement…</div>
+          <div class="mac-cal-view-toggles">
+            <button class="mac-cal-toggle-btn" data-view="day">Jour</button>
+            <button class="mac-cal-toggle-btn active" data-view="week">Semaine</button>
+            <button class="mac-cal-toggle-btn" data-view="month">Mois</button>
+          </div>
+          <div class="mac-cal-nav">
+            <button class="mac-cal-icon-btn" id="mye-period-prev">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button class="mac-cal-today-btn" id="mye-period-today">Aujourd'hui</button>
+            <button class="mac-cal-icon-btn" id="mye-period-next">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="mac-cal-content" id="mye-planning-right">
+        </div>
       </div>
     `;
 
     document.body.appendChild(container);
 
-    // Bind les boutons de navigation
-    document.getElementById('mye-week-prev').addEventListener('click', () => navigateWeek(-7));
-    document.getElementById('mye-week-next').addEventListener('click', () => navigateWeek(7));
-    document.getElementById('mye-week-today').addEventListener('click', () => {
-      state.currentDate = new Date();
-      updateWeekLabel();
-      fetchPlanningForWeek(state.currentDate);
+    // Événements boutons de vues
+    document.querySelectorAll('.mac-cal-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.mac-cal-toggle-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        state.currentView = e.target.getAttribute('data-view');
+        updatePeriodLabel();
+        fetchPlanningForPeriod(state.currentDate);
+      });
     });
 
-    updateWeekLabel();
+    // Événements navigation
+    document.getElementById('mye-period-prev').addEventListener('click', () => navigatePeriod(-1));
+    document.getElementById('mye-period-next').addEventListener('click', () => navigatePeriod(1));
+    document.getElementById('mye-period-today').addEventListener('click', () => {
+      state.currentDate = new Date();
+      updatePeriodLabel();
+      fetchPlanningForPeriod(state.currentDate);
+    });
+
+    updatePeriodLabel();
     showSpinner();
   }
 
-  function updateWeekLabel() {
-    const { start, end } = getWeekRange(state.currentDate);
-    const label = `Semaine du ${start.getDate()} ${start.toLocaleDateString('fr-FR', { month: 'short' })} au ${end.getDate()} ${end.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}`;
-    const labelEl = document.getElementById('mye-week-label');
+  function updatePeriodLabel() {
+    const { start, end } = getPeriodRange(state.currentDate, state.currentView);
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    let label = '';
+
+    if (state.currentView === 'day') {
+      const parts = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).formatToParts(state.currentDate);
+      label = cap(parts.map(p => p.value).join(''));
+    } else {
+      const startMonth = start.toLocaleDateString('fr-FR', { month: 'long' });
+      const endMonth = end.toLocaleDateString('fr-FR', { month: 'long' });
+      const startYear = start.getFullYear();
+      const endYear = end.getFullYear();
+
+      if (startMonth === endMonth && startYear === endYear) {
+        label = `${cap(startMonth)} ${startYear}`;
+      } else if (startYear === endYear) {
+        label = `${cap(startMonth)} - ${cap(endMonth)} ${startYear}`;
+      } else {
+        label = `${cap(startMonth)} ${startYear} - ${cap(endMonth)} ${endYear}`;
+      }
+    }
+
+    const labelEl = document.getElementById('mye-period-label');
     if (labelEl) labelEl.textContent = label;
+
+    renderMiniCalendar(state.currentDate);
   }
 
-  function navigateWeek(days) {
+  function renderMiniCalendar(refDate) {
+    const container = document.getElementById('mac-cal-minical');
+    if (!container) return;
+
+    const year = refDate.getFullYear();
+    const month = refDate.getMonth();
+    const today = new Date();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    let startDayIdx = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1; // 0 = Lundi, 6 = Dimanche
+    
+    let html = `
+      <div class="mac-minical-header">
+        <div class="mac-minical-title">${firstDay.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }).replace(/^./, c => c.toUpperCase())}</div>
+        <div class="mac-minical-nav">
+          <button onclick="document.getElementById('mye-period-prev').click()">‹</button>
+          <button onclick="document.getElementById('mye-period-next').click()">›</button>
+        </div>
+      </div>
+      <div class="mac-minical-grid">
+        <div class="mac-minical-dow">L</div>
+        <div class="mac-minical-dow">M</div>
+        <div class="mac-minical-dow">M</div>
+        <div class="mac-minical-dow">J</div>
+        <div class="mac-minical-dow">V</div>
+        <div class="mac-minical-dow">S</div>
+        <div class="mac-minical-dow">D</div>
+    `;
+
+    for (let i = 0; i < startDayIdx; i++) {
+      html += `<div class="mac-minical-day empty"></div>`;
+    }
+
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const isToday = (d === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+      
+      const dDate = new Date(year, month, d);
+      const { start: pStart, end: pEnd } = getPeriodRange(refDate, state.currentView);
+      const isSelectedPeriod = dDate >= pStart && dDate <= pEnd;
+
+      let cls = 'mac-minical-day';
+      if (isToday) cls += ' today';
+      if (isSelectedPeriod && !isToday) cls += ' selected-week';
+
+      html += `<div class="${cls}">${d}</div>`;
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+  }
+
+  function navigatePeriod(direction) {
     const nextDate = new Date(state.currentDate);
-    nextDate.setDate(nextDate.getDate() + days);
+    if (state.currentView === 'day') {
+      nextDate.setDate(nextDate.getDate() + direction);
+    } else if (state.currentView === 'week') {
+      nextDate.setDate(nextDate.getDate() + (direction * 7));
+    } else if (state.currentView === 'month') {
+      nextDate.setMonth(nextDate.getMonth() + direction);
+    }
     state.currentDate = nextDate;
-    updateWeekLabel();
-    fetchPlanningForWeek(state.currentDate);
+    updatePeriodLabel();
+    fetchPlanningForPeriod(state.currentDate);
   }
 
   function showSpinner() {
@@ -238,108 +378,239 @@
     `;
   }
 
-  // Rendu global
+  // ──────────────────────────────────────────────
+  // RENDU PRINCIPAL
+  // ──────────────────────────────────────────────
+
   function renderPlanning() {
+    if (state.currentView === 'month') {
+      renderMonthView();
+    } else {
+      renderGrid();
+    }
+  }
+
+  function renderMonthView() {
     const panel = document.getElementById('mye-planning-right');
     if (!panel) return;
 
     if (state.events.length === 0) {
-      panel.innerHTML = `
-        <div class="mye-planning-empty">
-          <div class="mye-planning-empty-icon">🏖️</div>
-          <div class="mye-planning-empty-text">Aucun cours prévu pour cette semaine !</div>
-        </div>
-      `;
-      updateStats(0, {});
+      panel.innerHTML = `<div class="mye-planning-empty"><div class="mye-planning-empty-icon">🏖️</div><div class="mye-planning-empty-text">Aucun cours prévu ce mois-ci !</div></div>`;
       return;
     }
 
-    // Grouper les événements par jour de la semaine
+    const year = state.currentDate.getFullYear();
+    const month = state.currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    
+    // Trouver le lundi de la première semaine
+    const startDay = firstDay.getDay();
+    const diffStart = firstDay.getDate() - startDay + (startDay === 0 ? -6 : 1);
+    let iterDate = new Date(firstDay.setDate(diffStart));
+    iterDate.setHours(0,0,0,0);
+
+    let html = `
+      <div class="mac-apple-calendar-month">
+        <div class="mac-cal-month-header">
+          <div>LUN</div><div>MAR</div><div>MER</div><div>JEU</div><div>VEN</div><div>SAM</div><div>DIM</div>
+        </div>
+        <div class="mac-cal-month-grid">
+    `;
+
+    // 6 semaines = 42 jours max
+    for (let i = 0; i < 42; i++) {
+      const dStr = formatDateISO(iterDate);
+      const isCurrentMonth = iterDate.getMonth() === month;
+      const isToday = dStr === formatDateISO(new Date());
+
+      // Filtrer les événements de ce jour
+      const dayEvents = state.events.filter(ev => formatDateISO(ev.start) === dStr);
+      
+      let eventsHTML = '';
+      dayEvents.forEach(ev => {
+        const normType = normalizeType(ev.type);
+        const classModifier = 'mac-course-' + normType.toLowerCase();
+        let evLink = ev.link ? `onclick="window.open('${ev.link}', '_blank'); event.stopPropagation();"` : '';
+        
+        eventsHTML += `
+          <div class="mac-cal-month-event ${classModifier}" ${evLink} title="${escapeHTML(ev.title)}">
+            <div class="mac-cal-month-event-inner">
+              <span class="mac-cal-month-event-time">${formatTime(ev.start)}</span>
+              <span class="mac-cal-month-event-title">${escapeHTML(ev.title)}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+        <div class="mac-cal-month-cell ${isCurrentMonth ? '' : 'mac-cal-month-cell-dim'}">
+          <div class="mac-cal-month-date ${isToday ? 'today' : ''}">${iterDate.getDate()}</div>
+          <div class="mac-cal-month-events">${eventsHTML}</div>
+        </div>
+      `;
+
+      iterDate.setDate(iterDate.getDate() + 1);
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+
+    panel.innerHTML = html;
+  }
+
+  function renderGrid() {
+    const panel = document.getElementById('mye-planning-right');
+    if (!panel) return;
+
+    if (state.events.length === 0) {
+      panel.innerHTML = `<div class="mye-planning-empty"><div class="mye-planning-empty-icon">🏖️</div><div class="mye-planning-empty-text">Aucun cours prévu sur cette période !</div></div>`;
+      return;
+    }
+
     const daysMap = {
-      1: { name: 'Lundi', events: [] },
-      2: { name: 'Mardi', events: [] },
-      3: { name: 'Mercredi', events: [] },
-      4: { name: 'Jeudi', events: [] },
-      5: { name: 'Vendredi', events: [] },
-      6: { name: 'Samedi', events: [] },
-      0: { name: 'Dimanche', events: [] }
+      1: { name: 'Lun', date: null, events: [] },
+      2: { name: 'Mar', date: null, events: [] },
+      3: { name: 'Mer', date: null, events: [] },
+      4: { name: 'Jeu', date: null, events: [] },
+      5: { name: 'Ven', date: null, events: [] },
+      6: { name: 'Sam', date: null, events: [] },
+      0: { name: 'Dim', date: null, events: [] }
     };
 
-    let totalMinutes = 0;
-    const statsTypes = {};
-
-    const { start: mon, end: sun } = getWeekRange(state.currentDate);
-
-    // Initialiser les jours avec les bonnes dates
+    const { start: pStart } = getPeriodRange(state.currentDate, 'week');
+    
+    // Initialiser les dates pour la semaine même en vue Jour (pour cohérence)
     for (let i = 0; i < 7; i++) {
-      const d = new Date(mon);
-      d.setDate(mon.getDate() + i);
-      const dayNum = d.getDay();
-      daysMap[dayNum].date = d;
+      const d = new Date(pStart);
+      d.setDate(pStart.getDate() + i);
+      daysMap[d.getDay()].date = d;
+    }
+
+    let minHour = 8;
+    let maxHour = 19;
+
+    let daysOrder = [1, 2, 3, 4, 5, 6, 0];
+    if (state.currentView === 'day') {
+      const todayNum = state.currentDate.getDay();
+      daysOrder = [todayNum];
+      // Force correct date for 'day' view
+      daysMap[todayNum].date = new Date(state.currentDate);
     }
 
     state.events.forEach(ev => {
       const dayNum = ev.start.getDay();
-      daysMap[dayNum].events.push(ev);
-
-      // Calculer la durée
-      if (ev.end && ev.start) {
-        const diffMs = ev.end - ev.start;
-        const diffMins = Math.round(diffMs / 60000);
-        totalMinutes += diffMins;
+      if (daysMap[dayNum]) {
+        // En vue Jour, on ignore les événements des autres jours
+        if (state.currentView === 'day' && dayNum !== state.currentDate.getDay()) return;
+        
+        daysMap[dayNum].events.push(ev);
+        if (ev.start) minHour = Math.min(minHour, ev.start.getHours());
+        if (ev.end) {
+          const endH = ev.end.getHours() + (ev.end.getMinutes() > 0 ? 1 : 0);
+          maxHour = Math.max(maxHour, endH);
+        }
       }
-
-      // Calculer stats par type
-      const typeLabel = normalizeType(ev.type);
-      statsTypes[typeLabel] = (statsTypes[typeLabel] || 0) + 1;
     });
+    
+    if (minHour > 8) minHour = 8;
+    if (maxHour < 20) maxHour = 20;
 
-    // Mettre à jour les stats à gauche
-    const totalHours = Math.round(totalMinutes / 60) || 0;
-    updateStats(totalHours, statsTypes);
-
-    // Vider le panneau droit
-    panel.innerHTML = '';
-
-    // Parcourir les jours (Lundi à Samedi ou Dimanche si cours)
-    const daysOrder = [1, 2, 3, 4, 5, 6, 0];
+    if (state.currentView === 'week') {
+      const hasSunday = daysMap[0].events.length > 0;
+      const hasSaturday = daysMap[6].events.length > 0;
+      if (!hasSunday) daysOrder.pop();
+      if (!hasSaturday && !hasSunday) daysOrder.pop();
+    }
+    
+    let headerHTML = `<div class="mac-cal-header"><div class="mac-cal-time-col-header"></div>`;
     daysOrder.forEach(dayNum => {
       const dayData = daysMap[dayNum];
-      if (dayNum === 0 && dayData.events.length === 0) return; // Ne pas afficher dimanche si vide
-
-      const dayBlock = document.createElement('div');
-      dayBlock.className = 'mye-day-block';
-
-      // Vérifier si c'est aujourd'hui
       const isToday = formatDateISO(dayData.date) === formatDateISO(new Date());
-      if (isToday) {
-        dayBlock.classList.add('mye-today');
-      }
-
-      const dayHeaderHTML = `
-        <div class="mye-day-header">
-          <h2 class="mye-day-title">${dayData.name}</h2>
-          <div class="mye-day-date">${dayData.date.getDate()} ${dayData.date.toLocaleDateString('fr-FR', { month: 'long' })}</div>
+      headerHTML += `
+        <div class="mac-cal-day-header ${isToday ? 'mac-cal-today' : ''}">
+          <div class="mac-cal-day-name">${dayData.name}</div>
+          <div class="mac-cal-day-num">${dayData.date.getDate()}</div>
         </div>
       `;
-
-      let cardsHTML = '';
-      if (dayData.events.length === 0) {
-        cardsHTML = `<div class="mye-course-empty">Aucun cours</div>`;
-      } else {
-        cardsHTML = dayData.events.map(ev => buildCourseCard(ev)).join('');
-      }
-
-      dayBlock.innerHTML = `
-        ${dayHeaderHTML}
-        <div class="mye-day-courses">${cardsHTML}</div>
-      `;
-
-      panel.appendChild(dayBlock);
     });
+    headerHTML += `</div>`;
+
+    const PIXELS_PER_HOUR = 60;
+    const totalGridHeight = (maxHour - minHour + 1) * PIXELS_PER_HOUR;
+
+    let timeColHTML = `<div class="mac-cal-time-col">`;
+    for (let h = minHour; h <= maxHour; h++) {
+      timeColHTML += `<div class="mac-cal-time-slot" style="height:${PIXELS_PER_HOUR}px"><span>${h}:00</span></div>`;
+    }
+    timeColHTML += `</div>`;
+
+    let gridLinesHTML = `<div class="mac-cal-grid-lines">`;
+    for (let h = minHour; h <= maxHour; h++) {
+      gridLinesHTML += `<div class="mac-cal-grid-line" style="top:${(h - minHour) * PIXELS_PER_HOUR}px"></div>`;
+    }
+    gridLinesHTML += `</div>`;
+
+    let daysColsHTML = `<div class="mac-cal-day-cols">`;
+    daysOrder.forEach(dayNum => {
+      const dayData = daysMap[dayNum];
+      const isToday = formatDateISO(dayData.date) === formatDateISO(new Date());
+      let eventsHTML = '';
+      
+      dayData.events.forEach(ev => {
+        eventsHTML += buildCourseCard(ev, minHour, PIXELS_PER_HOUR);
+      });
+      
+      daysColsHTML += `
+        <div class="mac-cal-day-col ${isToday ? 'mac-cal-today-col' : ''}">
+          ${eventsHTML}
+          ${isToday ? buildCurrentTimeIndicator(minHour, PIXELS_PER_HOUR) : ''}
+        </div>
+      `;
+    });
+    daysColsHTML += `</div>`;
+
+    const calendarHTML = `
+      <div class="mac-apple-calendar">
+        ${headerHTML}
+        <div class="mac-cal-scroll-area">
+          <div class="mac-cal-body" style="height:${totalGridHeight}px">
+            ${timeColHTML}
+            <div class="mac-cal-grid">
+              ${gridLinesHTML}
+              ${daysColsHTML}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    panel.innerHTML = calendarHTML;
+    
+    const scrollArea = panel.querySelector('.mac-cal-scroll-area');
+    if (scrollArea) {
+      const now = new Date();
+      let scrollHour = now.getHours() - 1;
+      if (scrollHour < minHour) scrollHour = minHour;
+      scrollArea.scrollTop = (scrollHour - minHour) * PIXELS_PER_HOUR;
+    }
   }
 
-  // Normaliser le type de cours pour les catégories et classes CSS
+  function buildCurrentTimeIndicator(minHour, pxPerHour) {
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes();
+    if (h < minHour) return '';
+    const topPx = ((h - minHour) + (m / 60)) * pxPerHour;
+    return `
+      <div class="mac-cal-current-time" style="top:${topPx}px">
+        <div class="mac-cal-current-time-dot"></div>
+        <div class="mac-cal-current-time-line"></div>
+      </div>
+    `;
+  }
+
   function normalizeType(type) {
     if (!type) return 'Cours';
     const t = type.toLowerCase();
@@ -351,84 +622,38 @@
     return 'Cours';
   }
 
-  function buildCourseCard(ev) {
+  function buildCourseCard(ev, minHour, pxPerHour) {
     const normType = normalizeType(ev.type);
-    let classModifier = 'mye-course-' + normType.toLowerCase();
+    let classModifier = 'mac-course-' + normType.toLowerCase();
 
-    // Liens de réunion / Teams / Moodle
+    const startH = ev.start.getHours();
+    const startM = ev.start.getMinutes();
+    const topPx = ((startH - minHour) + (startM / 60)) * pxPerHour;
+    
+    const diffMs = ev.end - ev.start;
+    const durationHours = (diffMs / 60000) / 60;
+    const heightPx = Math.max(15, (durationHours * pxPerHour) - 2);
+
     let actionBtnHTML = '';
     if (ev.link) {
       const isTeams = ev.link.includes('teams.microsoft') || ev.link.includes('teams.live');
-      const btnLabel = isTeams ? 'Rejoindre Teams' : 'Accéder';
-      const btnClass = isTeams ? 'mye-course-btn-teams' : 'mye-course-btn-link';
-      actionBtnHTML = `
-        <a href="${ev.link}" target="_blank" class="mye-course-btn ${btnClass}">
-          ${btnLabel}
-        </a>
-      `;
+      const btnLabel = isTeams ? 'Teams' : 'Lien';
+      actionBtnHTML = `<a href="${ev.link}" target="_blank" class="mac-cal-event-btn" onclick="event.stopPropagation()">${btnLabel}</a>`;
     }
 
     return `
-      <div class="mye-course-card ${classModifier}">
-        <div class="mye-course-time">
-          <span class="mye-course-start">${formatTime(ev.start)}</span>
-          <span class="mye-course-duration-arrow">↓</span>
-          <span class="mye-course-end">${formatTime(ev.end)}</span>
-        </div>
-        <div class="mye-course-details">
-          <div class="mye-course-title-row">
-            <h3 class="mye-course-title">${escapeHTML(ev.title)}</h3>
-            <span class="mye-course-badge">${normType}</span>
+      <div class="mac-cal-event ${classModifier}" style="top:${topPx}px; height:${heightPx}px;">
+        <div class="mac-cal-event-inner">
+          <div class="mac-cal-event-header">
+            <div class="mac-cal-event-title" title="${escapeHTML(ev.title)}">${escapeHTML(ev.title)}</div>
+            ${actionBtnHTML}
           </div>
-          <div class="mye-course-meta">
-            ${ev.room ? `
-              <span class="mye-course-meta-item" title="Salle">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                ${escapeHTML(ev.room)}
-              </span>
-            ` : ''}
-            ${ev.teacher ? `
-              <span class="mye-course-meta-item" title="Enseignant">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                ${escapeHTML(ev.teacher)}
-              </span>
-            ` : ''}
-          </div>
+          <div class="mac-cal-event-time">${formatTime(ev.start)} - ${formatTime(ev.end)}</div>
+          ${ev.room ? `<div class="mac-cal-event-room">${escapeHTML(ev.room)}</div>` : ''}
+          ${ev.teacher ? `<div class="mac-cal-event-teacher">${escapeHTML(ev.teacher)}</div>` : ''}
         </div>
-        ${actionBtnHTML ? `<div class="mye-course-actions">${actionBtnHTML}</div>` : ''}
       </div>
     `;
-  }
-
-  function updateStats(hours, types) {
-    const arc = document.getElementById('mye-stats-arc');
-    const hoursEl = document.getElementById('mye-stats-hours');
-    const summaryEl = document.getElementById('mye-stats-summary');
-
-    if (!arc || !hoursEl || !summaryEl) return;
-
-    hoursEl.textContent = `${hours}h`;
-
-    const ratio = Math.min(hours / 35, 1);
-    const offset = 471.2 * (1 - ratio);
-    arc.style.strokeDashoffset = offset;
-
-    let summaryHTML = '';
-    for (const [type, count] of Object.entries(types)) {
-      let icon = '📖';
-      if (type === 'Examen') icon = '✍️';
-      if (type === 'TP') icon = '💻';
-      if (type === 'TD') icon = '✏️';
-      if (type === 'Projet') icon = '🚀';
-
-      summaryHTML += `
-        <div class="mye-stat-row">
-          <span>${icon} ${type}</span>
-          <strong>${count} cours</strong>
-        </div>
-      `;
-    }
-    summaryEl.innerHTML = summaryHTML || '<div style="color:#888; text-align:center; padding:10px;">Aucune donnée</div>';
   }
 
   function escapeHTML(str) {
@@ -439,23 +664,21 @@
   }
 
   // ──────────────────────────────────────────────
-  // INITIALISATION ET ROUTAGE (SPA)
+  // INITIALISATION
   // ──────────────────────────────────────────────
 
   function init() {
     console.log('📅 Initialisation de la page du planning…');
     buildPageStructure();
-    fetchPlanningForWeek(state.currentDate);
+    fetchPlanningForPeriod(state.currentDate);
   }
 
-  // Attendre Angular et démarrer si on est sur la bonne page
   function waitAndInit() {
     document.body.classList.add('mye-clean-screen');
 
     const container = document.getElementById('mye-planning-container');
     if (container) container.style.display = 'flex';
 
-    // Attendre que le header personnalisé soit injecté par portal.js
     const checkHeader = setInterval(() => {
       if (document.getElementById('mye-custom-header-wrapper') || document.getElementById('mye-custom-header')) {
         clearInterval(checkHeader);
@@ -465,7 +688,6 @@
       }
     }, 200);
 
-    // Timeout de sécurité
     setTimeout(() => {
       clearInterval(checkHeader);
       if (!document.getElementById('mye-planning-container')) {
@@ -474,7 +696,6 @@
     }, 5000);
   }
 
-  // Routage
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       if (window.location.pathname.includes('/portal/student/planning')) waitAndInit();
@@ -496,7 +717,6 @@
           document.getElementById('mye-planning-container').style.display = 'flex';
         }
       } else {
-        // Cleanup : masquer et restaurer
         document.body.classList.remove('mye-clean-screen');
         const container = document.getElementById('mye-planning-container');
         if (container) container.style.display = 'none';
