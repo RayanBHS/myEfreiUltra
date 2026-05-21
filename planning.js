@@ -17,6 +17,59 @@
     loading: true
   };
 
+  const defaultSettings = {
+    colors: {
+      'CC': '#ff3b30',
+      'CE': '#ff3b30',
+      'DE': '#ff3b30',
+      'TAI': '#ff3b30',
+      'CM': '#34c759',
+      'TD': '#007aff',
+      'TP': '#ff9500',
+      'Projet': '#af52de',
+      'Cours': '#8e8e93'
+    },
+    displayStart: 7.5,
+    displayEnd: 20.0
+  };
+
+  let userSettings = { ...defaultSettings };
+
+  function loadSettings() {
+    try {
+      const saved = localStorage.getItem('mye-planning-settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        userSettings = { ...defaultSettings, ...parsed };
+        userSettings.colors = { ...defaultSettings.colors, ...(parsed.colors || {}) };
+      }
+    } catch(e) {}
+  }
+
+  function saveSettings() {
+    localStorage.setItem('mye-planning-settings', JSON.stringify(userSettings));
+  }
+
+  function applyColors() {
+    let styleTag = document.getElementById('mye-custom-colors');
+    if (!styleTag) {
+      styleTag = document.createElement('style');
+      styleTag.id = 'mye-custom-colors';
+      document.head.appendChild(styleTag);
+    }
+    
+    let css = '';
+    Object.entries(userSettings.colors).forEach(([type, hex]) => {
+      // Nettoyer les accents/espaces pour correspondre aux classes CSS
+      let tNorm = type.toLowerCase();
+      if (tNorm === 'cours') tNorm = 'cours'; // default fallback
+      const cls = '.mac-course-' + tNorm;
+      const lightHex = hex.length === 7 ? hex + '26' : hex; // 15% opacity
+      css += `${cls} { --course-bg: ${hex} !important; --course-bg-light: ${lightHex} !important; }\n`;
+    });
+    styleTag.textContent = css;
+  }
+
   // ──────────────────────────────────────────────
   // FONCTIONS DE DATES
   // ──────────────────────────────────────────────
@@ -160,6 +213,25 @@
   // STRUCTURE DE LA PAGE
   // ──────────────────────────────────────────────
 
+  function openSettingsModal() {
+    const colorsContainer = document.getElementById('mye-settings-colors');
+    let colorsHTML = '';
+    Object.entries(userSettings.colors).forEach(([type, hex]) => {
+      colorsHTML += `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+          <span style="font-size: 14px;">${type}</span>
+          <input type="color" class="mye-color-input" data-type="${type}" value="${hex}" style="width: 30px; height: 30px; border: none; border-radius: 4px; cursor: pointer; padding: 0;">
+        </div>
+      `;
+    });
+    colorsContainer.innerHTML = colorsHTML;
+    
+    document.getElementById('mye-setting-start').value = userSettings.displayStart;
+    document.getElementById('mye-setting-end').value = userSettings.displayEnd;
+    
+    document.getElementById('mye-settings-modal').style.display = 'flex';
+  }
+
   function buildPageStructure() {
     const existing = document.getElementById('mye-planning-container');
     if (existing) return;
@@ -192,6 +264,10 @@
                 <span class="mye-cd-value" id="mye-cd-projet">...</span>
               </div>
               <div class="mye-countdown-item type-exam">
+                <span class="mye-cd-label">TAI</span>
+                <span class="mye-cd-value" id="mye-cd-tai">...</span>
+              </div>
+              <div class="mye-countdown-item type-exam">
                 <span class="mye-cd-label">CE</span>
                 <span class="mye-cd-value" id="mye-cd-ce">...</span>
               </div>
@@ -202,8 +278,18 @@
             </div>
           </div>
         </div>
+
+        <div class="mac-cal-sidebar-section" style="margin-top: auto; border-top: 1px solid #e5e5ea; padding-top: 10px; margin-bottom: 10px;">
+          <button id="mye-settings-btn" style="width: 100%; padding: 8px; border-radius: 6px; border: none; background: #f2f2f7; color: #1d1d1f; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Paramètres
+          </button>
+        </div>
         
-        <div class="mac-cal-minical" id="mac-cal-minical"></div>
+        <div class="mac-cal-sidebar-section">
+          <div class="mac-cal-sidebar-title">Mini-Calendrier</div>
+          <div class="mac-cal-minical" id="mac-cal-minical"></div>
+        </div>
       </div>
 
       <div class="mac-cal-main">
@@ -224,7 +310,36 @@
             </button>
           </div>
         </div>
-        <div class="mac-cal-content" id="mye-planning-right">
+          <div class="mac-cal-content" id="mye-planning-right">
+          </div>
+        </div>
+      </div>
+
+      <div id="mye-settings-modal" class="mye-modal-overlay" style="display: none;">
+        <div class="mye-modal">
+          <div class="mye-modal-header">
+            <h3>Paramètres d'Affichage</h3>
+            <button id="mye-settings-close" class="mac-cal-icon-btn">&times;</button>
+          </div>
+          <div class="mye-modal-body">
+            <h4>Couleurs des Matières</h4>
+            <div class="mye-settings-colors" id="mye-settings-colors"></div>
+            
+            <h4 style="margin-top: 20px;">Amplitude Horaire (Jour/Semaine)</h4>
+            <div class="mye-settings-row">
+              <label>Heure de début :
+                <input type="number" id="mye-setting-start" min="0" max="23" step="0.5" value="${userSettings.displayStart}" style="width:60px">
+              </label>
+              <label>Heure de fin :
+                <input type="number" id="mye-setting-end" min="1" max="24" step="0.5" value="${userSettings.displayEnd}" style="width:60px">
+              </label>
+            </div>
+            <p style="font-size: 12px; color: #86868b; margin-top: 8px;">Exemple: 7.5 pour 7h30.</p>
+          </div>
+          <div class="mye-modal-footer">
+            <button class="mac-cal-btn" id="mye-settings-reset" style="background: #e5e5ea; color: #1d1d1f;">Réinitialiser</button>
+            <button class="mac-cal-btn" id="mye-settings-save" style="background: #007aff; color: #fff;">Sauvegarder</button>
+          </div>
         </div>
       </div>
     `;
@@ -259,6 +374,34 @@
         updatePeriodLabel();
         fetchPlanningForPeriod(state.currentDate);
       }
+    });
+
+    // Paramètres
+    document.getElementById('mye-settings-btn').addEventListener('click', openSettingsModal);
+    document.getElementById('mye-settings-close').addEventListener('click', () => {
+      document.getElementById('mye-settings-modal').style.display = 'none';
+    });
+    document.getElementById('mye-settings-reset').addEventListener('click', () => {
+      userSettings = { ...defaultSettings };
+      userSettings.colors = { ...defaultSettings.colors };
+      saveSettings();
+      applyColors();
+      document.getElementById('mye-settings-modal').style.display = 'none';
+      renderPlanning();
+    });
+    document.getElementById('mye-settings-save').addEventListener('click', () => {
+      userSettings.displayStart = parseFloat(document.getElementById('mye-setting-start').value) || 7.5;
+      userSettings.displayEnd = parseFloat(document.getElementById('mye-setting-end').value) || 20.0;
+      
+      const colorInputs = document.querySelectorAll('.mye-color-input');
+      colorInputs.forEach(input => {
+        userSettings.colors[input.dataset.type] = input.value;
+      });
+      
+      saveSettings();
+      applyColors();
+      document.getElementById('mye-settings-modal').style.display = 'none';
+      renderPlanning();
     });
 
     updatePeriodLabel();
@@ -538,9 +681,10 @@
     headerHTML += `</div>`;
 
     let PIXELS_PER_HOUR = 60;
+    const duration = userSettings.displayEnd - userSettings.displayStart;
     if (panel.clientHeight > 100) {
-      const availableScrollHeight = panel.clientHeight - 50; // -50px for the day header
-      PIXELS_PER_HOUR = Math.max(40, availableScrollHeight / 12.5); // 7h30 à 20h = 12.5h
+      const availableScrollHeight = panel.clientHeight - 50;
+      PIXELS_PER_HOUR = Math.max(40, availableScrollHeight / duration);
     }
     const totalGridHeight = 24 * PIXELS_PER_HOUR;
 
@@ -594,8 +738,7 @@
     
     const scrollArea = panel.querySelector('.mac-cal-scroll-area');
     if (scrollArea) {
-      // Afficher exactement la plage 7h30 - 20h
-      scrollArea.scrollTop = 7.5 * PIXELS_PER_HOUR;
+      scrollArea.scrollTop = userSettings.displayStart * PIXELS_PER_HOUR;
     }
   }
 
@@ -616,13 +759,17 @@
   function normalizeType(type) {
     if (!type) return 'Cours';
     const t = type.toLowerCase();
-    if (t.includes('exam') || t.includes('eval') || t.includes('contrôle') || t.includes('dst') || t.includes('partiel')) return 'Examen';
-    if (t === 'ce' || t.includes(' ce ') || t.startsWith('ce ') || t.endsWith(' ce')) return 'Examen';
-    if (t === 'de' || t.includes(' de ') || t.startsWith('de ') || t.endsWith(' de')) return 'Examen';
+    
+    if (/\bCE\b/.test(type)) return 'CE';
+    if (/\bDE\b/.test(type)) return 'DE';
+    if (/\bTAI\b/i.test(type)) return 'TAI';
+    if (/\bCC\b/.test(type)) return 'CC';
+
+    if (t.includes('exam') || t.includes('eval') || t.includes('contrôle') || t.includes('dst') || t.includes('partiel')) return 'CC';
     if (t.includes('tp') || t.includes('pratique') || t.includes('lab')) return 'TP';
     if (t.includes('td') || t.includes('dirigé')) return 'TD';
     if (t.includes('cours') || t.includes('cm') || t.includes('magistral')) return 'CM';
-    if (t.includes('projet') || t.includes('soutenance')) return 'Projet';
+    if (t.includes('projet') || t.includes('soutenance') || /\bPRJ\b/i.test(type)) return 'Projet';
     return 'Cours';
   }
 
@@ -693,16 +840,21 @@
 
   async function fetchFutureEvents() {
     const now = new Date();
-    const future = new Date();
-    future.setMonth(future.getMonth() + 2);
     
-    const url = new URL('/api/rest/student/planning', window.location.origin);
-    url.searchParams.set('startDate', now.toISOString());
-    url.searchParams.set('endDate', future.toISOString());
-
-    try {
-      const res = await fetch(url.toString(), { credentials: 'include' });
-      if (res.ok) {
+    // Fetch par blocs de 30 jours pour éviter la limitation de l'API Efrei
+    const fetchChunk = async (startDays, endDays) => {
+      const s = new Date(now);
+      s.setDate(s.getDate() + startDays);
+      const e = new Date(now);
+      e.setDate(e.getDate() + endDays);
+      
+      const url = new URL('/api/rest/student/planning', window.location.origin);
+      url.searchParams.set('startDate', s.toISOString());
+      url.searchParams.set('endDate', e.toISOString());
+      
+      try {
+        const res = await fetch(url.toString(), { credentials: 'include' });
+        if (!res.ok) return [];
         const rawData = await res.json();
         let rawEvents = [];
         if (Array.isArray(rawData)) rawEvents = rawData;
@@ -711,46 +863,67 @@
             if (Array.isArray(rawData[key])) { rawEvents = rawData[key]; break; }
           }
         }
-        const futureEvents = rawEvents.map(mapEvent).filter(ev => ev.start !== null);
-        futureEvents.sort((a, b) => a.start - b.start);
-        
-        let nextProjet = null;
-        let nextCE = null;
-        let nextDE = null;
-        const nowTime = now.getTime();
-        
-        const isCE = (str) => str === 'ce' || str.includes(' ce ') || str.startsWith('ce ') || str.endsWith(' ce');
-        const isDE = (str) => str === 'de' || str.includes(' de ') || str.startsWith('de ') || str.endsWith(' de');
-
-        for (const ev of futureEvents) {
-          if (ev.start.getTime() < nowTime) continue;
-          const title = (ev.title || '').toLowerCase();
-          const type = (ev.type || '').toLowerCase();
-          
-          if (!nextProjet && (title.includes('projet') || type.includes('projet'))) nextProjet = ev.start;
-          if (!nextCE && (isCE(title) || isCE(type))) nextCE = ev.start;
-          if (!nextDE && (isDE(title) || isDE(type))) nextDE = ev.start;
-          if (nextProjet && nextCE && nextDE) break;
-        }
-
-        const msInDay = 1000 * 60 * 60 * 24;
-        const setLabel = (id, dateStr) => {
-          const el = document.getElementById(id);
-          if (!el) return;
-          if (!dateStr) {
-            el.textContent = '> 1 mois';
-          } else {
-            const diff = Math.ceil((dateStr.getTime() - nowTime) / msInDay);
-            if (diff === 0) el.textContent = "Aujourd'hui";
-            else el.textContent = `J-${diff}`;
-          }
-        };
-
-        setLabel('mye-cd-projet', nextProjet);
-        setLabel('mye-cd-ce', nextCE);
-        setLabel('mye-cd-de', nextDE);
+        return rawEvents.map(mapEvent).filter(ev => ev.start !== null);
+      } catch(err) {
+        return [];
       }
-    } catch (e) {}
+    };
+
+    const [chunk1, chunk2, chunk3] = await Promise.all([
+      fetchChunk(0, 30),
+      fetchChunk(30, 60),
+      fetchChunk(60, 90)
+    ]);
+    
+    let futureEvents = [...chunk1, ...chunk2, ...chunk3];
+    futureEvents.sort((a, b) => a.start - b.start);
+    
+    let nextProjet = null;
+    let nextCE = null;
+    let nextDE = null;
+    let nextTAI = null;
+    const nowTime = now.getTime();
+    
+    const isCE = (t1, t2) => /\bCE\b/.test(t1) || /\bCE\b/.test(t2);
+    const isDE = (t1, t2) => /\bDE\b/.test(t1) || /\bDE\b/.test(t2);
+    const isPRJ = (t1, t2) => /\bPRJ\b/i.test(t1) || /\bPRJ\b/i.test(t2) || /\bPROJET\b/i.test(t1) || /\bPROJET\b/i.test(t2);
+    const isTAI = (t1, t2) => /\bTAI\b/i.test(t1) || /\bTAI\b/i.test(t2);
+
+    for (const ev of futureEvents) {
+      if (ev.start.getTime() < nowTime) continue;
+      const title = ev.title || '';
+      const type = ev.type || '';
+      
+      if (!nextProjet && isPRJ(title, type)) nextProjet = ev.start;
+      if (!nextCE && isCE(title, type)) nextCE = ev.start;
+      if (!nextDE && isDE(title, type)) nextDE = ev.start;
+      if (!nextTAI && isTAI(title, type)) nextTAI = ev.start;
+      if (nextProjet && nextCE && nextDE && nextTAI) break;
+    }
+
+    const msInHour = 1000 * 60 * 60;
+    const msInDay = msInHour * 24;
+    const setLabel = (id, dateStr) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!dateStr) {
+        el.textContent = '> 1 mois';
+      } else {
+        const diffMs = dateStr.getTime() - nowTime;
+        const diffHours = Math.ceil(diffMs / msInHour);
+        if (diffHours < 72) {
+          el.textContent = `${diffHours}h`;
+        } else {
+          const diffDays = Math.ceil(diffMs / msInDay);
+          el.textContent = `J-${diffDays}`;
+        }
+      }
+    };
+
+    setLabel('mye-cd-projet', nextProjet);
+    setLabel('mye-cd-ce', nextCE);
+    setLabel('mye-cd-de', nextDE);
+    setLabel('mye-cd-tai', nextTAI);
   }
 
   // ──────────────────────────────────────────────
@@ -759,6 +932,8 @@
 
   function init() {
     console.log('📅 Initialisation de la page du planning…');
+    loadSettings();
+    applyColors();
     buildPageStructure();
     fetchPlanningForPeriod(state.currentDate);
     fetchFutureEvents();
