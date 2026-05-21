@@ -662,6 +662,102 @@
   text-overflow: ellipsis;
 }
 
+/* ══════════════════════════════════════
+   STATS & COUNTDOWN (LEFT SIDEBAR)
+   ══════════════════════════════════════ */
+.mye-planning-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.mye-planning-gauge-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mye-planning-gauge {
+  transform: rotate(-90deg);
+}
+
+.mye-planning-gauge-bg {
+  fill: none;
+  stroke: #e5e5ea;
+  stroke-width: 8;
+}
+
+.mye-planning-gauge-fill {
+  fill: none;
+  stroke: #007aff;
+  stroke-width: 8;
+  stroke-dasharray: 314.159;
+  stroke-dashoffset: 314.159;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.mye-planning-gauge-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mye-planning-gauge-text span {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1d1d1f;
+  line-height: 1;
+}
+
+.mye-planning-gauge-text small {
+  font-size: 11px;
+  color: #86868b;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.mye-countdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.mye-countdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f2f2f7;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mye-countdown-item.type-projet .mye-cd-label {
+  color: #af52de;
+}
+.mye-countdown-item.type-exam .mye-cd-label {
+  color: #ff3b30;
+}
+
+.mye-cd-value {
+  color: #1d1d1f;
+  background: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   #mye-planning-container {
