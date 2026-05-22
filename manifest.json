@@ -22,8 +22,8 @@
         "*://auth.efrei.fr/*",
         "*://auth.myefrei.fr/*"
       ],
-      "css": ["portal.css", "grades.css", "planning.css"],
-      "js": ["portal.js", "grades.js", "planning.js"],
+      "css": ["pdfViewer.css", "portal.css", "grades.css", "planning.css"],
+      "js": ["lib/pdf.min.js", "pdfViewer.js", "portal.js", "grades.js", "planning.js"],
       "run_at": "document_end"
     }
   ],
@@ -36,7 +36,8 @@
         "img/Campus.png",
         "img/tourAssas.png",
         "Police/Alliance No.2 Bold.otf",
-        "Police/Alliance No.2 Regular.otf"
+        "Police/Alliance No.2 Regular.otf",
+        "lib/pdf.worker.min.js"
       ],
       "matches": ["*://*.efrei.fr/*", "*://*.myefrei.fr/*"]
     }

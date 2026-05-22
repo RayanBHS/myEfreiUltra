@@ -1253,90 +1253,14 @@
       e.stopPropagation();
       const url = link.getAttribute('href') || link.href;
       if (url && url !== '#') {
-        myeOpenPdf(url);
+        if (window.myePdfViewer) {
+          window.myePdfViewer.open(url, "Copie d'examen");
+        } else {
+          window.open(url, '_blank');
+        }
       }
     }
   }, true);
-
-  async function myeOpenPdf(url) {
-    let overlay = document.getElementById('mye-pdf-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'mye-pdf-overlay';
-      overlay.className = 'mye-pdf-overlay';
-      overlay.innerHTML = `
-        <div class="mye-pdf-modal" id="mye-pdf-modal">
-          <div class="mye-pdf-header">
-            <button class="mye-pdf-btn mye-pdf-close" id="mye-pdf-close-btn" title="Fermer">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-            <h3 class="mye-pdf-title">Copie d'examen</h3>
-            <div class="mye-pdf-actions">
-              <a id="mye-pdf-download" class="mye-pdf-btn" href="#" target="_blank" download title="Télécharger">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-              </a>
-            </div>
-          </div>
-          <div class="mye-pdf-body">
-            <iframe id="mye-pdf-iframe" class="mye-pdf-iframe" src=""></iframe>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-      
-      document.getElementById('mye-pdf-modal').addEventListener('click', function(e) {
-        e.stopPropagation();
-      });
-      
-      document.getElementById('mye-pdf-close-btn').addEventListener('click', function(e) {
-        e.stopPropagation();
-        myeClosePdf();
-      });
-      overlay.addEventListener('click', myeClosePdf);
-    }
-    
-    const iframe = document.getElementById('mye-pdf-iframe');
-    const downloadBtn = document.getElementById('mye-pdf-download');
-    
-    downloadBtn.href = url;
-    iframe.removeAttribute('src');
-    iframe.srcdoc = '<html style="height:100%;"><body style="display:flex;justify-content:center;align-items:center;height:100%;margin:0;font-family:sans-serif;color:#1d3b64;"><h3>Chargement de la copie en cours...</h3></body></html>';
-    
-    setTimeout(() => {
-      overlay.classList.add('mye-pdf-show');
-    }, 10);
-
-    try {
-      const response = await fetch(url, { credentials: 'include' });
-      if (!response.ok) throw new Error('Erreur réseau');
-      
-      const blob = await response.blob();
-      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-      const objectUrl = URL.createObjectURL(pdfBlob);
-      
-      iframe.removeAttribute('srcdoc');
-      iframe.src = objectUrl;
-      overlay.dataset.objectUrl = objectUrl;
-    } catch (err) {
-      console.error("Erreur chargement PDF:", err);
-      iframe.srcdoc = '<html style="height:100%;"><body style="display:flex;justify-content:center;align-items:center;height:100%;margin:0;font-family:sans-serif;color:#ff3385;"><h3>Erreur : Impossible de charger la copie.</h3></body></html>';
-    }
-  }
-
-  function myeClosePdf() {
-    const overlay = document.getElementById('mye-pdf-overlay');
-    if (overlay) {
-      overlay.classList.remove('mye-pdf-show');
-      if (overlay.dataset.objectUrl) {
-        URL.revokeObjectURL(overlay.dataset.objectUrl);
-        overlay.dataset.objectUrl = '';
-      }
-      setTimeout(() => {
-        const iframe = document.getElementById('mye-pdf-iframe');
-        if (iframe) iframe.removeAttribute('src');
-      }, 300);
-    }
-  }
 
   function escapeHTML(str) {
     if (!str) return '';
