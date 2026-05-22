@@ -22,8 +22,8 @@
         "*://auth.efrei.fr/*",
         "*://auth.myefrei.fr/*"
       ],
-      "css": ["pdfViewer.css", "portal.css", "grades.css", "planning.css"],
-      "js": ["lib/pdf.min.js", "pdfViewer.js", "portal.js", "grades.js", "planning.js"],
+      "css": ["pdfViewer.css", "portal.css", "grades.css", "planning.css", "moodle.css"],
+      "js": ["lib/pdf.min.js", "pdfViewer.js", "portal.js", "grades.js", "planning.js", "moodle.js"],
       "run_at": "document_end"
     }
   ],
