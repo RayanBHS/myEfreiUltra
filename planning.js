@@ -908,13 +908,13 @@
       if (!hasSunday) daysOrder.pop();
       if (!hasSaturday && !hasSunday) daysOrder.pop();
     }
-    
     let headerHTML = `<div class="mac-cal-header"><div class="mac-cal-time-col-header"></div>`;
     daysOrder.forEach(dayNum => {
       const dayData = daysMap[dayNum];
       const isToday = formatDateISO(dayData.date) === formatDateISO(new Date());
+      const isWeek = state.currentView === 'week';
       headerHTML += `
-        <div class="mac-cal-day-header ${isToday ? 'mac-cal-today' : ''}">
+        <div class="mac-cal-day-header ${isToday ? 'mac-cal-today' : ''} ${isWeek ? 'mye-clickable-day' : ''}" data-date="${dayData.date.toISOString()}">
           <div class="mac-cal-day-name">${dayData.name}</div>
           <div class="mac-cal-day-num">${dayData.date.getDate()}</div>
         </div>
@@ -970,6 +970,23 @@
     `;
 
     panel.innerHTML = calendarHTML;
+    
+    // Add click listener for switching to day view
+    panel.querySelectorAll('.mye-clickable-day').forEach(header => {
+      header.addEventListener('click', (e) => {
+        if (state.currentView !== 'week') return;
+        const dateStr = header.getAttribute('data-date');
+        state.currentDate = new Date(dateStr);
+        state.currentView = 'day';
+        
+        document.querySelectorAll('.mac-cal-toggle-btn').forEach(b => b.classList.remove('active'));
+        const dayBtn = document.querySelector('.mac-cal-toggle-btn[data-view="day"]');
+        if (dayBtn) dayBtn.classList.add('active');
+        
+        updatePeriodLabel();
+        renderPlanning();
+      });
+    });
     
     const scrollArea = panel.querySelector('.mac-cal-scroll-area');
     if (scrollArea) {
@@ -1051,9 +1068,14 @@
 
   function updateGauge() {
     let totalMinutes = 0;
+    const { start, end } = getPeriodRange(state.currentDate, state.currentView);
+    
     state.events.forEach(ev => {
       if (ev.start && ev.end) {
-        totalMinutes += (ev.end - ev.start) / 60000;
+        // Only sum events that fall within the current view's date range
+        if (ev.start >= start && ev.start <= end) {
+          totalMinutes += (ev.end - ev.start) / 60000;
+        }
       }
     });
     const hours = Math.round(totalMinutes / 60);

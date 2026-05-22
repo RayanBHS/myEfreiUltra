@@ -332,6 +332,14 @@
   gap: 6px;
   padding: 12px 0;
   border-right: 1px solid #f5f5f7;
+  transition: background-color 0.2s;
+}
+
+.mac-cal-day-header.mye-clickable-day {
+  cursor: pointer;
+}
+.mac-cal-day-header.mye-clickable-day:hover {
+  background-color: #f2f2f7;
 }
 
 .mac-cal-day-header:last-child {
