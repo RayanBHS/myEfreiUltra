@@ -1,0 +1,168 @@
+/* =========================================
+   MYEFREI ULTRA — Module Absences
+   ========================================= */
+
+#mye-absences-container {
+  display: flex;
+  gap: 25px;
+  padding: 90px 25px 25px 25px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
+}
+
+.mye-absences-left {
+  position: sticky;
+  top: 90px;
+  width: 340px;
+  min-width: 340px;
+  max-height: calc(100vh - 110px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+}
+
+.mye-absences-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mye-absences-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+
+
+/* ── Carte absence style liste horizontale ── */
+.mye-absence-card {
+  background-color: #1d3b64;
+  border: 3px solid #1d3b64;
+  border-radius: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  min-height: 80px;
+}
+
+.mye-absence-top {
+  background-color: white;
+  padding: 15px 25px;
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mye-absence-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.mye-absence-type-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.mye-absence-bottom {
+  background-color: #1d3b64;
+  padding: 15px 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 180px;
+}
+
+.mye-absence-course {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+  text-align: left;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.mye-absence-date {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  text-align: left;
+  margin: 0;
+}
+
+.mye-absence-type {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: right;
+  line-height: 1;
+}
+
+.mye-absence-type.absence {
+  color: #ef4444;
+}
+
+.mye-absence-type.retard {
+  color: #f59e0b;
+}
+
+.mye-absence-type.excused {
+  color: #10b981;
+}
+
+.mye-absence-justified {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mye-justified-true {
+  color: #10b981;
+}
+
+.mye-justified-false {
+  color: #ef4444;
+}
+
+.mye-absences-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: #64748b;
+  font-size: 16px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  border: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .mye-absences-empty {
+  background: rgba(30, 41, 59, 0.3);
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mye-absences-title-section {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+body.dark-mode .mye-absences-title-section {
+  color: #f8fafc;
+}

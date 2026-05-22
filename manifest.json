@@ -22,8 +22,8 @@
         "*://auth.efrei.fr/*",
         "*://auth.myefrei.fr/*"
       ],
-      "css": ["portal.css", "grades.css", "planning.css"],
-      "js": ["portal.js", "grades.js", "planning.js"],
+      "css": ["portal.css", "grades.css", "planning.css", "absences.css"],
+      "js": ["portal.js", "grades.js", "planning.js", "absences.js"],
       "run_at": "document_end"
     }
   ],
