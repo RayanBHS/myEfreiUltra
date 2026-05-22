@@ -27,6 +27,7 @@
       'TD': '#007aff',
       'TP': '#ff9500',
       'Projet': '#af52de',
+      'Langues': '#ff9500',
       'Cours': '#8e8e93'
     },
     displayStart: 7.5,
@@ -97,11 +98,27 @@
         ${cls} .mac-cal-event-time, ${cls} .mac-cal-event-room, ${cls} .mac-cal-event-teacher {
           color: #3a3a3c !important;
         }
+        ${cls} .mac-cal-month-event-inner {
+          border-left-color: ${simpleHex} !important;
+        }
+        ${cls} .mac-cal-month-event-time, ${cls} .mac-cal-month-event-title {
+          color: ${simpleHex} !important;
+        }
+        ${cls}:hover .mac-cal-month-event-inner {
+          background-color: ${lightBg} !important;
+        }
         ${cls} .mye-event-type-pill {
           background-color: ${simpleHex} !important;
           color: #1d1d1f !important;
         }
       `;
+      
+      let typeUpper = type.toUpperCase();
+      if (typeUpper === 'PROJET') css += `#mye-cd-projet-container .mye-cd-label { color: ${simpleHex} !important; }`;
+      if (typeUpper === 'TAI') css += `#mye-cd-tai-container .mye-cd-label { color: ${simpleHex} !important; }`;
+      if (typeUpper === 'CE') css += `#mye-cd-ce-container .mye-cd-label { color: ${simpleHex} !important; }`;
+      if (typeUpper === 'DE') css += `#mye-cd-de-container .mye-cd-label { color: ${simpleHex} !important; }`;
+      
     });
     styleTag.textContent = css;
   }
@@ -515,19 +532,19 @@
               </div>
               
               <div class="mye-countdown-list">
-                <div class="mye-countdown-item type-projet">
+                <div class="mye-countdown-item" id="mye-cd-projet-container">
                   <span class="mye-cd-label">Projet</span>
                   <span class="mye-cd-value" id="mye-cd-projet">...</span>
                 </div>
-                <div class="mye-countdown-item type-exam">
+                <div class="mye-countdown-item" id="mye-cd-tai-container">
                   <span class="mye-cd-label">TAI</span>
                   <span class="mye-cd-value" id="mye-cd-tai">...</span>
                 </div>
-                <div class="mye-countdown-item type-exam">
+                <div class="mye-countdown-item" id="mye-cd-ce-container">
                   <span class="mye-cd-label">CE</span>
                   <span class="mye-cd-value" id="mye-cd-ce">...</span>
                 </div>
-                <div class="mye-countdown-item type-exam">
+                <div class="mye-countdown-item" id="mye-cd-de-container">
                   <span class="mye-cd-label">DE</span>
                   <span class="mye-cd-value" id="mye-cd-de">...</span>
                 </div>
@@ -1179,6 +1196,7 @@
     if (t.includes('exam') || t.includes('eval') || t.includes('contrôle') || t.includes('dst') || t.includes('partiel')) return 'CC';
     if (t.includes('tp') || t.includes('pratique') || t.includes('lab')) return 'TP';
     if (t.includes('td') || t.includes('dirigé')) return 'TD';
+    if (t.includes('cours.comm') || t.includes('cours.langue') || t.includes('langue')) return 'Langues';
     if (t.includes('cours') || t.includes('cm') || t.includes('magistral')) return 'CM';
     if (t.includes('projet') || t.includes('soutenance') || /\bPRJ\b/i.test(type)) return 'Projet';
     return 'Cours';
