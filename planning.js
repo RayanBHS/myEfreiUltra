@@ -1006,6 +1006,52 @@
     panel.innerHTML = html;
   }
 
+  function computeEventLayout(events) {
+    if (!events || !events.length) return;
+    let columns = [];
+    let lastEventEnding = null;
+    
+    events.sort((a, b) => a.start - b.start || b.end - a.end);
+    
+    function packEvents(cols) {
+      const numCols = cols.length;
+      cols.forEach((col, colIndex) => {
+        col.forEach(ev => {
+          ev.colIndex = colIndex;
+          ev.numColumns = numCols;
+        });
+      });
+    }
+
+    events.forEach(ev => {
+      if (lastEventEnding !== null && ev.start >= lastEventEnding) {
+        packEvents(columns);
+        columns = [];
+        lastEventEnding = null;
+      }
+      let placed = false;
+      for (let col of columns) {
+        if (!col.length) continue;
+        let lastInCol = col[col.length - 1];
+        if (ev.start >= lastInCol.end) {
+          col.push(ev);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        columns.push([ev]);
+      }
+      if (lastEventEnding === null || ev.end > lastEventEnding) {
+        lastEventEnding = ev.end;
+      }
+    });
+    
+    if (columns.length > 0) {
+      packEvents(columns);
+    }
+  }
+
   function renderGrid() {
     const panel = document.getElementById('mye-planning-right');
     if (!panel) return;
@@ -1109,6 +1155,8 @@
       const isToday = formatDateISO(dayData.date) === formatDateISO(new Date());
       let eventsHTML = '';
       
+      computeEventLayout(dayData.events);
+
       dayData.events.forEach(ev => {
         eventsHTML += buildCourseCard(ev, minHour, maxHour, PIXELS_PER_HOUR);
       });
@@ -1276,8 +1324,18 @@
       `;
     }
 
+    const numColumns = ev.numColumns || 1;
+    const colIndex = ev.colIndex || 0;
+    
+    let widthStr = 'calc(100% - 4px)';
+    let leftStr = '2px';
+    if (numColumns > 1) {
+       widthStr = `calc(${100 / numColumns}% - 4px)`;
+       leftStr = `calc(${(100 / numColumns) * colIndex}% + 2px)`;
+    }
+
     return `
-      <div class="mac-cal-event ${classModifier} mye-open-modal-evt" style="top:${topPx}px; height:${heightPx}px;" data-index="${index}">
+      <div class="mac-cal-event ${classModifier} mye-open-modal-evt" style="top:${topPx}px; height:${heightPx}px; width:${widthStr}; left:${leftStr}; right:auto;" data-index="${index}">
         ${innerHTML}
       </div>
     `;
