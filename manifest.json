@@ -23,7 +23,7 @@
         "*://auth.myefrei.fr/*"
       ],
       "css": ["portal.css", "grades.css", "planning.css", "moodle.css", "pdfViewer.css", "absences.css"],
-      "js": ["lib/pdf.min.js", "portal.js", "grades.js", "planning.js", "moodle.js", "pdfViewer.js", "absences.js"],
+      "js": ["lib/pdf.min.js", "portal.js", "grades.js", "planning.js", "calendars.js", "moodle.js", "pdfViewer.js", "absences.js"],
       "run_at": "document_end"
     }
   ],

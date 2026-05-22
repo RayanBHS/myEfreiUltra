@@ -3,7 +3,8 @@
    ============================================= */
 
 /* ── Layout principal ── */
-#mye-planning-container {
+#mye-planning-container,
+#mye-calendars-container {
   display: flex;
   height: 100vh;
   padding-top: 70px; /* Espace pour le header portal */
@@ -1058,7 +1059,8 @@
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
-  #mye-planning-container {
+  #mye-planning-container,
+  #mye-calendars-container {
     flex-direction: column;
     overflow-y: auto;
   }
@@ -1079,10 +1081,12 @@
   }
 
   /* When stats toggle is clicked */
-  #mye-planning-container.mye-show-stats .mac-cal-sidebar {
+  #mye-planning-container.mye-show-stats .mac-cal-sidebar,
+  #mye-calendars-container.mye-show-stats .mac-cal-sidebar {
     display: flex !important;
   }
-  #mye-planning-container.mye-show-stats #mye-planning-right {
+  #mye-planning-container.mye-show-stats #mye-planning-right,
+  #mye-calendars-container.mye-show-stats #mye-planning-right {
     display: none !important;
   }
 
