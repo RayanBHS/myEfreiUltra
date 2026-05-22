@@ -649,6 +649,13 @@
     showSpinner();
   }
 
+  function getWeekNumber(d) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
+
   function updatePeriodLabel() {
     const { start, end } = getPeriodRange(state.currentDate, state.currentView);
     const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -675,6 +682,16 @@
 
     const labelEl = document.getElementById('mye-period-label');
     if (labelEl) labelEl.innerHTML = label;
+    
+    const todayBtn = document.getElementById('mye-period-today');
+    if (todayBtn) {
+      if (state.currentView === 'month') {
+        todayBtn.textContent = "Aujourd'hui";
+      } else {
+        const weekNum = getWeekNumber(state.currentDate);
+        todayBtn.textContent = `Semaine ${weekNum}`;
+      }
+    }
 
     renderMiniCalendar(state.currentDate);
   }

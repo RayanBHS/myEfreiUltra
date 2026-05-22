@@ -112,7 +112,6 @@
       }
       
       if (found.length === 0) {
-        console.warn('📊 Format de /periods inconnu, fallback sur le bruteforce...');
         return await fallbackDiscoverSemesters();
       }
 
@@ -124,7 +123,7 @@
 
       return found;
     } catch (e) {
-      console.warn('📊 Erreur avec /periods, fallback sur le bruteforce...', e);
+      // Silently fallback without logging to console to avoid user confusion
       return await fallbackDiscoverSemesters();
     }
   }

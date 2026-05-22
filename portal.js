@@ -647,34 +647,9 @@ function handleMainContact(mainContact) {
 }
 
 function injectMainWorldBridge() {
-    window.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'MYE_PORTAL_CONTACT') {
-            handleMainContact(event.data.contact);
-        }
-    });
-
-    const script = document.createElement('script');
-    script.textContent = `
-        (function() {
-            function checkContact() {
-                const contact = window.mainContact || (window.__INITIAL_STATE__ && window.__INITIAL_STATE__.mainContact);
-                if (contact) {
-                    window.postMessage({ type: 'MYE_PORTAL_CONTACT', contact: contact }, '*');
-                    return true;
-                }
-                return false;
-            }
-            if (!checkContact()) {
-                let attempts = 0;
-                const interval = setInterval(() => {
-                    attempts++;
-                    if (checkContact() || attempts > 20) clearInterval(interval);
-                }, 200);
-            }
-        })();
-    `;
-    (document.head || document.documentElement).appendChild(script);
-    script.remove();
+    // Intentionally left blank.
+    // The previous inline script injection triggered Content Security Policy (CSP) errors.
+    // We now rely on fetchProfileFromAPI() and startDOMScraping() which do not violate CSP.
 }
 
 function fetchProfileFromAPI() {
