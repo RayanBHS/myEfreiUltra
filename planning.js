@@ -153,6 +153,28 @@
   // RÉCUPÉRATION DES DONNÉES (DIRECT FETCH)
   // ──────────────────────────────────────────────
 
+  let moodleSpacesCache = null;
+  let moodleSpacesPromise = null;
+  function getMoodleSpaces() {
+      if (moodleSpacesCache) return Promise.resolve(moodleSpacesCache);
+      if (moodleSpacesPromise) return moodleSpacesPromise;
+      const date = new Date();
+      const year = date.getMonth() >= 7 ? date.getFullYear() : date.getFullYear() - 1;
+      const schoolYear = `${year}-${year + 1}`;
+      moodleSpacesPromise = fetch(`/api/rest/student/courses/spaces?schoolYear=${schoolYear}`)
+          .then(res => res.json())
+          .then(data => {
+              moodleSpacesCache = Array.isArray(data) ? data : (data || []);
+              return moodleSpacesCache;
+          })
+          .catch(e => {
+              console.error('BME: Failed to fetch Moodle spaces', e);
+              moodleSpacesCache = [];
+              return moodleSpacesCache;
+          });
+      return moodleSpacesPromise;
+  }
+
   async function fetchPlanningForPeriod(date) {
     const { start, end } = getPeriodRange(date, state.currentView);
     
@@ -185,14 +207,14 @@
       const res = await fetch(url.toString(), { credentials: 'include' });
       if (!res.ok) throw new Error('API planning failed');
       const data = await res.json();
-      handlePlanningData(data);
+      await handlePlanningData(data);
     } catch (e) {
       console.error('📡 Erreur fetch planning:', e);
       showError();
     }
   }
 
-  function handlePlanningData(rawData) {
+  async function handlePlanningData(rawData) {
     state.loading = false;
     
     let rawEvents = [];
@@ -207,7 +229,34 @@
       }
     }
 
-    state.events = rawEvents.map(mapEvent).filter(ev => ev.start !== null);
+    const moodleSpaces = await getMoodleSpaces();
+
+    state.events = rawEvents.map(raw => {
+       let ev = mapEvent(raw);
+       if (!ev.raw.moodleUrl && (ev.moduleCode || ev.title)) {
+           let space = null;
+           const searchId = ev.moduleCode ? ev.moduleCode.toUpperCase() : null;
+           const searchName = ev.title ? ev.title.toLowerCase() : null;
+           
+           if (searchId) {
+               space = moodleSpaces.find(s => (s.code || '').toUpperCase() === searchId);
+               if (!space) {
+                   space = moodleSpaces.find(s => {
+                       const scode = (s.code || '').toUpperCase();
+                       return scode && searchId.startsWith(scode);
+                   });
+               }
+           }
+           if (!space && searchName) {
+               space = moodleSpaces.find(s => (s.name || '').toLowerCase().includes(searchName));
+           }
+           
+           if (space && (space.url || space.moodleUrl || space.link)) {
+               ev.raw.moodleUrl = space.url || space.moodleUrl || space.link;
+           }
+       }
+       return ev;
+    }).filter(ev => ev.start !== null);
     state.events.sort((a, b) => a.start - b.start);
     renderPlanning();
   }
@@ -1105,12 +1154,7 @@
     const heightPx = Math.max(15, (durationHours * pxPerHour) - 2);
 
     let actionBtnHTML = '';
-    if (ev.link) {
-      const isTeams = ev.link.includes('teams.microsoft') || ev.link.includes('teams.live');
-      if (isTeams) {
-          actionBtnHTML = `<a href="${ev.link}" target="_blank" class="mac-cal-event-btn" onclick="event.stopPropagation()">Teams</a>`;
-      }
-    }
+    // intentionally left empty to not display Teams/Moodle buttons on the calendar square
 
     let typePill = '';
     let isThin = heightPx < 70;
@@ -1191,9 +1235,36 @@
     const body = document.getElementById('mye-em-body');
     if (body) {
       let teamsHtml = '';
-      if (ev.link && normType !== 'DE' && normType !== 'CE' && normType !== 'CC') {
-         teamsHtml = `<a href="${ev.link}" target="_blank" style="margin-top: 10px; background: #eef2ff; color: #4f46e5; padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid #c7d2fe; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; max-width: max-content;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 15.46L14 18V13.8L21 16.36V15.46ZM14 10.2L21 12.76V11.86L14 9.3V10.2ZM12 8.44V15.56L3 18V6L12 8.44Z"/></svg> Teams</a>`;
+      let actionButtons = [];
+      if (normType !== 'DE' && normType !== 'CE' && normType !== 'CC') {
+         let hasMoodle = false;
+         
+         if (ev.link) {
+             const linkLower = ev.link.toLowerCase();
+             if (linkLower.includes('teams.microsoft') || linkLower.includes('teams.live') || linkLower.includes('teams.cloud')) {
+                 actionButtons.push(`<a href="${ev.link}" target="_blank" style="margin-top: 10px; background: #eef2ff; color: #4f46e5; padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid #c7d2fe; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; max-width: max-content;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 15.46L14 18V13.8L21 16.36V15.46ZM14 10.2L21 12.76V11.86L14 9.3V10.2ZM12 8.44V15.56L3 18V6L12 8.44Z"/></svg> Teams</a>`);
+             } else if (linkLower.includes('moodle') || linkLower.includes('elearning')) {
+                 actionButtons.push(`<a href="${ev.link}" target="_blank" style="margin-top: 10px; background: #fffbeb; color: #b45309; padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid #fde68a; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; max-width: max-content;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> Moodle</a>`);
+                 hasMoodle = true;
+             } else if (linkLower.includes('zoom.us')) {
+                 actionButtons.push(`<a href="${ev.link}" target="_blank" style="margin-top: 10px; background: #e0f2fe; color: #0284c7; padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid #bae6fd; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; max-width: max-content;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z"/><rect x="3" y="6" width="12" height="12" rx="2" ry="2"/></svg> Zoom</a>`);
+             } else {
+                 actionButtons.push(`<a href="${ev.link}" target="_blank" style="margin-top: 10px; background: #f3f4f6; color: #374151; padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid #d1d5db; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; max-width: max-content;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> Lien</a>`);
+             }
+         }
+         
+         if (ev.raw && ev.raw.moodleUrl && ev.raw.moodleUrl !== ev.link) {
+             actionButtons.push(`<a href="${ev.raw.moodleUrl}" target="_blank" style="margin-top: 10px; background: #fffbeb; color: #b45309; padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid #fde68a; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; max-width: max-content;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> Moodle</a>`);
+             hasMoodle = true;
+         }
+         
+         if (!hasMoodle && (ev.moduleCode || ev.title)) {
+             const searchQuery = encodeURIComponent(ev.moduleCode || ev.title);
+             const searchMoodle = `https://moodle.myefrei.fr/course/search.php?search=${searchQuery}`;
+             actionButtons.push(`<a href="${searchMoodle}" target="_blank" style="margin-top: 10px; background: #fffbeb; color: #b45309; padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid #fde68a; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; max-width: max-content;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> Moodle</a>`);
+         }
       }
+      teamsHtml = actionButtons.length > 0 ? `<div style="display:flex; gap: 10px; flex-wrap: wrap;">${actionButtons.join('')}</div>` : '';
       
       const dateStr = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).format(ev.start);
       const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -1330,7 +1401,33 @@
             if (Array.isArray(rawData[key])) { rawEvents = rawData[key]; break; }
           }
         }
-        return rawEvents.map(mapEvent).filter(ev => ev.start !== null);
+        const moodleSpaces = await getMoodleSpaces();
+        return rawEvents.map(raw => {
+           let ev = mapEvent(raw);
+           if (!ev.raw.moodleUrl && (ev.moduleCode || ev.title)) {
+               let space = null;
+               const searchId = ev.moduleCode ? ev.moduleCode.toUpperCase() : null;
+               const searchName = ev.title ? ev.title.toLowerCase() : null;
+               
+               if (searchId) {
+                   space = moodleSpaces.find(s => (s.code || '').toUpperCase() === searchId);
+                   if (!space) {
+                       space = moodleSpaces.find(s => {
+                           const scode = (s.code || '').toUpperCase();
+                           return scode && searchId.startsWith(scode);
+                       });
+                   }
+               }
+               if (!space && searchName) {
+                   space = moodleSpaces.find(s => (s.name || '').toLowerCase().includes(searchName));
+               }
+               
+               if (space && (space.url || space.moodleUrl || space.link)) {
+                   ev.raw.moodleUrl = space.url || space.moodleUrl || space.link;
+               }
+           }
+           return ev;
+        }).filter(ev => ev.start !== null);
       } catch(err) {
         return [];
       }
