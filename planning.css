@@ -387,6 +387,7 @@
 .mac-cal-body {
   display: flex;
   position: relative;
+  min-height: 100%;
 }
 
 .mac-cal-time-col {
@@ -1061,31 +1062,94 @@
     flex-direction: column;
     overflow-y: auto;
   }
+  .mac-cal-main {
+    order: 1;
+    min-height: auto;
+  }
+  
+  /* Sidebar is hidden by default on mobile, Calendar takes full space */
   .mac-cal-sidebar {
+    display: none;
+    order: 2;
     width: 100%;
     min-width: auto;
     border-right: none;
-    border-bottom: 1px solid #d2d2d7;
+    border-bottom: none;
+    border-top: 1px solid #d2d2d7;
   }
-  .mac-cal-main {
-    min-height: 600px;
+
+  /* When stats toggle is clicked */
+  #mye-planning-container.mye-show-stats .mac-cal-sidebar {
+    display: flex !important;
+  }
+  #mye-planning-container.mye-show-stats #mye-planning-right {
+    display: none !important;
+  }
+
+  /* Show the mobile pill */
+  .mye-mobile-pill {
+    display: flex !important;
   }
 }
 
 @media (max-width: 600px) {
   .mac-cal-scroll-area {
-    overflow-x: auto;
+    overflow-x: hidden;
   }
   .mac-cal-body, .mac-cal-header {
-    min-width: 600px;
+    min-width: 0;
+    width: 100%;
   }
+  .mac-cal-header {
+    padding-right: 0;
+  }
+  .mac-cal-header-day {
+    font-size: 10px;
+    padding: 4px 2px;
+  }
+  .mac-cal-header-date {
+    font-size: 16px;
+    width: 24px;
+    height: 24px;
+  }
+  .mac-cal-event {
+    padding: 2px;
+  }
+  .mac-cal-event-title {
+    font-size: 9px;
+  }
+  .mac-cal-event-time, .mac-cal-event-room {
+    font-size: 8px;
+  }
+  
+  /* Toolbar styling for mobile */
   .mac-cal-toolbar {
-    flex-wrap: wrap;
+    flex-direction: column;
     height: auto;
     padding: 10px;
-    gap: 10px;
+    gap: 12px;
+    align-items: stretch;
   }
-  .mac-cal-view-toggles { display: none; }
+  .mac-cal-toolbar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .mac-cal-toolbar-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mac-cal-view-toggles { 
+    display: flex; 
+    align-self: center;
+  }
+  .mac-cal-toggle-btn {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .mac-cal-title {
+    font-size: 16px;
+  }
 }
 
 /* Event Details Modal & Pills */

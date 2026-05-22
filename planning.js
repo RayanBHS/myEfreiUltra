@@ -552,6 +552,17 @@
         <div class="mac-cal-toolbar">
           <div class="mac-cal-toolbar-left">
             <div class="mac-cal-title" id="mye-period-label">Chargement…</div>
+            <div class="mac-cal-view-toggles mye-mobile-pill" style="margin-left: 15px; display: none;">
+              <button class="mac-cal-toggle-btn" id="mye-pill-stats" title="Charge de travail" style="padding: 6px 12px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+              </button>
+              <button class="mac-cal-toggle-btn active" id="mye-pill-cal" title="Calendrier" style="padding: 6px 12px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </button>
+              <button class="mac-cal-toggle-btn" id="mye-pill-settings" title="Paramètres" style="padding: 6px 12px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </button>
+            </div>
           </div>
           <div class="mac-cal-view-toggles">
             <button class="mac-cal-toggle-btn" data-view="day">Jour</button>
@@ -631,15 +642,33 @@
 
     document.body.appendChild(container);
 
-    // Événements boutons de vues
-    document.querySelectorAll('.mac-cal-toggle-btn').forEach(btn => {
+    // Événements boutons de vues (les standards)
+    document.querySelectorAll('.mac-cal-toggle-btn:not(.mye-mobile-pill .mac-cal-toggle-btn)').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.mac-cal-toggle-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.mac-cal-toggle-btn:not(.mye-mobile-pill .mac-cal-toggle-btn)').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
         state.currentView = e.target.getAttribute('data-view');
         updatePeriodLabel();
         fetchPlanningForPeriod(state.currentDate);
       });
+    });
+
+    // Événements pour la pilule mobile
+    const mainContainer = document.getElementById('mye-planning-container');
+    document.getElementById('mye-pill-stats')?.addEventListener('click', (e) => {
+      mainContainer.classList.add('mye-show-stats');
+      document.querySelectorAll('.mye-mobile-pill .mac-cal-toggle-btn').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+    });
+    document.getElementById('mye-pill-cal')?.addEventListener('click', (e) => {
+      mainContainer.classList.remove('mye-show-stats');
+      document.querySelectorAll('.mye-mobile-pill .mac-cal-toggle-btn').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+    });
+    document.getElementById('mye-pill-settings')?.addEventListener('click', (e) => {
+      openSettingsModal();
+      document.querySelectorAll('.mye-mobile-pill .mac-cal-toggle-btn').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
     });
 
     // Événements navigation
@@ -991,6 +1020,11 @@
     let minHour = 0;
     let maxHour = 23;
 
+    if (window.innerWidth <= 900) {
+      minHour = Math.floor(userSettings.displayStart);
+      maxHour = Math.ceil(userSettings.displayEnd);
+    }
+
     let daysOrder = [1, 2, 3, 4, 5, 6, 0];
     if (state.currentView === 'day') {
       const todayNum = state.currentDate.getDay();
@@ -1015,27 +1049,36 @@
       if (!hasSunday) daysOrder.pop();
       if (!hasSaturday && !hasSunday) daysOrder.pop();
     }
+    let isMobile = window.innerWidth <= 900;
+    
     let headerHTML = `<div class="mac-cal-header"><div class="mac-cal-time-col-header"></div>`;
     daysOrder.forEach(dayNum => {
       const dayData = daysMap[dayNum];
       const isToday = formatDateISO(dayData.date) === formatDateISO(new Date());
       const isWeek = state.currentView === 'week';
+      const displayName = isMobile ? dayData.name.charAt(0) : dayData.name;
+      
       headerHTML += `
         <div class="mac-cal-day-header ${isToday ? 'mac-cal-today' : ''} ${isWeek ? 'mye-clickable-day' : ''}" data-date="${dayData.date.toISOString()}">
-          <div class="mac-cal-day-name">${dayData.name}</div>
+          <div class="mac-cal-day-name">${displayName}</div>
           <div class="mac-cal-day-num">${dayData.date.getDate()}</div>
         </div>
       `;
     });
     headerHTML += `</div>`;
 
+    let containerHeight = panel.clientHeight;
+    if (containerHeight < 100) {
+      containerHeight = window.innerHeight - 150;
+    }
+
     let PIXELS_PER_HOUR = 60;
     const duration = userSettings.displayEnd - userSettings.displayStart;
-    if (panel.clientHeight > 100) {
-      const availableScrollHeight = panel.clientHeight - 50;
+    if (containerHeight > 100) {
+      const availableScrollHeight = containerHeight - 50;
       PIXELS_PER_HOUR = Math.max(40, availableScrollHeight / duration);
     }
-    const totalGridHeight = 24 * PIXELS_PER_HOUR;
+    const totalGridHeight = ((maxHour - minHour) + 1) * PIXELS_PER_HOUR;
 
     let timeColHTML = `<div class="mac-cal-time-col">`;
     for (let h = minHour; h <= maxHour; h++) {
@@ -1050,13 +1093,13 @@
       let eventsHTML = '';
       
       dayData.events.forEach(ev => {
-        eventsHTML += buildCourseCard(ev, minHour, PIXELS_PER_HOUR);
+        eventsHTML += buildCourseCard(ev, minHour, maxHour, PIXELS_PER_HOUR);
       });
       
       daysColsHTML += `
         <div class="mac-cal-day-col ${isToday ? 'mac-cal-today-col' : ''}">
           ${eventsHTML}
-          ${isToday ? buildCurrentTimeIndicator(minHour, PIXELS_PER_HOUR) : ''}
+          ${isToday ? buildCurrentTimeIndicator(minHour, maxHour, PIXELS_PER_HOUR) : ''}
         </div>
       `;
     });
@@ -1105,15 +1148,16 @@
     
     const scrollArea = panel.querySelector('.mac-cal-scroll-area');
     if (scrollArea) {
-      scrollArea.scrollTop = userSettings.displayStart * PIXELS_PER_HOUR;
+      const targetScroll = (userSettings.displayStart - minHour) * PIXELS_PER_HOUR;
+      scrollArea.scrollTop = targetScroll;
     }
   }
 
-  function buildCurrentTimeIndicator(minHour, pxPerHour) {
+  function buildCurrentTimeIndicator(minHour, maxHour, pxPerHour) {
     const now = new Date();
     const h = now.getHours();
     const m = now.getMinutes();
-    if (h < minHour) return '';
+    if (h < minHour || h > maxHour) return '';
     const topPx = ((h - minHour) + (m / 60)) * pxPerHour;
     return `
       <div class="mac-cal-current-time" style="top:${topPx}px">
@@ -1140,17 +1184,31 @@
     return 'Cours';
   }
 
-  function buildCourseCard(ev, minHour, pxPerHour) {
+  function buildCourseCard(ev, minHour, maxHour, pxPerHour) {
     const normType = normalizeType(ev.type);
     let classModifier = 'mac-course-' + normType.toLowerCase();
     const index = state.events.indexOf(ev);
 
     const startH = ev.start.getHours();
     const startM = ev.start.getMinutes();
-    const topPx = ((startH - minHour) + (startM / 60)) * pxPerHour;
+    let topPx = ((startH - minHour) + (startM / 60)) * pxPerHour;
     
-    const diffMs = ev.end - ev.start;
-    const durationHours = (diffMs / 60000) / 60;
+    let diffMs = ev.end - ev.start;
+    let durationHours = (diffMs / 60000) / 60;
+    
+    if (topPx < 0) {
+      durationHours += (topPx / pxPerHour);
+      topPx = 0;
+    }
+    
+    const maxGridHeight = ((maxHour - minHour) + 1) * pxPerHour;
+    const bottomPx = topPx + (durationHours * pxPerHour);
+    if (bottomPx > maxGridHeight) {
+      durationHours -= ((bottomPx - maxGridHeight) / pxPerHour);
+    }
+    
+    if (durationHours <= 0) return '';
+    
     const heightPx = Math.max(15, (durationHours * pxPerHour) - 2);
 
     let actionBtnHTML = '';

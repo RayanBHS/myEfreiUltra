@@ -5,7 +5,7 @@
 #mye-absences-container {
   display: flex;
   gap: 25px;
-  padding: 90px 25px 25px 25px;
+  padding: 120px 25px 25px 25px;
   min-height: 100vh;
   box-sizing: border-box;
   font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
@@ -13,10 +13,10 @@
 
 .mye-absences-left {
   position: sticky;
-  top: 90px;
+  top: 120px;
   width: 340px;
   min-width: 340px;
-  max-height: calc(100vh - 110px);
+  max-height: calc(100vh - 140px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -81,7 +81,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-width: 180px;
+  flex: 0 0 240px;
 }
 
 .mye-absence-course {
@@ -165,4 +165,45 @@ body.dark-mode .mye-absences-empty {
 
 body.dark-mode .mye-absences-title-section {
   color: #f8fafc;
+}
+
+/* =========================================
+   RESPONSIVE (Mobile)
+   ========================================= */
+@media (max-width: 900px) {
+  #mye-absences-container {
+    flex-direction: column;
+    padding: 110px 15px 15px 15px;
+  }
+
+  .mye-absences-left {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    max-height: none;
+    align-items: stretch;
+  }
+
+  .mye-absence-card {
+    flex-direction: column;
+  }
+
+  .mye-absence-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .mye-absence-type-container {
+    align-items: flex-start;
+  }
+
+  .mye-absence-type {
+    text-align: left;
+  }
+
+  .mye-absence-bottom {
+    flex: none;
+    width: 100%;
+  }
 }
