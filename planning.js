@@ -42,6 +42,13 @@
         const parsed = JSON.parse(saved);
         userSettings = { ...defaultSettings, ...parsed };
         userSettings.colors = { ...defaultSettings.colors, ...(parsed.colors || {}) };
+        
+        // Sanitize any leftover advanced color objects into simple strings
+        Object.keys(userSettings.colors).forEach(key => {
+          if (typeof userSettings.colors[key] === 'object') {
+            userSettings.colors[key] = userSettings.colors[key].simple || '#8e8e93';
+          }
+        });
       }
     } catch(e) {}
   }
@@ -59,15 +66,12 @@
     }
     
     let css = '';
-    Object.entries(userSettings.colors).forEach(([type, colorData]) => {
+    Object.entries(userSettings.colors).forEach(([type, simpleHex]) => {
       let tNorm = type.toLowerCase();
       const cls = '.mac-course-' + tNorm;
       
-      let isAdvanced = typeof colorData === 'object' && colorData.advanced;
-      let simpleHex = typeof colorData === 'string' ? colorData : (colorData.simple || '#8e8e93');
-      
       let r = 142, g = 142, b = 147; // Default gray
-      if (simpleHex.length === 7) {
+      if (simpleHex && simpleHex.length === 7) {
         r = parseInt(simpleHex.slice(1,3), 16);
         g = parseInt(simpleHex.slice(3,5), 16);
         b = parseInt(simpleHex.slice(5,7), 16);
@@ -77,18 +81,15 @@
       const solidG = Math.round(g * 0.15 + 255 * 0.85);
       const solidB = Math.round(b * 0.15 + 255 * 0.85);
       const lightBg = `rgb(${solidR}, ${solidG}, ${solidB})`;
-      
-      let norm = isAdvanced ? colorData.normal : lightBg;
-      let bord = isAdvanced ? colorData.bordure : simpleHex;
-      let surv = isAdvanced ? colorData.survol : lightBg;
+      const hoverBg = `rgb(${Math.max(0, solidR - 10)}, ${Math.max(0, solidG - 10)}, ${Math.max(0, solidB - 10)})`;
       
       css += `
         ${cls} .mac-cal-event-inner {
-          background-color: ${norm} !important;
-          border-left-color: ${bord} !important;
+          background-color: ${lightBg} !important;
+          border-left-color: ${simpleHex} !important;
         }
         ${cls}:hover .mac-cal-event-inner {
-          background-color: ${surv} !important;
+          background-color: ${hoverBg} !important;
         }
         ${cls} .mac-cal-event-title {
           color: #1d1d1f !important;
@@ -97,7 +98,7 @@
           color: #3a3a3c !important;
         }
         ${cls} .mye-event-type-pill {
-          background-color: ${bord} !important;
+          background-color: ${simpleHex} !important;
           color: #1d1d1f !important;
         }
       `;
@@ -296,12 +297,26 @@
 
     let link = raw.link || raw.url || raw.teamsUrl || raw.moodleUrl || '';
     if (!link) {
+      for (let g of groups) {
+        if (g && typeof g === 'object' && (g.teamsUrl || g.link || g.url)) {
+          link = g.teamsUrl || g.link || g.url;
+          break;
+        }
+      }
+    }
+    if (!link) {
       for (let key in raw) {
         if (typeof raw[key] === 'string' && (raw[key].startsWith('http://') || raw[key].startsWith('https://'))) {
           link = raw[key];
           break;
         }
       }
+    }
+    // Regex fallback to find ANY Teams or Zoom link in the entire raw object
+    if (!link) {
+      const strRaw = JSON.stringify(raw);
+      const match = strRaw.match(/https:\/\/(?:teams\.microsoft\.com|teams\.cloud\.microsoft|zoom\.us|meet\.google\.com)[^\s"'}\\]+/i);
+      if (match) link = match[0];
     }
 
     return { title, start, end, room, roomLong, teacher, type, link, moduleCode, modality, groupNames, raw };
@@ -316,13 +331,9 @@
     let colorsHTML = '';
     
     Object.entries(userSettings.colors).forEach(([type, colorData]) => {
-      let isAdvanced = typeof colorData === 'object' && colorData.advanced;
       let simpleHex = typeof colorData === 'string' ? colorData : (colorData.simple || '#8e8e93');
-      
-      let advNormal = typeof colorData === 'object' ? (colorData.normal || '#E2FFEF') : '#E2FFEF';
-      let advSurvol = typeof colorData === 'object' ? (colorData.survol || '#C4FFDE') : '#C4FFDE';
-      let advActif = typeof colorData === 'object' ? (colorData.actif || '#84FFBA') : '#84FFBA';
-      let advBordure = typeof colorData === 'object' ? (colorData.bordure || simpleHex) : simpleHex;
+      // Ensure we sanitize userSettings immediately to remove old advanced objects
+      userSettings.colors[type] = simpleHex;
 
       let r = 142, g = 142, b = 147;
       if (simpleHex.length === 7) {
@@ -332,8 +343,8 @@
       }
       const lightBg = `rgba(${r}, ${g}, ${b}, 0.15)`;
       
-      const iconBorder = isAdvanced ? advBordure : simpleHex;
-      const iconBg = isAdvanced ? advNormal : lightBg;
+      const iconBorder = simpleHex;
+      const iconBg = lightBg;
       
       let typeLabel = type;
       if (type === 'Projet') typeLabel = 'Projet';
@@ -344,60 +355,17 @@
       else if (type === 'DE') typeLabel = 'DE (Devoir écrit)';
 
       colorsHTML += `
-        <div class="mye-color-card" data-type="${type}">
-          <div class="mye-color-card-header">
-            <div class="mye-color-card-icon" style="border-color: ${iconBorder}; background-color: ${iconBg};"></div>
-            <span class="mye-color-card-title">${typeLabel}</span>
-            <div class="mye-color-card-actions">
-              <button class="mye-reset-btn" data-type="${type}" title="Réinitialiser">↺</button>
-              <button class="mye-expand-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-              </button>
+        <div class="mye-color-card" data-type="${type}" style="position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 12px; background: #fff; border: 1px solid #e5e5ea; border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s;">
+          <input type="color" class="mye-color-input" data-type="${type}" value="${simpleHex}" style="position: absolute; top: -10px; left: -10px; width: calc(100% + 20px); height: calc(100% + 20px); opacity: 0; cursor: pointer; z-index: 1; border: none; padding: 0; margin: 0;">
+          <div class="mye-color-card-header" style="position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; pointer-events: none;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="mye-color-card-icon" style="width: 20px; height: 20px; border-radius: 6px; border: 2px solid ${iconBorder}; background-color: ${iconBg};"></div>
+              <span class="mye-color-card-title" style="font-size: 14px; font-weight: 600; color: #1d1d1f;">${typeLabel}</span>
             </div>
-          </div>
-          <div class="mye-color-card-body" style="display: none;">
-            <div class="mye-color-picker-row" style="margin-bottom: 12px;">
-              <span class="mye-cpr-label">Couleur</span>
-              <div class="mye-cpr-inputs">
-                <input type="color" class="mye-color-input" data-type="${type}" data-prop="simple" value="${simpleHex}">
-                <input type="text" class="mye-color-hex" value="${simpleHex.toUpperCase()}" readonly>
-              </div>
-            </div>
-            
-            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1d3b64; font-weight: 500; cursor: pointer; margin-bottom: 12px;">
-              <input type="checkbox" class="mye-adv-checkbox" data-type="${type}" ${isAdvanced ? 'checked' : ''}>
-              Mode avancé
-            </label>
-            
-            <div class="mye-adv-options" style="display: ${isAdvanced ? 'grid' : 'none'}; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <div>
-                <div style="font-size: 12px; color: #86868b; margin-bottom: 4px;">Normal</div>
-                <div class="mye-cpr-inputs">
-                  <input type="color" class="mye-adv-input" data-type="${type}" data-prop="normal" value="${advNormal}">
-                  <input type="text" class="mye-color-hex" value="${advNormal.toUpperCase()}" readonly>
-                </div>
-              </div>
-              <div>
-                <div style="font-size: 12px; color: #86868b; margin-bottom: 4px;">Survol</div>
-                <div class="mye-cpr-inputs">
-                  <input type="color" class="mye-adv-input" data-type="${type}" data-prop="survol" value="${advSurvol}">
-                  <input type="text" class="mye-color-hex" value="${advSurvol.toUpperCase()}" readonly>
-                </div>
-              </div>
-              <div>
-                <div style="font-size: 12px; color: #86868b; margin-bottom: 4px;">Actif</div>
-                <div class="mye-cpr-inputs">
-                  <input type="color" class="mye-adv-input" data-type="${type}" data-prop="actif" value="${advActif}">
-                  <input type="text" class="mye-color-hex" value="${advActif.toUpperCase()}" readonly>
-                </div>
-              </div>
-              <div>
-                <div style="font-size: 12px; color: #86868b; margin-bottom: 4px;">Bordure/Chip</div>
-                <div class="mye-cpr-inputs">
-                  <input type="color" class="mye-adv-input" data-type="${type}" data-prop="bordure" value="${advBordure}">
-                  <input type="text" class="mye-color-hex" value="${advBordure.toUpperCase()}" readonly>
-                </div>
-              </div>
+            <div class="mye-color-card-actions" style="display: flex; align-items: center; gap: 8px; pointer-events: none;">
+              <input type="text" class="mye-color-hex" value="${simpleHex.toUpperCase()}" style="pointer-events: auto; width: 65px; font-size: 13px; font-family: monospace; border: 1px solid #d1d1d6; border-radius: 6px; padding: 4px; color: #1d1d1f; text-align: center; background: #f5f5f7;">
+              <div class="mye-color-preview-box" style="width: 24px; height: 24px; border-radius: 4px; background: ${simpleHex}; border: 1px solid rgba(0,0,0,0.1);"></div>
+              <button class="mye-reset-btn" data-type="${type}" title="Réinitialiser" style="pointer-events: auto; background: none; border: none; font-size: 16px; cursor: pointer; color: #8e8e93; padding: 0 4px;">↺</button>
             </div>
           </div>
         </div>
@@ -405,90 +373,48 @@
     });
     colorsContainer.innerHTML = colorsHTML;
     
-    // Add event listeners for accordion
-    document.querySelectorAll('.mye-color-card-header').forEach(header => {
-      header.addEventListener('click', (e) => {
-        if (e.target.closest('.mye-reset-btn')) return; // Ignore if clicked on reset
-        const card = header.closest('.mye-color-card');
-        const body = card.querySelector('.mye-color-card-body');
-        const expandBtn = card.querySelector('.mye-expand-btn svg');
-        
-        if (body.style.display === 'none') {
-          // collapse all others
-          document.querySelectorAll('.mye-color-card-body').forEach(b => b.style.display = 'none');
-          document.querySelectorAll('.mye-expand-btn svg').forEach(svg => svg.style.transform = 'rotate(0deg)');
-          document.querySelectorAll('.mye-color-card').forEach(c => c.classList.remove('expanded'));
-          
-          body.style.display = 'block';
-          expandBtn.style.transform = 'rotate(90deg)';
-          card.classList.add('expanded');
-        } else {
-          body.style.display = 'none';
-          expandBtn.style.transform = 'rotate(0deg)';
-          card.classList.remove('expanded');
-        }
-      });
-    });
-    
-    // Advanced mode checkbox toggle
-    document.querySelectorAll('.mye-adv-checkbox').forEach(chk => {
-      chk.addEventListener('change', (e) => {
-        const card = e.target.closest('.mye-color-card');
-        const advOptions = card.querySelector('.mye-adv-options');
-        advOptions.style.display = e.target.checked ? 'grid' : 'none';
-        
-        if (e.target.checked) {
-          const normal = card.querySelector('.mye-adv-input[data-prop="normal"]').value;
-          const bordure = card.querySelector('.mye-adv-input[data-prop="bordure"]').value;
-          card.querySelector('.mye-color-card-icon').style.borderColor = bordure;
-          card.querySelector('.mye-color-card-icon').style.backgroundColor = normal;
-        } else {
-          const hex = card.querySelector('.mye-color-input').value;
-          let r = parseInt(hex.slice(1,3), 16);
-          let g = parseInt(hex.slice(3,5), 16);
-          let b = parseInt(hex.slice(5,7), 16);
-          card.querySelector('.mye-color-card-icon').style.borderColor = hex;
-          card.querySelector('.mye-color-card-icon').style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
-        }
-      });
+    // Add hover effect
+    document.querySelectorAll('.mye-color-card').forEach(card => {
+      card.addEventListener('mouseenter', () => card.style.background = '#f9f9fb');
+      card.addEventListener('mouseleave', () => card.style.background = '#fff');
     });
 
-    // Update hex when advanced color changes
-    document.querySelectorAll('.mye-adv-input').forEach(input => {
-      input.addEventListener('input', (e) => {
-        const hex = e.target.value.toUpperCase();
-        const parent = e.target.closest('.mye-cpr-inputs');
-        parent.querySelector('.mye-color-hex').value = hex;
+    function updateColorFromHex(card, type, hex) {
+      if (/^#[0-9A-F]{6}$/i.test(hex)) {
+        userSettings.colors[type] = hex;
         
-        const prop = e.target.dataset.prop;
-        if (prop === 'normal' || prop === 'bordure') {
-          const card = e.target.closest('.mye-color-card');
-          const isAdvanced = card.querySelector('.mye-adv-checkbox').checked;
-          if (isAdvanced) {
-            const normal = card.querySelector('.mye-adv-input[data-prop="normal"]').value;
-            const bordure = card.querySelector('.mye-adv-input[data-prop="bordure"]').value;
-            card.querySelector('.mye-color-card-icon').style.borderColor = bordure;
-            card.querySelector('.mye-color-card-icon').style.backgroundColor = normal;
-          }
-        }
-      });
-    });
-    
-    // Update hex when simple color changes
+        card.querySelector('.mye-color-input').value = hex;
+        card.querySelector('.mye-color-hex').value = hex.toUpperCase();
+        
+        let r = parseInt(hex.slice(1,3), 16);
+        let g = parseInt(hex.slice(3,5), 16);
+        let b = parseInt(hex.slice(5,7), 16);
+        card.querySelector('.mye-color-card-icon').style.borderColor = hex;
+        card.querySelector('.mye-color-card-icon').style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+      }
+    }
+
+    // Update from native color picker
     document.querySelectorAll('.mye-color-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const hex = e.target.value.toUpperCase();
+        const type = e.target.getAttribute('data-type');
         const card = e.target.closest('.mye-color-card');
-        card.querySelector('.mye-color-hex').value = hex;
-        
-        const isAdvanced = card.querySelector('.mye-adv-checkbox').checked;
-        if (!isAdvanced) {
-          let r = parseInt(hex.slice(1,3), 16);
-          let g = parseInt(hex.slice(3,5), 16);
-          let b = parseInt(hex.slice(5,7), 16);
-          card.querySelector('.mye-color-card-icon').style.borderColor = hex;
-          card.querySelector('.mye-color-card-icon').style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+        updateColorFromHex(card, type, hex);
+      });
+    });
+
+    // Update from text input
+    document.querySelectorAll('.mye-color-hex').forEach(input => {
+      input.addEventListener('change', (e) => {
+        let hex = e.target.value.trim();
+        if (!hex.startsWith('#')) hex = '#' + hex;
+        if (/^#[0-9A-Fa-f]{3}$/.test(hex)) {
+          hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
         }
+        const card = e.target.closest('.mye-color-card');
+        const type = card.getAttribute('data-type');
+        updateColorFromHex(card, type, hex);
       });
     });
     
@@ -498,27 +424,16 @@
         const type = btn.getAttribute('data-type');
         const defaultHex = typeof defaultSettings.colors[type] === 'string' ? defaultSettings.colors[type] : (defaultSettings.colors[type]?.simple || '#8e8e93');
         const card = btn.closest('.mye-color-card');
-        
-        // Reset simple
-        card.querySelector('.mye-color-input').value = defaultHex;
-        card.querySelector('.mye-color-picker-row .mye-color-hex').value = defaultHex.toUpperCase();
-        
-        // Reset checkbox
-        const chk = card.querySelector('.mye-adv-checkbox');
-        chk.checked = false;
-        card.querySelector('.mye-adv-options').style.display = 'none';
-        
-        // Update icon
-        let r = parseInt(defaultHex.slice(1,3), 16);
-        let g = parseInt(defaultHex.slice(3,5), 16);
-        let b = parseInt(defaultHex.slice(5,7), 16);
-        card.querySelector('.mye-color-card-icon').style.borderColor = defaultHex;
-        card.querySelector('.mye-color-card-icon').style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+        updateColorFromHex(card, type, defaultHex);
       });
     });
     
-    document.getElementById('mye-setting-start').value = userSettings.displayStart;
-    document.getElementById('mye-setting-end').value = userSettings.displayEnd;
+    const startInput = document.getElementById('mye-setting-start');
+    const endInput = document.getElementById('mye-setting-end');
+    startInput.value = userSettings.displayStart;
+    endInput.value = userSettings.displayEnd;
+    startInput.dispatchEvent(new Event('input'));
+    endInput.dispatchEvent(new Event('input'));
     
     document.getElementById('mye-settings-modal').style.display = 'flex';
   }
@@ -622,15 +537,26 @@
             <div class="mye-settings-colors" id="mye-settings-colors"></div>
             
             <h4 style="margin-top: 20px;">Amplitude Horaire (Jour/Semaine)</h4>
-            <div class="mye-settings-row">
-              <label>Heure de début :
-                <input type="number" id="mye-setting-start" min="0" max="23" step="0.5" value="${userSettings.displayStart}" style="width:60px">
-              </label>
-              <label>Heure de fin :
-                <input type="number" id="mye-setting-end" min="1" max="24" step="0.5" value="${userSettings.displayEnd}" style="width:60px">
-              </label>
+            <div class="mye-settings-row" style="display: flex; flex-direction: column; margin-top: 12px; background: #fff; border: 1px solid #e5e5ea; border-radius: 12px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; color: #1d1d1f; margin-bottom: 8px;">
+                <span>De <span id="mye-setting-start-val" style="color: #007aff; font-variant-numeric: tabular-nums;"></span></span>
+                <span>À <span id="mye-setting-end-val" style="color: #007aff; font-variant-numeric: tabular-nums;"></span></span>
+              </div>
+              <style>
+                .mye-dual-slider-container { position: relative; width: 100%; height: 24px; display: flex; align-items: center; }
+                .mye-dual-slider-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: #e5e5ea; border-radius: 2px; transform: translateY(-50%); }
+                .mye-dual-slider-range { position: absolute; top: 50%; height: 4px; background: #007aff; border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+                .mye-dual-slider-input { position: absolute !important; width: 100% !important; left: 0 !important; -webkit-appearance: none !important; appearance: none !important; background: transparent !important; pointer-events: none !important; margin: 0 !important; outline: none !important; }
+                .mye-dual-slider-input::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 1px solid #d1d1d6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
+                .mye-dual-slider-input::-moz-range-thumb { pointer-events: auto; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 1px solid #d1d1d6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
+              </style>
+              <div class="mye-dual-slider-container">
+                <div class="mye-dual-slider-track"></div>
+                <div id="mye-dual-slider-range" class="mye-dual-slider-range"></div>
+                <input type="range" id="mye-setting-start" class="mye-dual-slider-input" min="0" max="23.5" step="0.5" value="${userSettings.displayStart}" style="z-index: 4;">
+                <input type="range" id="mye-setting-end" class="mye-dual-slider-input" min="0.5" max="24" step="0.5" value="${userSettings.displayEnd}" style="z-index: 5;">
+              </div>
             </div>
-            <p style="font-size: 12px; color: #86868b; margin-top: 8px;">Exemple: 7.5 pour 7h30.</p>
           </div>
           <div class="mye-modal-footer">
             <button class="mac-cal-btn" id="mye-settings-reset" style="background: #e5e5ea; color: #1d1d1f;">Réinitialiser</button>
@@ -687,6 +613,49 @@
     });
 
     // Paramètres
+    const formatHour = (val) => {
+      const v = parseFloat(val);
+      const h = Math.floor(v);
+      const m = (v % 1) * 60;
+      return `${h.toString().padStart(2, '0')}h${m > 0 ? m.toString().padStart(2, '0') : '00'}`;
+    };
+    const startInput = document.getElementById('mye-setting-start');
+    const endInput = document.getElementById('mye-setting-end');
+    const startValEl = document.getElementById('mye-setting-start-val');
+    const endValEl = document.getElementById('mye-setting-end-val');
+    const rangeBar = document.getElementById('mye-dual-slider-range');
+    
+    const updateDualSlider = () => {
+      let start = parseFloat(startInput.value);
+      let end = parseFloat(endInput.value);
+      
+      if (start >= end) {
+        if (document.activeElement === startInput) {
+          startInput.value = end - 0.5;
+          start = end - 0.5;
+        } else {
+          endInput.value = start + 0.5;
+          end = start + 0.5;
+        }
+      }
+      
+      startValEl.textContent = formatHour(start);
+      endValEl.textContent = formatHour(end);
+      
+      const min = 0;
+      const max = 24;
+      
+      const leftPercent = ((start - min) / (max - min)) * 100;
+      const rightPercent = ((max - end) / (max - min)) * 100;
+      
+      rangeBar.style.left = leftPercent + '%';
+      rangeBar.style.right = rightPercent + '%';
+    };
+
+    startInput.addEventListener('input', updateDualSlider);
+    endInput.addEventListener('input', updateDualSlider);
+    updateDualSlider();
+
     document.getElementById('mye-settings-btn').addEventListener('click', openSettingsModal);
     document.getElementById('mye-settings-close').addEventListener('click', () => {
       document.getElementById('mye-settings-modal').style.display = 'none';
@@ -700,6 +669,9 @@
       renderPlanning();
     });
     document.getElementById('mye-settings-save').addEventListener('click', () => {
+      userSettings.displayStart = parseFloat(document.getElementById('mye-setting-start').value) || 7.5;
+      userSettings.displayEnd = parseFloat(document.getElementById('mye-setting-end').value) || 20.0;
+      
       saveSettings();
       applyColors();
       document.getElementById('mye-settings-modal').style.display = 'none';
@@ -1240,49 +1212,50 @@
           </div>
         </div>
         
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="background: #f8fafc; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0;">
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Modalité</span>
-              <span style="font-size: 16px; font-weight: 600; color: #0f172a;">${escapeHTML(ev.modality)}</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+          <div style="flex: 1 1 calc(50% - 5px); min-width: 140px; background: #f8fafc; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 20px; width: 24px; text-align: center;">${ev.modality && ev.modality.toLowerCase().includes('distanciel') ? '💻' : '🏢'}</div>
+            <div style="display: flex; flex-direction: column; overflow: hidden;">
+              <span style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase;">Modalité</span>
+              <span style="font-size: 13px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(ev.modality)}</span>
             </div>
-            <div style="font-size: 24px;">${ev.modality && ev.modality.toLowerCase().includes('distanciel') ? '💻' : '🏢'}</div>
           </div>
           
           ${ev.roomLong || ev.room ? `
-          <div style="background: #f8fafc; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0;">
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Salle(s)</span>
-              <span style="font-size: 16px; font-weight: 600; color: #0f172a;">${escapeHTML(ev.roomLong || ev.room)}</span>
+          <div style="flex: 1 1 calc(50% - 5px); min-width: 140px; background: #f8fafc; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 20px; width: 24px; text-align: center;">📍</div>
+            <div style="display: flex; flex-direction: column; overflow: hidden;">
+              <span style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase;">Salle(s)</span>
+              <span style="font-size: 13px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHTML(ev.roomLong || ev.room)}">${escapeHTML(ev.roomLong || ev.room)}</span>
             </div>
-            <div style="font-size: 24px;">📍</div>
           </div>` : ''}
           
           ${ev.groupNames ? `
-          <div style="background: #f8fafc; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0;">
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Groupe(s)</span>
-              <span style="font-size: 15px; font-weight: 500; color: #0f172a;">${escapeHTML(ev.groupNames)}</span>
+          <div style="flex: 1 1 calc(50% - 5px); min-width: 140px; background: #f8fafc; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 20px; width: 24px; text-align: center;">👥</div>
+            <div style="display: flex; flex-direction: column; overflow: hidden;">
+              <span style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase;">Groupe(s)</span>
+              <span style="font-size: 13px; font-weight: 500; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHTML(ev.groupNames)}">${escapeHTML(ev.groupNames)}</span>
             </div>
-            <div style="font-size: 24px;">👥</div>
           </div>` : ''}
           
           ${ev.teacher ? `
-          <div style="background: #f8fafc; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0;">
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Intervenant</span>
-              <span style="font-size: 16px; font-weight: 600; color: #0f172a;">${escapeHTML(ev.teacher)}</span>
+          <div style="flex: 1 1 calc(50% - 5px); min-width: 140px; background: #f8fafc; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 20px; width: 24px; text-align: center;">👨‍🏫</div>
+            <div style="display: flex; flex-direction: column; overflow: hidden;">
+              <span style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase;">Intervenant</span>
+              <span style="font-size: 13px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHTML(ev.teacher)}">${escapeHTML(ev.teacher)}</span>
             </div>
-            <div style="font-size: 24px;">👨‍🏫</div>
           </div>` : ''}
-          
-          ${ev.comments ? `
-          <div style="background: #fff; border-radius: 16px; padding: 15px 20px; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0;">
-            <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Remarques</span>
-            <span style="font-size: 14px; color: #334155; line-height: 1.5;">${escapeHTML(ev.comments).replace(/\\n/g, '<br>')}</span>
-          </div>` : ''}
-          
-          ${teamsHtml}
+        </div>
+        
+        ${ev.comments ? `
+        <div style="background: #fff; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; border: 1px solid #e2e8f0; margin-top: 10px;">
+          <span style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase;">Remarques</span>
+          <span style="font-size: 13px; color: #334155; line-height: 1.4;">${escapeHTML(ev.comments).replace(/\\n/g, '<br>')}</span>
+        </div>` : ''}
+        
+        ${teamsHtml}
 
           <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
             <button onclick="document.getElementById('mye-debug-raw').style.display = document.getElementById('mye-debug-raw').style.display === 'none' ? 'block' : 'none'" style="background:none; border:none; color:#007aff; cursor:pointer; font-size:12px; padding:0;">[+] Voir les données brutes de l'API</button>
@@ -1387,25 +1360,50 @@
       const title = ev.title || '';
       const type = ev.type || '';
       
-      if (!nextProjet && isPRJ(title, type)) nextProjet = ev.start;
-      if (!nextCE && isCE(title, type)) nextCE = ev.start;
-      if (!nextDE && isDE(title, type)) nextDE = ev.start;
-      if (!nextTAI && isTAI(title, type)) nextTAI = ev.start;
+      if (!nextProjet && isPRJ(title, type)) nextProjet = ev;
+      if (!nextCE && isCE(title, type)) nextCE = ev;
+      if (!nextDE && isDE(title, type)) nextDE = ev;
+      if (!nextTAI && isTAI(title, type)) nextTAI = ev;
       if (nextProjet && nextCE && nextDE && nextTAI) break;
     }
 
     const msInHour = 1000 * 60 * 60;
     const msInDay = msInHour * 24;
-    const setLabel = (id, dateStr) => {
+    const setLabel = (id, targetEv) => {
       const el = document.getElementById(id);
       if (!el) return;
       const parentItem = el.closest('.mye-countdown-item');
-      if (!dateStr) {
+      if (!targetEv) {
         el.textContent = '> 1 mois';
-        if (parentItem) parentItem.style.order = 999999999;
+        if (parentItem) {
+          parentItem.style.order = 999999999;
+          parentItem.style.cursor = 'default';
+          parentItem.onclick = null;
+        }
       } else {
+        const dateStr = targetEv.start;
         const diffMs = dateStr.getTime() - nowTime;
-        if (parentItem) parentItem.style.order = Math.max(0, Math.floor(diffMs / 1000));
+        if (parentItem) {
+          parentItem.style.order = Math.max(0, Math.floor(diffMs / 1000));
+          parentItem.style.cursor = 'pointer';
+          parentItem.onclick = async () => {
+            state.currentDate = new Date(dateStr);
+            if (state.currentView !== 'day' && state.currentView !== 'week') {
+              state.currentView = 'week';
+              document.querySelectorAll('.mac-cal-toggle-btn').forEach(b => b.classList.remove('active'));
+              const weekBtn = document.querySelector('.mac-cal-toggle-btn[data-view="week"]');
+              if (weekBtn) weekBtn.classList.add('active');
+            }
+            updatePeriodLabel();
+            
+            await fetchPlanningForPeriod(state.currentDate);
+            
+            const newEvIndex = state.events.findIndex(e => e.start.getTime() === dateStr.getTime() && e.title === targetEv.title);
+            if (newEvIndex !== -1) {
+              openEventModal(newEvIndex);
+            }
+          };
+        }
         const diffHours = Math.ceil(diffMs / msInHour);
         if (diffHours < 72) {
           el.textContent = `${diffHours}h`;
