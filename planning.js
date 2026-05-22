@@ -72,7 +72,11 @@
         g = parseInt(simpleHex.slice(3,5), 16);
         b = parseInt(simpleHex.slice(5,7), 16);
       }
-      const lightBg = `rgba(${r}, ${g}, ${b}, 0.15)`;
+      // Convert transparent rgba to a solid color assuming a white background
+      const solidR = Math.round(r * 0.15 + 255 * 0.85);
+      const solidG = Math.round(g * 0.15 + 255 * 0.85);
+      const solidB = Math.round(b * 0.15 + 255 * 0.85);
+      const lightBg = `rgb(${solidR}, ${solidG}, ${solidB})`;
       
       let norm = isAdvanced ? colorData.normal : lightBg;
       let bord = isAdvanced ? colorData.bordure : simpleHex;
@@ -91,6 +95,10 @@
         }
         ${cls} .mac-cal-event-time, ${cls} .mac-cal-event-room, ${cls} .mac-cal-event-teacher {
           color: #3a3a3c !important;
+        }
+        ${cls} .mye-event-type-pill {
+          background-color: ${bord} !important;
+          color: #1d1d1f !important;
         }
       `;
     });
@@ -212,16 +220,79 @@
     let start = startVal ? new Date(startVal) : null;
     let end = endVal ? new Date(endVal) : null;
 
-    let room = raw.room || raw.classroom || raw.location || raw.salle || '';
-    if (typeof room === 'object') room = room.name || room.code || room.label || JSON.stringify(room);
+    let possibleRoomFields = [raw.rooms, raw.room, raw.classrooms, raw.classroom, raw.locations, raw.location, raw.salles, raw.salle, raw.building, raw.buildings, raw.sites, raw.site];
+    if (Array.isArray(raw.resources)) {
+      raw.resources.forEach(res => {
+        if (res && (String(res.type).toLowerCase().includes('room') || String(res.category).toLowerCase().includes('room') || String(res.type).toLowerCase() === 'salle')) {
+          possibleRoomFields.push(res.name || res.label || res.code);
+        }
+      });
+    }
 
-    let teacher = raw.teacher || raw.professor || raw.intervenant || raw.enseignant || '';
-    if (typeof teacher === 'object') {
-      teacher = `${teacher.firstName || ''} ${teacher.lastName || ''}`.trim() || teacher.name || teacher.label || JSON.stringify(teacher);
+    let allRoomStrings = [];
+    possibleRoomFields.forEach(rData => {
+      if (Array.isArray(rData)) {
+        rData.forEach(r => {
+          if (typeof r === 'object' && r) {
+            let rn = r.room || r.code || r.name || r.label || '';
+            let bn = r.building || r.bat || r.site || r.campus || '';
+            if (rn && bn) allRoomStrings.push(`${rn} - ${bn}`);
+            else if (rn) allRoomStrings.push(rn);
+            else if (bn) allRoomStrings.push(bn);
+          }
+          else if (r) allRoomStrings.push(String(r));
+        });
+      } else if (typeof rData === 'object' && rData !== null) {
+        let rn = rData.room || rData.code || rData.name || rData.label || '';
+        let bn = rData.building || rData.bat || rData.site || rData.campus || '';
+        if (rn && bn) allRoomStrings.push(`${rn} - ${bn}`);
+        else if (rn) allRoomStrings.push(rn);
+        else if (bn) allRoomStrings.push(bn);
+        else allRoomStrings.push(JSON.stringify(rData));
+      } else if (rData) {
+        allRoomStrings.push(String(rData));
+      }
+    });
+
+    let rawStr = [...new Set(allRoomStrings)].filter(Boolean).join(' - ');
+    
+    let clean = str => str.replace(/B[aâ]timent\s*[A-Z]?\s*/gi, '')
+                          .replace(/Bat\.\s*[A-Z]?\s*/gi, '')
+                          .replace(/Site\s*/gi, '')
+                          .replace(/Campus\s*/gi, '')
+                          .trim();
+                          
+    let cleanedParts = rawStr.split('-').map(clean).filter(Boolean);
+    let roomLong = [...new Set(cleanedParts)].join(' - ');
+    // We want the room code (e.g. H213) which usually contains digits, to show on the card,
+    // rather than the building name (e.g. La Factory).
+    let room = cleanedParts.find(p => /\d/.test(p)) || (cleanedParts.length > 0 ? cleanedParts[0] : '');
+
+    let tData = raw.teacher || raw.teachers || raw.professor || raw.intervenant || raw.enseignant || raw.instructors || raw.staffs || raw.staff || raw.intervenants;
+    let teacher = '';
+    if (Array.isArray(tData)) {
+      teacher = tData.map(t => typeof t === 'object' ? (`${t.firstName || ''} ${t.lastName || ''}`.trim() || t.name || t.label) : t).filter(Boolean).join(', ');
+    } else if (typeof tData === 'object' && tData !== null) {
+      teacher = `${tData.firstName || ''} ${tData.lastName || ''}`.trim() || tData.name || tData.label || JSON.stringify(tData);
+    } else if (tData) {
+      teacher = String(tData);
     }
 
     let type = raw.type || raw.courseActivity || raw.category || raw.sessionType || 'Cours';
     if (typeof type === 'object') type = type.name || type.label || JSON.stringify(type);
+
+    let moduleCode = raw.moduleCode || raw.code || raw.teachingModule || '';
+    if (typeof moduleCode === 'object') moduleCode = moduleCode.code || moduleCode.name || '';
+    
+    let modalityRaw = raw.modality || raw.modalityType || '';
+    let modality = 'Présentiel';
+    if (String(modalityRaw).toLowerCase().includes('dist') || String(modalityRaw).toLowerCase().includes('online')) modality = 'Distanciel';
+    else if (String(modalityRaw).toLowerCase().includes('in_person') || String(modalityRaw).toLowerCase().includes('present')) modality = 'Présentiel';
+    else if (modalityRaw) modality = modalityRaw;
+    
+    let groups = raw.group || raw.groups || raw.studentGroups || [];
+    if (!Array.isArray(groups)) groups = [groups];
+    let groupNames = groups.map(g => typeof g === 'object' ? (g.name || g.label || '') : g).join(', ');
 
     let link = raw.link || raw.url || raw.teamsUrl || raw.moodleUrl || '';
     if (!link) {
@@ -233,7 +304,7 @@
       }
     }
 
-    return { title, start, end, room, teacher, type, link, raw };
+    return { title, start, end, room, roomLong, teacher, type, link, moduleCode, modality, groupNames, raw };
   }
 
   // ──────────────────────────────────────────────
@@ -567,6 +638,20 @@
           </div>
         </div>
       </div>
+
+      <div id="mye-event-modal" class="mye-modal-overlay" style="display: none;">
+        <div class="mye-modal" style="max-width: 500px; width: 100%;">
+          <div class="mye-modal-header" style="flex-direction: row-reverse; align-items: flex-start; padding: 20px 24px;">
+            <button id="mye-event-close" class="mac-cal-icon-btn" style="background: rgba(255, 255, 255, 0.1); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 24px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+            <div id="mye-em-header-text" style="display: flex; flex-direction: column; gap: 4px;">
+              <!-- Title and type injected here -->
+            </div>
+          </div>
+          <div class="mye-modal-body" id="mye-em-body" style="padding: 24px; display: flex; flex-direction: column; gap: 20px; max-height: 70vh; overflow-y: auto;">
+            <!-- Content injected dynamically -->
+          </div>
+        </div>
+      </div>
     `;
 
     document.body.appendChild(container);
@@ -615,34 +700,17 @@
       renderPlanning();
     });
     document.getElementById('mye-settings-save').addEventListener('click', () => {
-      userSettings.displayStart = parseFloat(document.getElementById('mye-setting-start').value) || 7.5;
-      userSettings.displayEnd = parseFloat(document.getElementById('mye-setting-end').value) || 20.0;
-      
-      const colorCards = document.querySelectorAll('.mye-color-card');
-      colorCards.forEach(card => {
-        const type = card.dataset.type;
-        const isAdvanced = card.querySelector('.mye-adv-checkbox').checked;
-        const simpleHex = card.querySelector('.mye-color-input').value;
-        
-        if (isAdvanced) {
-          const normal = card.querySelector('.mye-adv-input[data-prop="normal"]').value;
-          const survol = card.querySelector('.mye-adv-input[data-prop="survol"]').value;
-          const actif = card.querySelector('.mye-adv-input[data-prop="actif"]').value;
-          const bordure = card.querySelector('.mye-adv-input[data-prop="bordure"]').value;
-          userSettings.colors[type] = {
-            advanced: true,
-            simple: simpleHex,
-            normal, survol, actif, bordure
-          };
-        } else {
-          userSettings.colors[type] = simpleHex;
-        }
-      });
-      
       saveSettings();
       applyColors();
       document.getElementById('mye-settings-modal').style.display = 'none';
       renderPlanning();
+    });
+
+    document.getElementById('mye-event-close').addEventListener('click', () => {
+      document.getElementById('mye-event-modal').style.display = 'none';
+    });
+    document.getElementById('mye-event-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'mye-event-modal') e.target.style.display = 'none';
     });
 
     updatePeriodLabel();
@@ -798,6 +866,7 @@
     } else {
       renderGrid();
     }
+    attachEventModalListeners();
   }
 
   function renderMonthView() {
@@ -840,10 +909,10 @@
       dayEvents.forEach(ev => {
         const normType = normalizeType(ev.type);
         const classModifier = 'mac-course-' + normType.toLowerCase();
-        let evLink = ev.link ? `onclick="window.open('${ev.link}', '_blank'); event.stopPropagation();"` : '';
+        const index = state.events.indexOf(ev);
         
         eventsHTML += `
-          <div class="mac-cal-month-event ${classModifier}" ${evLink} title="${escapeHTML(ev.title)}">
+          <div class="mac-cal-month-event ${classModifier} mye-open-modal-evt" data-index="${index}" title="${escapeHTML(ev.title)}">
             <div class="mac-cal-month-event-inner">
               <span class="mac-cal-month-event-time">${formatTime(ev.start)}</span>
               <span class="mac-cal-month-event-title">${escapeHTML(ev.title)}</span>
@@ -972,6 +1041,13 @@
     });
     daysColsHTML += `</div>`;
 
+    let gridLinesHTML = `<div class="mac-cal-grid-lines">`;
+    for (let h = minHour; h <= maxHour; h++) {
+      const topPx = (h - minHour) * PIXELS_PER_HOUR;
+      gridLinesHTML += `<div class="mac-cal-grid-line" style="top:${topPx}px"></div>`;
+    }
+    gridLinesHTML += `</div>`;
+
     const calendarHTML = `
       <div class="mac-apple-calendar">
         ${headerHTML}
@@ -979,6 +1055,7 @@
           <div class="mac-cal-body" style="height:${totalGridHeight}px">
             ${timeColHTML}
             <div class="mac-cal-grid">
+              ${gridLinesHTML}
               ${daysColsHTML}
             </div>
           </div>
@@ -1045,6 +1122,7 @@
   function buildCourseCard(ev, minHour, pxPerHour) {
     const normType = normalizeType(ev.type);
     let classModifier = 'mac-course-' + normType.toLowerCase();
+    const index = state.events.indexOf(ev);
 
     const startH = ev.start.getHours();
     const startM = ev.start.getMinutes();
@@ -1061,19 +1139,160 @@
       actionBtnHTML = `<a href="${ev.link}" target="_blank" class="mac-cal-event-btn" onclick="event.stopPropagation()">${btnLabel}</a>`;
     }
 
-    return `
-      <div class="mac-cal-event ${classModifier}" style="top:${topPx}px; height:${heightPx}px;">
-        <div class="mac-cal-event-inner">
+    let typePill = '';
+    let isThin = heightPx < 70;
+
+    if (ev.type && heightPx > 20) {
+      typePill = `<div class="mye-event-type-pill" style="${isThin ? 'margin-right: 4px; flex-shrink: 0;' : 'margin-bottom: 2px; align-self: flex-start;'}">${escapeHTML(ev.type)}</div>`;
+    }
+
+    let innerHTML = '';
+    if (isThin) {
+      innerHTML = `
+        <div class="mac-cal-event-inner" style="display: flex; flex-direction: column; height: 100%;">
+          <div class="mac-cal-event-header" style="display: flex; flex-direction: row; align-items: center;">
+            ${typePill}
+            <div class="mac-cal-event-title" title="${escapeHTML(ev.title)}" style="-webkit-line-clamp: 1;">${escapeHTML(ev.title)}</div>
+            ${actionBtnHTML}
+          </div>
+          <div style="flex-grow: 1;"></div>
+          <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; opacity: 0.8; font-size: 10px;">
+            ${ev.room ? `<div class="mac-cal-event-room" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px;">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px; vertical-align:-1px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              ${escapeHTML(ev.room)}
+            </div>` : '<div></div>'}
+            <div class="mac-cal-event-time">${formatTime(ev.start)}</div>
+          </div>
+        </div>
+      `;
+    } else {
+      innerHTML = `
+        <div class="mac-cal-event-inner" style="display: flex; flex-direction: column; height: 100%;">
+          ${typePill}
           <div class="mac-cal-event-header">
             <div class="mac-cal-event-title" title="${escapeHTML(ev.title)}">${escapeHTML(ev.title)}</div>
             ${actionBtnHTML}
           </div>
-          <div class="mac-cal-event-time">${formatTime(ev.start)} - ${formatTime(ev.end)}</div>
-          ${ev.room ? `<div class="mac-cal-event-room">${escapeHTML(ev.room)}</div>` : ''}
-          ${ev.teacher ? `<div class="mac-cal-event-teacher">${escapeHTML(ev.teacher)}</div>` : ''}
+          <div style="flex-grow: 1;"></div>
+          ${ev.room ? `<div class="mac-cal-event-room">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px; vertical-align:-1px; opacity:0.7;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            ${escapeHTML(ev.room)}
+          </div>` : ''}
+          <div class="mac-cal-event-time" style="opacity: 0.8;">${formatTime(ev.start)} - ${formatTime(ev.end)}</div>
         </div>
+      `;
+    }
+
+    return `
+      <div class="mac-cal-event ${classModifier} mye-open-modal-evt" style="top:${topPx}px; height:${heightPx}px;" data-index="${index}">
+        ${innerHTML}
       </div>
     `;
+  }
+
+  function attachEventModalListeners() {
+    document.querySelectorAll('.mye-open-modal-evt').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const index = el.getAttribute('data-index');
+        openEventModal(index);
+      });
+    });
+  }
+
+  function openEventModal(index) {
+    const ev = state.events[index];
+    if (!ev) return;
+    
+    const normType = normalizeType(ev.type);
+    let colorData = userSettings.colors[normType] || userSettings.colors['Cours'] || '#8e8e93';
+    let bgColor = typeof colorData === 'string' ? colorData : (colorData.bordure || colorData.simple || '#8e8e93');
+    
+    const headerText = document.getElementById('mye-em-header-text');
+    if (headerText) {
+      headerText.innerHTML = `
+        ${ev.moduleCode ? `<div style="font-size:13px; color:rgba(255,255,255,0.8); margin:0; font-weight:500;">${escapeHTML(ev.moduleCode)}</div>` : ''}
+        <div style="font-size: 22px; font-weight: 700; color: white; margin: 0; line-height: 1.2;">${escapeHTML(ev.title)}</div>
+      `;
+    }
+    
+    const body = document.getElementById('mye-em-body');
+    if (body) {
+      let teamsHtml = '';
+      if (ev.link) {
+         teamsHtml = `<a href="${ev.link}" target="_blank" style="margin-top: 10px; background: #eef2ff; color: #4f46e5; padding: 14px 24px; border-radius: 999px; font-weight: 600; font-size: 16px; border: 2px solid #c7d2fe; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21 15.46L14 18V13.8L21 16.36V15.46ZM14 10.2L21 12.76V11.86L14 9.3V10.2ZM12 8.44V15.56L3 18V6L12 8.44Z"/></svg> Rejoindre la réunion</a>`;
+      }
+      
+      const dateStr = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).format(ev.start);
+      const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+      
+      body.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div style="background-color: #1d3b64; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+            <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Horaire</div>
+            <div style="font-size: 15px; font-weight: 600; color: white; text-align: center;">${cap(dateStr)}</div>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.8);">${formatTime(ev.start)} - ${formatTime(ev.end)}</div>
+          </div>
+          
+          <div style="background-color: #1d3b64; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+            <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Type</div>
+            <div style="font-size: 18px; font-weight: 600; color: white;">${escapeHTML(ev.type)}</div>
+            <div class="mye-event-type-pill" style="background-color: ${bgColor}; color: #1d1d1f; margin-top: 4px;">${escapeHTML(ev.type)}</div>
+          </div>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="background: #f8fafc; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Modalité</span>
+              <span style="font-size: 16px; font-weight: 600; color: #0f172a;">${escapeHTML(ev.modality)}</span>
+            </div>
+            <div style="font-size: 24px;">${ev.modality && ev.modality.toLowerCase().includes('distanciel') ? '💻' : '🏢'}</div>
+          </div>
+          
+          ${ev.roomLong || ev.room ? `
+          <div style="background: #f8fafc; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Salle(s)</span>
+              <span style="font-size: 16px; font-weight: 600; color: #0f172a;">${escapeHTML(ev.roomLong || ev.room)}</span>
+            </div>
+            <div style="font-size: 24px;">📍</div>
+          </div>` : ''}
+          
+          ${ev.groupNames ? `
+          <div style="background: #f8fafc; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Groupe(s)</span>
+              <span style="font-size: 15px; font-weight: 500; color: #0f172a;">${escapeHTML(ev.groupNames)}</span>
+            </div>
+            <div style="font-size: 24px;">👥</div>
+          </div>` : ''}
+          
+          ${ev.teacher ? `
+          <div style="background: #f8fafc; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Intervenant</span>
+              <span style="font-size: 16px; font-weight: 600; color: #0f172a;">${escapeHTML(ev.teacher)}</span>
+            </div>
+            <div style="font-size: 24px;">👨‍🏫</div>
+          </div>` : ''}
+          
+          ${ev.comments ? `
+          <div style="background: #fff; border-radius: 16px; padding: 15px 20px; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0;">
+            <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Remarques</span>
+            <span style="font-size: 14px; color: #334155; line-height: 1.5;">${escapeHTML(ev.comments).replace(/\\n/g, '<br>')}</span>
+          </div>` : ''}
+          
+          ${teamsHtml}
+
+          <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+            <button onclick="document.getElementById('mye-debug-raw').style.display = document.getElementById('mye-debug-raw').style.display === 'none' ? 'block' : 'none'" style="background:none; border:none; color:#007aff; cursor:pointer; font-size:12px; padding:0;">[+] Voir les données brutes de l'API</button>
+            <pre id="mye-debug-raw" style="display:none; background:#f5f5f7; padding:10px; border-radius:6px; font-size:11px; max-height:200px; overflow:auto; margin-top:10px; white-space:pre-wrap; word-break:break-all;">${escapeHTML(JSON.stringify(ev.raw, null, 2))}</pre>
+          </div>
+        </div>
+      `;
+    }
+    
+    document.getElementById('mye-event-modal').style.display = 'flex';
   }
 
   function escapeHTML(str) {
@@ -1180,10 +1399,13 @@
     const setLabel = (id, dateStr) => {
       const el = document.getElementById(id);
       if (!el) return;
+      const parentItem = el.closest('.mye-countdown-item');
       if (!dateStr) {
         el.textContent = '> 1 mois';
+        if (parentItem) parentItem.style.order = 999999999;
       } else {
         const diffMs = dateStr.getTime() - nowTime;
+        if (parentItem) parentItem.style.order = Math.max(0, Math.floor(diffMs / 1000));
         const diffHours = Math.ceil(diffMs / msInHour);
         if (diffHours < 72) {
           el.textContent = `${diffHours}h`;

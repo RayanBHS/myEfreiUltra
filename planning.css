@@ -418,7 +418,10 @@
 }
 
 .mac-cal-grid-lines {
-  display: none !important;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .mac-cal-grid-line {
@@ -426,7 +429,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background-color: #f5f5f7;
+  background-color: #eaeaea;
 }
 
 .mac-cal-day-cols {
@@ -457,7 +460,7 @@
   transition: transform 0.1s, z-index 0.1s;
   display: flex;
   flex-direction: column;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .mac-cal-event:hover {
@@ -1083,4 +1086,50 @@
     gap: 10px;
   }
   .mac-cal-view-toggles { display: none; }
+}
+
+/* Event Details Modal & Pills */
+.mye-event-type-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.mye-em-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+.mye-em-label {
+  font-size: 12px;
+  color: #86868b;
+  margin-bottom: 4px;
+}
+.mye-em-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mye-em-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 12px 0 4px 0;
+}
+.mye-em-type {
+  font-size: 14px;
+  color: #86868b;
+}
+.mye-open-modal-evt {
+  cursor: pointer;
 }
