@@ -18,10 +18,9 @@
    SIDEBAR GAUCHE
    ══════════════════════════════════════ */
 .mac-cal-sidebar {
-  width: 260px;
-  min-width: 260px;
+  width: 300px;
+  min-width: 300px;
   background-color: #f5f5f7;
-  border-right: 1px solid #d2d2d7;
   display: flex;
   flex-direction: column;
   padding: 20px 0;
@@ -30,7 +29,7 @@
 }
 
 .mac-cal-sidebar-section {
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
 .mac-cal-sidebar-title {
@@ -99,8 +98,8 @@
 
 /* Mini Calendar */
 .mac-cal-minical {
-  padding: 0 20px;
-  margin-top: 30px;
+  padding: 0;
+  margin-top: 20px;
 }
 
 .mac-minical-header {
@@ -179,50 +178,78 @@
 /* ══════════════════════════════════════
    PANNEAU PRINCIPAL
    ══════════════════════════════════════ */
+.mye-sidebar-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
 .mac-cal-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background-color: #ffffff;
+  background-color: #f5f5f7;
 }
 
 .mac-cal-toolbar {
-  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid #d2d2d7;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e5ea;
+  background-color: #f5f5f7;
+  height: 64px;
+}
+
+.mac-cal-toolbar-left {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.mac-cal-toolbar-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .mac-cal-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: #1d1d1f;
 }
 
+.mac-cal-title span.year {
+  font-weight: 300;
+}
+
 .mac-cal-view-toggles {
   display: flex;
-  background-color: #f5f5f7;
-  border-radius: 8px;
-  padding: 2px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02);
 }
 
 .mac-cal-toggle-btn {
   background: none;
   border: none;
-  padding: 4px 16px;
+  padding: 6px 16px;
   font-size: 13px;
   font-weight: 500;
   color: #1d1d1f;
-  border-radius: 6px;
+  border-radius: 16px;
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .mac-cal-toggle-btn.active {
-  background-color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background-color: #e5e5ea;
+  box-shadow: none;
 }
 
 .mac-cal-nav {
@@ -234,15 +261,16 @@
 .mac-cal-icon-btn {
   background: none;
   border: none;
-  color: #86868b;
+  color: #1d1d1f;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
-  background-color: #f5f5f7;
+  border-radius: 50%;
+  background-color: #f2f2f7;
+  transition: background-color 0.15s ease;
 }
 
 .mac-cal-icon-btn:hover {
@@ -250,14 +278,15 @@
 }
 
 .mac-cal-today-btn {
-  background-color: #f5f5f7;
+  background-color: #f2f2f7;
   border: none;
-  padding: 6px 12px;
+  padding: 6px 16px;
   font-size: 13px;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: 16px;
   cursor: pointer;
   color: #1d1d1f;
+  transition: background-color 0.15s ease;
 }
 
 .mac-cal-today-btn:hover {
@@ -282,7 +311,7 @@
 .mac-cal-header {
   display: flex;
   border-bottom: 1px solid #d2d2d7;
-  background-color: #ffffff;
+  background-color: #f5f5f7;
   z-index: 10;
   padding-right: 8px;
 }
@@ -297,10 +326,11 @@
 .mac-cal-day-header {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 8px 0;
+  gap: 6px;
+  padding: 12px 0;
   border-right: 1px solid #f5f5f7;
 }
 
@@ -309,18 +339,20 @@
 }
 
 .mac-cal-day-name {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 400;
   color: #86868b;
-  margin-bottom: 2px;
+  margin-bottom: 0;
+  text-transform: none;
 }
 
 .mac-cal-day-num {
-  font-size: 20px;
-  font-weight: 400;
+  font-size: 15px;
+  font-weight: 500;
   color: #1d1d1f;
-  width: 32px;
-  height: 32px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -328,14 +360,13 @@
 }
 
 .mac-cal-today .mac-cal-day-name {
-  color: #ff3b30;
-  font-weight: 600;
+  color: #86868b;
 }
 
 .mac-cal-today .mac-cal-day-num {
   background-color: #ff3b30;
   color: white;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .mac-cal-scroll-area {
@@ -355,7 +386,7 @@
   min-width: 50px;
   flex-shrink: 0;
   border-right: 1px solid #d2d2d7;
-  background-color: #ffffff;
+  background-color: #f5f5f7;
   position: relative;
   z-index: 2;
 }
@@ -379,12 +410,7 @@
 }
 
 .mac-cal-grid-lines {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 0;
+  display: none !important;
 }
 
 .mac-cal-grid-line {

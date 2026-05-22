@@ -243,71 +243,77 @@
     container.className = 'mye-page-container';
     
     container.innerHTML = `
-      <div class="mac-cal-sidebar">
-        <div class="mac-cal-sidebar-section">
-          <div class="mac-cal-sidebar-title">Charge & Événements</div>
-          <div class="mye-planning-stats">
-            <div class="mye-planning-gauge-wrapper">
-              <svg width="120" height="120" viewBox="0 0 120 120" class="mye-planning-gauge">
-                <circle cx="60" cy="60" r="50" class="mye-planning-gauge-bg"></circle>
-                <circle cx="60" cy="60" r="50" class="mye-planning-gauge-fill" id="mye-planning-arc"></circle>
-              </svg>
-              <div class="mye-planning-gauge-text">
-                <span id="mye-planning-hours">0</span>
-                <small>Heures</small>
+      <div class="mac-cal-sidebar" style="border-right: none;">
+        <div class="mac-cal-sidebar-section" style="height: 100%; display: flex; flex-direction: column; padding-bottom: 20px;">
+          <div class="mye-sidebar-card" style="flex: 1; display: flex; flex-direction: column; margin-bottom: 0;">
+            <div class="mac-cal-sidebar-title">Charge & Événements</div>
+            <div class="mye-planning-stats">
+              <div class="mye-planning-gauge-wrapper">
+                <svg width="120" height="120" viewBox="0 0 120 120" class="mye-planning-gauge">
+                  <circle cx="60" cy="60" r="50" class="mye-planning-gauge-bg"></circle>
+                  <circle cx="60" cy="60" r="50" class="mye-planning-gauge-fill" id="mye-planning-arc"></circle>
+                </svg>
+                <div class="mye-planning-gauge-text">
+                  <span id="mye-planning-hours">0</span>
+                  <small>Heures</small>
+                </div>
+              </div>
+              
+              <div class="mye-countdown-list">
+                <div class="mye-countdown-item type-projet">
+                  <span class="mye-cd-label">Projet</span>
+                  <span class="mye-cd-value" id="mye-cd-projet">...</span>
+                </div>
+                <div class="mye-countdown-item type-exam">
+                  <span class="mye-cd-label">TAI</span>
+                  <span class="mye-cd-value" id="mye-cd-tai">...</span>
+                </div>
+                <div class="mye-countdown-item type-exam">
+                  <span class="mye-cd-label">CE</span>
+                  <span class="mye-cd-value" id="mye-cd-ce">...</span>
+                </div>
+                <div class="mye-countdown-item type-exam">
+                  <span class="mye-cd-label">DE</span>
+                  <span class="mye-cd-value" id="mye-cd-de">...</span>
+                </div>
               </div>
             </div>
+
+            <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 30px 0;">
+
+            <div class="mac-cal-sidebar-title">Mini-Calendrier</div>
+            <div class="mac-cal-minical" id="mac-cal-minical" style="margin-bottom: 20px;"></div>
             
-            <div class="mye-countdown-list">
-              <div class="mye-countdown-item type-projet">
-                <span class="mye-cd-label">Projet</span>
-                <span class="mye-cd-value" id="mye-cd-projet">...</span>
-              </div>
-              <div class="mye-countdown-item type-exam">
-                <span class="mye-cd-label">TAI</span>
-                <span class="mye-cd-value" id="mye-cd-tai">...</span>
-              </div>
-              <div class="mye-countdown-item type-exam">
-                <span class="mye-cd-label">CE</span>
-                <span class="mye-cd-value" id="mye-cd-ce">...</span>
-              </div>
-              <div class="mye-countdown-item type-exam">
-                <span class="mye-cd-label">DE</span>
-                <span class="mye-cd-value" id="mye-cd-de">...</span>
-              </div>
+            <div style="margin-top: auto;">
+              <button id="mye-settings-btn" style="width: 100%; padding: 12px; border-radius: 12px; border: none; background: #f5f5f7; color: #1d1d1f; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Paramètres
+              </button>
             </div>
           </div>
-        </div>
-
-        <div class="mac-cal-sidebar-section" style="margin-top: auto; border-top: 1px solid #e5e5ea; padding-top: 10px; margin-bottom: 10px;">
-          <button id="mye-settings-btn" style="width: 100%; padding: 8px; border-radius: 6px; border: none; background: #f2f2f7; color: #1d1d1f; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            Paramètres
-          </button>
-        </div>
-        
-        <div class="mac-cal-sidebar-section">
-          <div class="mac-cal-sidebar-title">Mini-Calendrier</div>
-          <div class="mac-cal-minical" id="mac-cal-minical"></div>
         </div>
       </div>
 
       <div class="mac-cal-main">
         <div class="mac-cal-toolbar">
-          <div class="mac-cal-title" id="mye-period-label">Chargement…</div>
+          <div class="mac-cal-toolbar-left">
+            <div class="mac-cal-title" id="mye-period-label">Chargement…</div>
+          </div>
           <div class="mac-cal-view-toggles">
             <button class="mac-cal-toggle-btn" data-view="day">Jour</button>
             <button class="mac-cal-toggle-btn active" data-view="week">Semaine</button>
             <button class="mac-cal-toggle-btn" data-view="month">Mois</button>
           </div>
-          <div class="mac-cal-nav">
-            <button class="mac-cal-icon-btn" id="mye-period-prev">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <button class="mac-cal-today-btn" id="mye-period-today">Aujourd'hui</button>
-            <button class="mac-cal-icon-btn" id="mye-period-next">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            </button>
+          <div class="mac-cal-toolbar-right">
+            <div class="mac-cal-nav">
+              <button class="mac-cal-icon-btn" id="mye-period-prev">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button class="mac-cal-today-btn" id="mye-period-today">Aujourd'hui</button>
+              <button class="mac-cal-icon-btn" id="mye-period-next">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+            </div>
           </div>
         </div>
           <div class="mac-cal-content" id="mye-planning-right">
@@ -414,8 +420,9 @@
     let label = '';
 
     if (state.currentView === 'day') {
-      const parts = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).formatToParts(state.currentDate);
-      label = cap(parts.map(p => p.value).join(''));
+      const parts = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).formatToParts(state.currentDate);
+      const str = cap(parts.map(p => p.value).join(''));
+      label = `${str} <span class="year">${state.currentDate.getFullYear()}</span>`;
     } else {
       const startMonth = start.toLocaleDateString('fr-FR', { month: 'long' });
       const endMonth = end.toLocaleDateString('fr-FR', { month: 'long' });
@@ -423,16 +430,16 @@
       const endYear = end.getFullYear();
 
       if (startMonth === endMonth && startYear === endYear) {
-        label = `${cap(startMonth)} ${startYear}`;
+        label = `${cap(startMonth)} <span class="year">${startYear}</span>`;
       } else if (startYear === endYear) {
-        label = `${cap(startMonth)} - ${cap(endMonth)} ${startYear}`;
+        label = `${cap(startMonth)} - ${cap(endMonth)} <span class="year">${startYear}</span>`;
       } else {
-        label = `${cap(startMonth)} ${startYear} - ${cap(endMonth)} ${endYear}`;
+        label = `${cap(startMonth)} ${startYear} - ${cap(endMonth)} <span class="year">${endYear}</span>`;
       }
     }
 
     const labelEl = document.getElementById('mye-period-label');
-    if (labelEl) labelEl.textContent = label;
+    if (labelEl) labelEl.innerHTML = label;
 
     renderMiniCalendar(state.currentDate);
   }
@@ -694,12 +701,6 @@
     }
     timeColHTML += `</div>`;
 
-    let gridLinesHTML = `<div class="mac-cal-grid-lines">`;
-    for (let h = minHour; h <= maxHour; h++) {
-      gridLinesHTML += `<div class="mac-cal-grid-line" style="top:${(h - minHour) * PIXELS_PER_HOUR}px"></div>`;
-    }
-    gridLinesHTML += `</div>`;
-
     let daysColsHTML = `<div class="mac-cal-day-cols">`;
     daysOrder.forEach(dayNum => {
       const dayData = daysMap[dayNum];
@@ -726,7 +727,6 @@
           <div class="mac-cal-body" style="height:${totalGridHeight}px">
             ${timeColHTML}
             <div class="mac-cal-grid">
-              ${gridLinesHTML}
               ${daysColsHTML}
             </div>
           </div>
