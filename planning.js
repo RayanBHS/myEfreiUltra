@@ -1107,8 +1107,9 @@
     let actionBtnHTML = '';
     if (ev.link) {
       const isTeams = ev.link.includes('teams.microsoft') || ev.link.includes('teams.live');
-      const btnLabel = isTeams ? 'Teams' : 'Lien';
-      actionBtnHTML = `<a href="${ev.link}" target="_blank" class="mac-cal-event-btn" onclick="event.stopPropagation()">${btnLabel}</a>`;
+      if (isTeams) {
+          actionBtnHTML = `<a href="${ev.link}" target="_blank" class="mac-cal-event-btn" onclick="event.stopPropagation()">Teams</a>`;
+      }
     }
 
     let typePill = '';
@@ -1190,8 +1191,8 @@
     const body = document.getElementById('mye-em-body');
     if (body) {
       let teamsHtml = '';
-      if (ev.link) {
-         teamsHtml = `<a href="${ev.link}" target="_blank" style="margin-top: 10px; background: #eef2ff; color: #4f46e5; padding: 14px 24px; border-radius: 999px; font-weight: 600; font-size: 16px; border: 2px solid #c7d2fe; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21 15.46L14 18V13.8L21 16.36V15.46ZM14 10.2L21 12.76V11.86L14 9.3V10.2ZM12 8.44V15.56L3 18V6L12 8.44Z"/></svg> Rejoindre la réunion</a>`;
+      if (ev.link && normType !== 'DE' && normType !== 'CE' && normType !== 'CC') {
+         teamsHtml = `<a href="${ev.link}" target="_blank" style="margin-top: 10px; background: #eef2ff; color: #4f46e5; padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid #c7d2fe; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; max-width: max-content;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 15.46L14 18V13.8L21 16.36V15.46ZM14 10.2L21 12.76V11.86L14 9.3V10.2ZM12 8.44V15.56L3 18V6L12 8.44Z"/></svg> Teams</a>`;
       }
       
       const dateStr = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).format(ev.start);
