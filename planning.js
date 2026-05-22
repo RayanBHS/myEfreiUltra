@@ -59,13 +59,40 @@
     }
     
     let css = '';
-    Object.entries(userSettings.colors).forEach(([type, hex]) => {
-      // Nettoyer les accents/espaces pour correspondre aux classes CSS
+    Object.entries(userSettings.colors).forEach(([type, colorData]) => {
       let tNorm = type.toLowerCase();
-      if (tNorm === 'cours') tNorm = 'cours'; // default fallback
       const cls = '.mac-course-' + tNorm;
-      const lightHex = hex.length === 7 ? hex + '26' : hex; // 15% opacity
-      css += `${cls} { --course-bg: ${hex} !important; --course-bg-light: ${lightHex} !important; }\n`;
+      
+      let isAdvanced = typeof colorData === 'object' && colorData.advanced;
+      let simpleHex = typeof colorData === 'string' ? colorData : (colorData.simple || '#8e8e93');
+      
+      let r = 142, g = 142, b = 147; // Default gray
+      if (simpleHex.length === 7) {
+        r = parseInt(simpleHex.slice(1,3), 16);
+        g = parseInt(simpleHex.slice(3,5), 16);
+        b = parseInt(simpleHex.slice(5,7), 16);
+      }
+      const lightBg = `rgba(${r}, ${g}, ${b}, 0.15)`;
+      
+      let norm = isAdvanced ? colorData.normal : lightBg;
+      let bord = isAdvanced ? colorData.bordure : simpleHex;
+      let surv = isAdvanced ? colorData.survol : lightBg;
+      
+      css += `
+        ${cls} .mac-cal-event-inner {
+          background-color: ${norm} !important;
+          border-left-color: ${bord} !important;
+        }
+        ${cls}:hover .mac-cal-event-inner {
+          background-color: ${surv} !important;
+        }
+        ${cls} .mac-cal-event-title {
+          color: #1d1d1f !important;
+        }
+        ${cls} .mac-cal-event-time, ${cls} .mac-cal-event-room, ${cls} .mac-cal-event-teacher {
+          color: #3a3a3c !important;
+        }
+      `;
     });
     styleTag.textContent = css;
   }
@@ -216,15 +243,208 @@
   function openSettingsModal() {
     const colorsContainer = document.getElementById('mye-settings-colors');
     let colorsHTML = '';
-    Object.entries(userSettings.colors).forEach(([type, hex]) => {
+    
+    Object.entries(userSettings.colors).forEach(([type, colorData]) => {
+      let isAdvanced = typeof colorData === 'object' && colorData.advanced;
+      let simpleHex = typeof colorData === 'string' ? colorData : (colorData.simple || '#8e8e93');
+      
+      let advNormal = typeof colorData === 'object' ? (colorData.normal || '#E2FFEF') : '#E2FFEF';
+      let advSurvol = typeof colorData === 'object' ? (colorData.survol || '#C4FFDE') : '#C4FFDE';
+      let advActif = typeof colorData === 'object' ? (colorData.actif || '#84FFBA') : '#84FFBA';
+      let advBordure = typeof colorData === 'object' ? (colorData.bordure || simpleHex) : simpleHex;
+
+      let r = 142, g = 142, b = 147;
+      if (simpleHex.length === 7) {
+        r = parseInt(simpleHex.slice(1,3), 16);
+        g = parseInt(simpleHex.slice(3,5), 16);
+        b = parseInt(simpleHex.slice(5,7), 16);
+      }
+      const lightBg = `rgba(${r}, ${g}, ${b}, 0.15)`;
+      
+      const iconBorder = isAdvanced ? advBordure : simpleHex;
+      const iconBg = isAdvanced ? advNormal : lightBg;
+      
+      let typeLabel = type;
+      if (type === 'Projet') typeLabel = 'Projet';
+      else if (type === 'CM') typeLabel = 'CM (Cours magistral)';
+      else if (type === 'TD') typeLabel = 'TD (Travaux dirigés)';
+      else if (type === 'TP') typeLabel = 'TP (Travaux pratiques)';
+      else if (type === 'CE') typeLabel = 'CE (Contrôle écrit)';
+      else if (type === 'DE') typeLabel = 'DE (Devoir écrit)';
+
       colorsHTML += `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
-          <span style="font-size: 14px;">${type}</span>
-          <input type="color" class="mye-color-input" data-type="${type}" value="${hex}" style="width: 30px; height: 30px; border: none; border-radius: 4px; cursor: pointer; padding: 0;">
+        <div class="mye-color-card" data-type="${type}">
+          <div class="mye-color-card-header">
+            <div class="mye-color-card-icon" style="border-color: ${iconBorder}; background-color: ${iconBg};"></div>
+            <span class="mye-color-card-title">${typeLabel}</span>
+            <div class="mye-color-card-actions">
+              <button class="mye-reset-btn" data-type="${type}" title="Réinitialiser">↺</button>
+              <button class="mye-expand-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="mye-color-card-body" style="display: none;">
+            <div class="mye-color-picker-row" style="margin-bottom: 12px;">
+              <span class="mye-cpr-label">Couleur</span>
+              <div class="mye-cpr-inputs">
+                <input type="color" class="mye-color-input" data-type="${type}" data-prop="simple" value="${simpleHex}">
+                <input type="text" class="mye-color-hex" value="${simpleHex.toUpperCase()}" readonly>
+              </div>
+            </div>
+            
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1d3b64; font-weight: 500; cursor: pointer; margin-bottom: 12px;">
+              <input type="checkbox" class="mye-adv-checkbox" data-type="${type}" ${isAdvanced ? 'checked' : ''}>
+              Mode avancé
+            </label>
+            
+            <div class="mye-adv-options" style="display: ${isAdvanced ? 'grid' : 'none'}; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <div style="font-size: 12px; color: #86868b; margin-bottom: 4px;">Normal</div>
+                <div class="mye-cpr-inputs">
+                  <input type="color" class="mye-adv-input" data-type="${type}" data-prop="normal" value="${advNormal}">
+                  <input type="text" class="mye-color-hex" value="${advNormal.toUpperCase()}" readonly>
+                </div>
+              </div>
+              <div>
+                <div style="font-size: 12px; color: #86868b; margin-bottom: 4px;">Survol</div>
+                <div class="mye-cpr-inputs">
+                  <input type="color" class="mye-adv-input" data-type="${type}" data-prop="survol" value="${advSurvol}">
+                  <input type="text" class="mye-color-hex" value="${advSurvol.toUpperCase()}" readonly>
+                </div>
+              </div>
+              <div>
+                <div style="font-size: 12px; color: #86868b; margin-bottom: 4px;">Actif</div>
+                <div class="mye-cpr-inputs">
+                  <input type="color" class="mye-adv-input" data-type="${type}" data-prop="actif" value="${advActif}">
+                  <input type="text" class="mye-color-hex" value="${advActif.toUpperCase()}" readonly>
+                </div>
+              </div>
+              <div>
+                <div style="font-size: 12px; color: #86868b; margin-bottom: 4px;">Bordure/Chip</div>
+                <div class="mye-cpr-inputs">
+                  <input type="color" class="mye-adv-input" data-type="${type}" data-prop="bordure" value="${advBordure}">
+                  <input type="text" class="mye-color-hex" value="${advBordure.toUpperCase()}" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       `;
     });
     colorsContainer.innerHTML = colorsHTML;
+    
+    // Add event listeners for accordion
+    document.querySelectorAll('.mye-color-card-header').forEach(header => {
+      header.addEventListener('click', (e) => {
+        if (e.target.closest('.mye-reset-btn')) return; // Ignore if clicked on reset
+        const card = header.closest('.mye-color-card');
+        const body = card.querySelector('.mye-color-card-body');
+        const expandBtn = card.querySelector('.mye-expand-btn svg');
+        
+        if (body.style.display === 'none') {
+          // collapse all others
+          document.querySelectorAll('.mye-color-card-body').forEach(b => b.style.display = 'none');
+          document.querySelectorAll('.mye-expand-btn svg').forEach(svg => svg.style.transform = 'rotate(0deg)');
+          document.querySelectorAll('.mye-color-card').forEach(c => c.classList.remove('expanded'));
+          
+          body.style.display = 'block';
+          expandBtn.style.transform = 'rotate(90deg)';
+          card.classList.add('expanded');
+        } else {
+          body.style.display = 'none';
+          expandBtn.style.transform = 'rotate(0deg)';
+          card.classList.remove('expanded');
+        }
+      });
+    });
+    
+    // Advanced mode checkbox toggle
+    document.querySelectorAll('.mye-adv-checkbox').forEach(chk => {
+      chk.addEventListener('change', (e) => {
+        const card = e.target.closest('.mye-color-card');
+        const advOptions = card.querySelector('.mye-adv-options');
+        advOptions.style.display = e.target.checked ? 'grid' : 'none';
+        
+        if (e.target.checked) {
+          const normal = card.querySelector('.mye-adv-input[data-prop="normal"]').value;
+          const bordure = card.querySelector('.mye-adv-input[data-prop="bordure"]').value;
+          card.querySelector('.mye-color-card-icon').style.borderColor = bordure;
+          card.querySelector('.mye-color-card-icon').style.backgroundColor = normal;
+        } else {
+          const hex = card.querySelector('.mye-color-input').value;
+          let r = parseInt(hex.slice(1,3), 16);
+          let g = parseInt(hex.slice(3,5), 16);
+          let b = parseInt(hex.slice(5,7), 16);
+          card.querySelector('.mye-color-card-icon').style.borderColor = hex;
+          card.querySelector('.mye-color-card-icon').style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+        }
+      });
+    });
+
+    // Update hex when advanced color changes
+    document.querySelectorAll('.mye-adv-input').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const hex = e.target.value.toUpperCase();
+        const parent = e.target.closest('.mye-cpr-inputs');
+        parent.querySelector('.mye-color-hex').value = hex;
+        
+        const prop = e.target.dataset.prop;
+        if (prop === 'normal' || prop === 'bordure') {
+          const card = e.target.closest('.mye-color-card');
+          const isAdvanced = card.querySelector('.mye-adv-checkbox').checked;
+          if (isAdvanced) {
+            const normal = card.querySelector('.mye-adv-input[data-prop="normal"]').value;
+            const bordure = card.querySelector('.mye-adv-input[data-prop="bordure"]').value;
+            card.querySelector('.mye-color-card-icon').style.borderColor = bordure;
+            card.querySelector('.mye-color-card-icon').style.backgroundColor = normal;
+          }
+        }
+      });
+    });
+    
+    // Update hex when simple color changes
+    document.querySelectorAll('.mye-color-input').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const hex = e.target.value.toUpperCase();
+        const card = e.target.closest('.mye-color-card');
+        card.querySelector('.mye-color-hex').value = hex;
+        
+        const isAdvanced = card.querySelector('.mye-adv-checkbox').checked;
+        if (!isAdvanced) {
+          let r = parseInt(hex.slice(1,3), 16);
+          let g = parseInt(hex.slice(3,5), 16);
+          let b = parseInt(hex.slice(5,7), 16);
+          card.querySelector('.mye-color-card-icon').style.borderColor = hex;
+          card.querySelector('.mye-color-card-icon').style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+        }
+      });
+    });
+    
+    // Reset individual color
+    document.querySelectorAll('.mye-reset-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const type = btn.getAttribute('data-type');
+        const defaultHex = typeof defaultSettings.colors[type] === 'string' ? defaultSettings.colors[type] : (defaultSettings.colors[type]?.simple || '#8e8e93');
+        const card = btn.closest('.mye-color-card');
+        
+        // Reset simple
+        card.querySelector('.mye-color-input').value = defaultHex;
+        card.querySelector('.mye-color-picker-row .mye-color-hex').value = defaultHex.toUpperCase();
+        
+        // Reset checkbox
+        const chk = card.querySelector('.mye-adv-checkbox');
+        chk.checked = false;
+        card.querySelector('.mye-adv-options').style.display = 'none';
+        
+        // Update icon
+        let r = parseInt(defaultHex.slice(1,3), 16);
+        let g = parseInt(defaultHex.slice(3,5), 16);
+        let b = parseInt(defaultHex.slice(5,7), 16);
+        card.querySelector('.mye-color-card-icon').style.borderColor = defaultHex;
+        card.querySelector('.mye-color-card-icon').style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+      });
+    });
     
     document.getElementById('mye-setting-start').value = userSettings.displayStart;
     document.getElementById('mye-setting-end').value = userSettings.displayEnd;
@@ -279,9 +499,8 @@
               </div>
             </div>
 
-            <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 30px 0;">
+            <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 20px 0 0 0;">
 
-            <div class="mac-cal-sidebar-title">Mini-Calendrier</div>
             <div class="mac-cal-minical" id="mac-cal-minical" style="margin-bottom: 20px;"></div>
             
             <div style="margin-top: auto;">
@@ -399,9 +618,25 @@
       userSettings.displayStart = parseFloat(document.getElementById('mye-setting-start').value) || 7.5;
       userSettings.displayEnd = parseFloat(document.getElementById('mye-setting-end').value) || 20.0;
       
-      const colorInputs = document.querySelectorAll('.mye-color-input');
-      colorInputs.forEach(input => {
-        userSettings.colors[input.dataset.type] = input.value;
+      const colorCards = document.querySelectorAll('.mye-color-card');
+      colorCards.forEach(card => {
+        const type = card.dataset.type;
+        const isAdvanced = card.querySelector('.mye-adv-checkbox').checked;
+        const simpleHex = card.querySelector('.mye-color-input').value;
+        
+        if (isAdvanced) {
+          const normal = card.querySelector('.mye-adv-input[data-prop="normal"]').value;
+          const survol = card.querySelector('.mye-adv-input[data-prop="survol"]').value;
+          const actif = card.querySelector('.mye-adv-input[data-prop="actif"]').value;
+          const bordure = card.querySelector('.mye-adv-input[data-prop="bordure"]').value;
+          userSettings.colors[type] = {
+            advanced: true,
+            simple: simpleHex,
+            normal, survol, actif, bordure
+          };
+        } else {
+          userSettings.colors[type] = simpleHex;
+        }
       });
       
       saveSettings();
