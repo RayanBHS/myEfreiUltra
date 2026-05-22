@@ -501,6 +501,10 @@
             <div class="mye-grade-sim-progress" id="mye-grade-arc-sim"></div>
           </div>
         </div>
+        <button id="mye-grades-settings-btn" style="width: 100%; padding: 12px; margin-top: 10px; border-radius: 12px; border: none; background: #f5f5f7; color: #1d1d1f; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Paramètres
+        </button>
       </div>
       <div class="mye-grades-right" id="mye-grades-right">
         <div class="mye-grades-loading">
@@ -532,6 +536,13 @@
       btn.classList.toggle('open');
       dropdown.classList.toggle('show');
     });
+
+    const settingsBtn = document.getElementById('mye-grades-settings-btn');
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', () => {
+        alert("Les paramètres des notes seront bientôt disponibles ! (Couleurs, Objectifs globaux, etc.)");
+      });
+    }
 
     document.addEventListener('click', () => {
       btn.classList.remove('open');
