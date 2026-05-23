@@ -1279,7 +1279,8 @@ body.dark-mode .mye-grade-circle-bg {
   stroke: #333333 !important;
 }
 
-body.dark-mode .mye-grade-circle-value {
+body.dark-mode .mye-grade-circle-value,
+body.dark-mode .mye-grade-circle-value-real {
   color: #ffffff !important;
 }
 
@@ -1295,18 +1296,27 @@ body.dark-mode .mye-ue-title {
   color: #ffffff !important;
 }
 
+body.dark-mode .mye-ue-grade {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
 body.dark-mode .mye-ue-grade span:first-child {
   color: #ffffff !important;
 }
 
 body.dark-mode .mye-ue-grade span:last-child {
-  color: #aaaaaa !important;
+  color: #10b981 !important;
 }
 
 body.dark-mode .mye-subject-card {
   background-color: #1a1a1a !important;
   border-color: #333333 !important;
   box-shadow: none !important;
+}
+
+body.dark-mode .mye-subject-top {
+  background-color: #2F2F2F !important;
 }
 
 body.dark-mode .mye-subject-name {
@@ -1318,8 +1328,14 @@ body.dark-mode .mye-subject-coef {
   color: #ffffff !important;
 }
 
-body.dark-mode .mye-subject-grade .mye-grade-value {
+body.dark-mode .mye-subject-grade .mye-grade-value,
+body.dark-mode .mye-subject-grade-val {
   color: #ffffff !important;
+}
+
+body.dark-mode .mye-subject-grade-sim {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #10b981 !important;
 }
 
 body.dark-mode .mye-subject-grade .mye-grade-scale {
@@ -1349,21 +1365,24 @@ body.dark-mode .mye-subject-code {
 }
 
 /* Simulateur */
-body.dark-mode #mye-simulator-overlay {
+body.dark-mode .mye-simulator-overlay {
   background-color: rgba(0,0,0,0.8) !important;
 }
 
-body.dark-mode #mye-simulator-container {
-  background-color: #1a1a1a !important;
-  color: #ffffff !important;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+body.dark-mode .mye-simulator-modal {
+  background-color: #000000 !important;
+  border-color: #333333 !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8) !important;
 }
 
 body.dark-mode .mye-simulator-header {
+  background-color: #0a0a0a !important;
   border-bottom-color: #333333 !important;
 }
 
-body.dark-mode .mye-simulator-title {
+body.dark-mode .mye-simulator-header-text,
+body.dark-mode .mye-simulator-subject-name,
+body.dark-mode .mye-simulator-ue-name {
   color: #ffffff !important;
 }
 
@@ -1376,51 +1395,129 @@ body.dark-mode .mye-simulator-close:hover {
   background-color: #555555 !important;
 }
 
-body.dark-mode .mye-sim-ue-header {
-  background-color: #0a0a0a !important;
-  border-color: #333333 !important;
+body.dark-mode .mye-simulator-body {
+  background-color: #000000 !important;
+}
+
+body.dark-mode .mye-sim-stat {
+  background-color: #1a1a1a !important;
+  border: 1px solid #333333 !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .mye-sim-stat-label {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-sim-val-real,
+body.dark-mode .mye-sim-val-sim {
   color: #ffffff !important;
 }
 
-body.dark-mode .mye-sim-subject {
-  border-bottom-color: #333333 !important;
+body.dark-mode .mye-sim-val-sep {
+  color: #555555 !important;
 }
 
-body.dark-mode .mye-sim-subject:last-child {
-  border-bottom-color: #333333 !important;
+body.dark-mode .mye-sim-req-box {
+  background-color: #022c22 !important; /* Très vert sombre */
+  border-color: #065f46 !important;
 }
 
-body.dark-mode .mye-sim-subj-name {
+body.dark-mode .mye-sim-req-box.mye-sim-req-comp {
+  background-color: #451a03 !important;
+  border-color: #92400e !important;
+}
+
+body.dark-mode .mye-sim-req-title {
+  color: #34d399 !important;
+}
+
+body.dark-mode .mye-sim-req-comp .mye-sim-req-title {
+  color: #fbbf24 !important;
+}
+
+body.dark-mode .mye-sim-req-list {
+  color: #a7f3d0 !important;
+}
+
+body.dark-mode .mye-sim-req-comp .mye-sim-req-list {
+  color: #fcd34d !important;
+}
+
+body.dark-mode .mye-sim-eval-list h4 {
   color: #ffffff !important;
 }
 
-body.dark-mode .mye-sim-subj-input {
-  background-color: #333333 !important;
+body.dark-mode .mye-sim-eval-row {
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mye-sim-eval-name {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-sim-eval-coef,
+body.dark-mode .mye-sim-eval-max {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-sim-eval-input {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
   border-color: #555555 !important;
-  color: #ffffff !important;
 }
 
-body.dark-mode .mye-sim-subj-input:focus {
-  border-color: #007aff !important;
+body.dark-mode .mye-sim-eval-input:focus {
+  border-color: #10b981 !important;
+}
+
+body.dark-mode .mye-sim-eval-input:disabled {
+  background-color: #0a0a0a !important;
+  color: #888888 !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-sim-eval-input.simulated {
+  background-color: #064e3b !important;
+  border-color: #10b981 !important;
+  color: #34d399 !important;
 }
 
 body.dark-mode .mye-simulator-footer {
+  background-color: #0a0a0a !important;
   border-top-color: #333333 !important;
 }
 
-body.dark-mode .mye-sim-result-value {
+body.dark-mode .mye-sim-btn-reset {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #555555 !important;
+}
+
+body.dark-mode .mye-sim-btn-reset:hover {
+  background-color: #333333 !important;
   color: #ffffff !important;
 }
 
-body.dark-mode .mye-sim-result-status {
-  color: #aaaaaa !important;
-}
-
-body.dark-mode .mye-grades-loading {
-  color: #aaaaaa !important;
-}
-
-body.dark-mode .mye-grades-spinner {
+body.dark-mode .mye-grade-sim-card {
+  background-color: #1a1a1a !important;
   border-color: #333333 !important;
-  border-top-color: #007aff !important;
+}
+
+body.dark-mode .mye-grade-sim-label,
+body.dark-mode .mye-grade-sim-value {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-grade-sim-track {
+  background-color: #333333 !important;
+}
+
+body.dark-mode #mye-grades-settings-btn {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode #mye-grades-settings-btn:hover {
+  background-color: #333333 !important;
 }
