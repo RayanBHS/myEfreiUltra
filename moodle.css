@@ -298,3 +298,79 @@
     font-size: 18px;
   }
 }
+
+/* ==========================================================================
+   OLED BLACK DARK MODE
+   ========================================================================== */
+
+body.dark-mode #mye-moodle-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-moodle-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-moodle-subtitle {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-moodle-action-btn,
+body.dark-mode .mye-moodle-year-btn {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-moodle-action-btn:hover,
+body.dark-mode .mye-moodle-year-btn:hover {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mye-moodle-ue-title {
+  color: #ffffff !important;
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mye-moodle-card {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .mye-moodle-card-code {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-moodle-card-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-moodle-card-footer {
+  border-top-color: #333333 !important;
+  background-color: #0a0a0a !important;
+}
+
+body.dark-mode .mye-moodle-card-id {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-moodle-empty {
+  background-color: rgba(30, 30, 30, 0.5) !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-moodle-empty-text {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-moodle-loading {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-moodle-spinner {
+  border-color: #333333 !important;
+  border-top-color: #007aff !important;
+}

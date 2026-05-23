@@ -1,5 +1,13 @@
 console.log("🚀 Extension MyEfrei v8 — Portail");
 
+// INITIALISATION DU THEME (OLED Black Dark Mode)
+const savedTheme = localStorage.getItem('mye-theme') || 'light';
+if (savedTheme === 'dark') {
+  document.documentElement.classList.add('dark-mode');
+  if(document.body) document.body.classList.add('dark-mode');
+  else document.addEventListener('DOMContentLoaded', () => document.body.classList.add('dark-mode'));
+}
+
 // URLs des assets (scope global pour être accessibles partout)
 const LOGO_URL = chrome.runtime.getURL('img/logoEfrei.png');
 const LOGO_MYEFREI_URL = chrome.runtime.getURL('img/logoMyEfrei.png');
@@ -29,7 +37,7 @@ function getHeaderHTML() {
         <!-- RECHERCHE : Juste l'icône loupe -->
         <div class="mye-icon-btn" id="mye-custom-search-btn"></div>
         <div class="mye-icon-btn" id="mye-custom-notif-btn"></div>
-        <div class="mye-profile-pill" id="mye-profile-btn">
+        <div class="mye-profile-pill mye-has-dropdown" id="mye-profile-btn" data-target="mye-dropdown-profile">
           <div class="mye-profile-info">
             <span class="mye-profile-first" id="mye-first-name">Prénom</span>
             <span class="mye-profile-last" id="mye-last-name">Nom</span>
@@ -143,6 +151,21 @@ function getHeaderHTML() {
       <a href="https://efreiparis.myfreshworks.com/login?client_id=134315043955409715&redirect_uri=https://efreiparis.freshservice.com/freshid/authorize_callback?hd%3Dservices.efrei.fr&account_id=616282803414392709" class="mye-dropdown-link" target="_blank">
         <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.22C21 6.73 16.74 3 12 3c-4.69 0-9 3.65-9 9.28C2.4 12.62 2 13.26 2 14v2c0 1.1.9 2 2 2h1v-6.1c0-3.87 3.13-7 7-7s7 3.13 7 7V19h-8v2h8c1.1 0 2-.9 2-2v-1.22c.59-.31 1-.92 1-1.64v-2.3c0-.7-.41-1.31-1-1.62z"/></svg></span>Incidents et Demandes
       </a>
+    </div>
+    <div class="mye-dropdown-menu" id="mye-dropdown-profile">
+      <div class="mye-dropdown-link mye-theme-toggle-container" id="mye-theme-toggle" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+        <div style="display:flex; align-items:center;">
+          <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></span>
+          Mode Sombre
+        </div>
+        <div class="mye-switch ${localStorage.getItem('mye-theme') === 'dark' ? 'active' : ''}" id="mye-theme-switch"></div>
+      </div>
+      <div class="mye-dropdown-link" style="cursor:pointer;" id="mye-desk-account">
+        <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>Gérer mon compte
+      </div>
+      <div class="mye-dropdown-link" style="cursor:pointer; color: #ff3b30;" id="mye-desk-logout">
+        <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></span>Se déconnecter
+      </div>
     </div>
  
     <!-- Tiroir Mobile (Drawer) -->
@@ -281,7 +304,7 @@ function initCustomHeaderEvents() {
     });
 
     // Menus déroulants (pour le header)
-    document.querySelectorAll('.mye-nav-item.mye-has-dropdown').forEach(item => {
+    document.querySelectorAll('.mye-has-dropdown').forEach(item => {
         item.addEventListener('click', (e) => {
             e.stopPropagation();
             const targetId = item.getAttribute('data-target');
@@ -291,7 +314,7 @@ function initCustomHeaderEvents() {
             document.querySelectorAll('.mye-dropdown-menu').forEach(m => {
                 if (m !== menu) m.classList.remove('show');
             });
-            document.querySelectorAll('.mye-nav-item, .searchBar').forEach(nav => {
+            document.querySelectorAll('.mye-nav-item, .mye-profile-pill, .searchBar').forEach(nav => {
                 if (nav !== item) {
                     nav.classList.remove('active');
                     if (nav.classList.contains('searchBar')) nav.classList.remove('mye-search-active');
@@ -313,7 +336,7 @@ function initCustomHeaderEvents() {
     // Fermer les dropdowns quand on clique ailleurs
     document.addEventListener('click', (e) => {
         // Fermer les popups de menu
-        document.querySelectorAll('.mye-nav-item').forEach(nav => nav.classList.remove('active'));
+        document.querySelectorAll('.mye-nav-item, .mye-profile-pill').forEach(nav => nav.classList.remove('active'));
         document.querySelectorAll('.mye-dropdown-menu').forEach(menu => menu.classList.remove('show'));
 
         // Fermer la barre de recherche d'origine CSS-teleportée si on clique ailleurs
@@ -474,13 +497,7 @@ function initCustomHeaderEvents() {
         }
     };
 
-    const profileBtn = document.getElementById('mye-profile-btn');
-    if (profileBtn) {
-        profileBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            triggerOriginalProfileClick();
-        });
-    }
+    // Retrait de triggerOriginalProfileClick() sur profileBtn, géré via mye-has-dropdown
 
     // TIROIR MOBILE (DRAWER) ÉVÉNEMENTS
     const hamburgerBtn = document.getElementById('mye-hamburger-btn');
@@ -535,6 +552,38 @@ function initCustomHeaderEvents() {
         }
         console.error("Option originale non trouvée pour :", searchText);
     };
+
+    // Theme toggle
+    const themeToggleBtn = document.getElementById('mye-theme-toggle');
+    const themeSwitch = document.getElementById('mye-theme-switch');
+    if (themeToggleBtn && themeSwitch) {
+        themeToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isDark = document.body.classList.toggle('dark-mode');
+            document.documentElement.classList.toggle('dark-mode', isDark);
+            themeSwitch.classList.toggle('active', isDark);
+            localStorage.setItem('mye-theme', isDark ? 'dark' : 'light');
+        });
+    }
+
+    // Gérer mon compte / Se déconnecter (bureau)
+    const deskAccountBtn = document.getElementById('mye-desk-account');
+    if (deskAccountBtn) {
+        deskAccountBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('mye-dropdown-profile').classList.remove('show');
+            setTimeout(() => clickOriginalByText("Gérer mon compte"), 350);
+        });
+    }
+
+    const deskLogoutBtn = document.getElementById('mye-desk-logout');
+    if (deskLogoutBtn) {
+        deskLogoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('mye-dropdown-profile').classList.remove('show');
+            setTimeout(() => clickOriginalByText("Se déconnecter"), 350);
+        });
+    }
 
     const mobAccountBtn = document.getElementById('mye-mob-account');
     if (mobAccountBtn) {

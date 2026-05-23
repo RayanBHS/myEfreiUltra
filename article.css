@@ -237,3 +237,64 @@
     transform: translateY(0);
   }
 }
+
+/* ==========================================================================
+   OLED BLACK DARK MODE
+   ========================================================================== */
+
+body.dark-mode .mye-article-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-article-back-btn {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-article-back-btn:hover {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mye-article-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-article-info-bar {
+  border-top-color: #333333 !important;
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mye-article-date,
+body.dark-mode .mye-article-author {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-article-tag {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-article-body h1,
+body.dark-mode .mye-article-body h2,
+body.dark-mode .mye-article-body h3 {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-article-body p,
+body.dark-mode .mye-article-body li {
+  color: #dddddd !important;
+}
+
+body.dark-mode .mye-article-body a {
+  color: #007aff !important;
+}
+
+body.dark-mode .mye-article-body li::before {
+  color: #007aff !important;
+}
+
+body.dark-mode .mye-article-spinner {
+  color: #aaaaaa !important;
+}

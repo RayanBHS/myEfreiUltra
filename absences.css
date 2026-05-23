@@ -207,3 +207,33 @@ body.dark-mode .mye-absences-title-section {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   OLED BLACK DARK MODE
+   ========================================================================== */
+
+body.dark-mode #mye-absences-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-absence-card {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-absence-top {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-mode .mye-absence-bottom {
+  background-color: #0a0a0a !important;
+}
+
+body.dark-mode .mye-absence-course {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-absence-date {
+  color: #aaaaaa !important;
+}

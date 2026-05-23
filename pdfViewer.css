@@ -347,3 +347,81 @@
   overflow: hidden;
   position: relative;
 }
+
+/* ==========================================================================
+   OLED BLACK DARK MODE
+   ========================================================================== */
+
+body.dark-mode .mye-pdf-overlay {
+  background-color: rgba(0,0,0,0.9) !important;
+}
+
+body.dark-mode .mye-pdf-modal {
+  background-color: #000000 !important;
+  border-color: #333333 !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8) !important;
+}
+
+body.dark-mode .mye-pdf-toolbar {
+  background-color: #1a1a1a !important;
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mye-pdf-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-pdf-indicator {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-pdf-btn {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-pdf-btn:hover {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mye-pdf-btn:disabled {
+  color: #555555 !important;
+}
+
+body.dark-mode .mye-pdf-btn-download {
+  background-color: #007aff !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-pdf-btn-download:hover {
+  background-color: #005bb5 !important;
+}
+
+body.dark-mode .mye-pdf-btn-close {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-pdf-btn-close:hover {
+  background-color: #555555 !important;
+}
+
+body.dark-mode .mye-pdf-body {
+  background-color: #0a0a0a !important;
+}
+
+body.dark-mode .mye-pdf-page-wrapper {
+  background-color: #ffffff !important; /* The PDF page itself should stay white */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+}
+
+body.dark-mode .mye-pdf-loader-overlay, 
+body.dark-mode .mye-pdf-error-overlay {
+  background-color: #000000 !important;
+}
+
+body.dark-mode .mye-pdf-loading-text,
+body.dark-mode .mye-pdf-error-title,
+body.dark-mode .mye-pdf-error-desc {
+  color: #ffffff !important;
+}

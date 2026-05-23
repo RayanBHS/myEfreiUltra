@@ -1262,3 +1262,168 @@
  } 
   
  
+/* ==========================================================================
+   OLED BLACK DARK MODE
+   ========================================================================== */
+
+body.dark-mode #mye-planning-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-cal-sidebar {
+  background-color: #000000 !important;
+  border-right-color: #333333 !important;
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mye-sidebar-card {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .mac-cal-sidebar-title,
+body.dark-mode .mye-cal-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-planning-gauge-bg {
+  stroke: #333333 !important;
+}
+
+body.dark-mode .mye-planning-gauge-text span,
+body.dark-mode .mye-stat-value {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-planning-gauge-text small,
+body.dark-mode .mye-stat-label {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-cal-header-top {
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mye-cal-day-col {
+  border-right-color: #333333 !important;
+}
+
+body.dark-mode .mye-cal-day-col:last-child {
+  border-right: none !important;
+}
+
+body.dark-mode .mye-cal-day-header {
+  border-bottom-color: #333333 !important;
+  background-color: #000000 !important;
+}
+
+body.dark-mode .mye-cal-day-name,
+body.dark-mode .mye-cal-day-number {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-cal-hour-label {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-cal-grid-lines {
+  border-top-color: #333333 !important;
+}
+
+body.dark-mode .mye-cal-grid-lines::after {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mye-event {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .mye-event-time {
+  color: rgba(255,255,255,0.8) !important;
+}
+
+body.dark-mode .mye-modal-content {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+}
+
+body.dark-mode .mye-modal-close {
+  background-color: rgba(255,255,255,0.1) !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-modal-close:hover {
+  background-color: rgba(255,255,255,0.2) !important;
+}
+
+body.dark-mode .mye-event-tooltip {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+}
+
+body.dark-mode .mye-tooltip-room,
+body.dark-mode .mye-tooltip-teacher {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-nav-arrow {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-nav-arrow:hover {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mye-today-btn {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-today-btn:hover {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mye-cal-view-selector {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-cal-view-btn {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-cal-view-btn.active {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+}
+
+body.dark-mode .mye-empty-day {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-month-day-cell {
+  border-bottom-color: #333333 !important;
+  border-right-color: #333333 !important;
+}
+
+body.dark-mode .mye-month-day-number {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-month-day-cell.other-month .mye-month-day-number {
+  color: #555555 !important;
+}
+
+body.dark-mode .mye-month-more-events {
+  color: #aaaaaa !important;
+}

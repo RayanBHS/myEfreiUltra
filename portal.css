@@ -1,4 +1,4 @@
-﻿/* =============================================
+/* =============================================
    MYEFREI — Interface Personnalisée v8 (Portail)
    ============================================= */
 
@@ -165,6 +165,17 @@
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, 0);
+}
+
+/* Fix spécifique pour le menu de profil (aligné à droite pour ne pas déborder) */
+#mye-dropdown-profile {
+  left: auto;
+  right: 0;
+  transform: translate(0, -10px);
+}
+
+#mye-dropdown-profile.show {
+  transform: translate(0, 0);
 }
 
 .mye-dropdown-link {
@@ -1004,3 +1015,140 @@ body.mye-clean-screen {
   }
 }
 
+/* ==========================================================================
+   OLED BLACK DARK MODE
+   ========================================================================== */
+
+/* Toggle Switch Styles */
+.mye-theme-toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mye-switch {
+  width: 44px;
+  height: 24px;
+  background-color: #e5e5ea;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.mye-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.3s;
+}
+
+.mye-switch.active {
+  background-color: #34c759;
+}
+
+.mye-switch.active::after {
+  transform: translateX(20px);
+}
+
+/* Dark Mode Overrides */
+html.dark-mode, body.dark-mode {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode.mye-clean-screen {
+  background-color: #000000 !important;
+}
+
+body.dark-mode #mye-custom-header {
+  background-color: #000000 !important;
+  border: 1px solid #333333;
+  box-shadow: 0 4px 15px rgba(255,255,255,0.05);
+}
+
+body.dark-mode .mye-profile-pill {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-profile-first {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-profile-last {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-dropdown-menu,
+body.dark-mode .MuiPaper-root {
+  background-color: #000000 !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-dropdown-link,
+body.dark-mode .MuiMenuItem-root,
+body.dark-mode .MuiAutocomplete-option,
+body.dark-mode #simple-popper-efrei > div > div > div:nth-child(2) {
+  color: #dddddd !important;
+}
+
+body.dark-mode .mye-dropdown-link:hover,
+body.dark-mode .MuiMenuItem-root:hover,
+body.dark-mode .MuiAutocomplete-option[aria-selected="true"], 
+body.dark-mode .MuiAutocomplete-option:hover {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .searchBar.mye-search-active {
+  background-color: #000000 !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .searchBar.mye-search-active input {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-mobile-drawer {
+  background-color: #000000 !important;
+  border-left: 1px solid #333333 !important;
+}
+
+body.dark-mode .mye-drawer-profile,
+body.dark-mode .mye-drawer-item {
+  border-bottom-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-drawer-profile:hover,
+body.dark-mode .mye-drawer-item:hover {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-mode .mye-drawer-submenu,
+body.dark-mode .mye-drawer-collapsible.expanded .mye-drawer-trigger {
+  background-color: #0a0a0a !important;
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mye-drawer-subitem {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-drawer-subitem:hover {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-mode #simple-popper-efrei .MuiTypography-root:first-child {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-bottom-color: #333333 !important;
+}
