@@ -122,6 +122,14 @@
         </div>
       `;
       
+      card.addEventListener('click', (e) => {
+        // Ne pas déclencher le clic si on fait défiler les tags
+        if (e.target.closest('.mye-news-tags')) return;
+        
+        const url = item.url || `/portal/common/news/${item._id}`;
+        window.location.href = url;
+      });
+      
       grid.appendChild(card);
       animationObserver.observe(card);
 
@@ -222,12 +230,16 @@
     }, 5000);
   }
 
+  function isNewsListPage() {
+    return window.location.pathname === '/portal/common/news' || window.location.pathname === '/portal/common/news/';
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      if (window.location.pathname.includes('/portal/common/news')) waitAndInit();
+      if (isNewsListPage()) waitAndInit();
     });
   } else {
-    if (window.location.pathname.includes('/portal/common/news')) waitAndInit();
+    if (isNewsListPage()) waitAndInit();
   }
 
   let lastUrl = window.location.href;
@@ -235,7 +247,7 @@
     if (lastUrl !== window.location.href) {
       lastUrl = window.location.href;
       
-      if (window.location.pathname.includes('/portal/common/news')) {
+      if (isNewsListPage()) {
         if (!document.getElementById('mye-news-container')) {
           waitAndInit();
         } else {

@@ -42,16 +42,22 @@
   height: 100%;
   min-width: 0; /* Force la carte à ne pas s'élargir en fonction du contenu (ex: tags longs) */
   box-sizing: border-box;
+  cursor: pointer;
   
   /* Initial state for animation */
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
 }
 
 .mye-news-card.mye-news-card-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.mye-news-card.mye-news-card-visible:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 83, 204, 0.3);
 }
 
 .mye-news-image-wrapper {
