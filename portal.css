@@ -1,21 +1,7 @@
-/* =============================================
+﻿/* =============================================
    MYEFREI — Interface Personnalisée v8 (Portail)
    ============================================= */
 
-/* ── Police Alliance No.2 (fichiers locaux dans Police/) ── */
-@font-face {
-  font-family: 'Alliance No.2';
-  src: url('Police/Alliance No.2 Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Alliance No.2';
-  src: url('Police/Alliance No.2 Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-}
 
 /* ══════════════════════════════════════
    HEADER PERSONNALISÉ

@@ -714,8 +714,8 @@
 
 .mye-planning-gauge-wrapper {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 180px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -728,15 +728,15 @@
 .mye-planning-gauge-bg {
   fill: none;
   stroke: #e5e5ea;
-  stroke-width: 8;
+  stroke-width: 12;
 }
 
 .mye-planning-gauge-fill {
   fill: none;
   stroke: #007aff;
-  stroke-width: 8;
-  stroke-dasharray: 314.159;
-  stroke-dashoffset: 314.159;
+  stroke-width: 12;
+  stroke-dasharray: 502.654;
+  stroke-dashoffset: 502.654;
   stroke-linecap: round;
   transition: stroke-dashoffset 1s ease-out;
 }
@@ -750,17 +750,17 @@
 }
 
 .mye-planning-gauge-text span {
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 700;
   color: #1d1d1f;
   line-height: 1;
 }
 
 .mye-planning-gauge-text small {
-  font-size: 11px;
+  font-size: 14px;
   color: #86868b;
   font-weight: 500;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .mye-countdown-list {

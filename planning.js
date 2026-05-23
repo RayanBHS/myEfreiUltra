@@ -518,12 +518,11 @@
       <div class="mac-cal-sidebar" style="border-right: none;">
         <div class="mac-cal-sidebar-section" style="height: 100%; display: flex; flex-direction: column; padding-bottom: 20px;">
           <div class="mye-sidebar-card" style="flex: 1; display: flex; flex-direction: column; margin-bottom: 0;">
-            <div class="mac-cal-sidebar-title">Charge & Événements</div>
             <div class="mye-planning-stats">
               <div class="mye-planning-gauge-wrapper">
-                <svg width="120" height="120" viewBox="0 0 120 120" class="mye-planning-gauge">
-                  <circle cx="60" cy="60" r="50" class="mye-planning-gauge-bg"></circle>
-                  <circle cx="60" cy="60" r="50" class="mye-planning-gauge-fill" id="mye-planning-arc"></circle>
+                <svg width="180" height="180" viewBox="0 0 180 180" class="mye-planning-gauge">
+                  <circle cx="90" cy="90" r="80" class="mye-planning-gauge-bg"></circle>
+                  <circle cx="90" cy="90" r="80" class="mye-planning-gauge-fill" id="mye-planning-arc"></circle>
                 </svg>
                 <div class="mye-planning-gauge-text">
                   <span id="mye-planning-hours">0</span>
@@ -1511,7 +1510,7 @@
       if (state.currentView === 'month') maxHours = 140;
       
       const ratio = Math.min(hours / maxHours, 1);
-      const CIRCUMFERENCE = 314.159; // r=50 -> 2*PI*50
+      const CIRCUMFERENCE = 502.654; // r=80 -> 2*PI*80
       const offset = CIRCUMFERENCE * (1 - ratio);
       arc.style.strokeDashoffset = offset;
     }
