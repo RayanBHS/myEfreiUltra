@@ -1284,7 +1284,14 @@
     let isThin = heightPx < 70;
 
     if (ev.type && heightPx > 20) {
-      typePill = `<div class="mye-event-type-pill" style="${isThin ? 'margin-right: 4px; flex-shrink: 0;' : 'margin-bottom: 2px; align-self: flex-start;'}">${escapeHTML(ev.type)}</div>`;
+      let timerHtml = '';
+      if (diffMs > 65 * 60 * 1000) {
+        timerHtml = `<div class="mye-course-timer" data-start="${ev.start.getTime()}" data-end="${ev.end.getTime()}" style="display: none; background: #ff3b30; color: white; border-radius: 6px; padding: 2px 6px; font-size: 10px; font-weight: 700; margin-left: 6px; font-variant-numeric: tabular-nums; box-shadow: 0 2px 4px rgba(255, 59, 48, 0.3); letter-spacing: 0.5px; white-space: nowrap;"></div>`;
+      }
+      typePill = `<div style="display: flex; align-items: center; ${isThin ? 'margin-right: 4px; flex-shrink: 0;' : 'margin-bottom: 2px; align-self: flex-start;'}">
+        <div class="mye-event-type-pill" style="margin: 0;">${escapeHTML(ev.type)}</div>
+        ${timerHtml}
+      </div>`;
     }
 
     let innerHTML = '';
@@ -1715,5 +1722,23 @@
       }
     }
   }, 500);
+
+  setInterval(() => {
+    const now = Date.now();
+    document.querySelectorAll('.mye-course-timer').forEach(timer => {
+      const start = parseInt(timer.getAttribute('data-start'));
+      const end = parseInt(timer.getAttribute('data-end'));
+      if (now >= start && now <= end) {
+        timer.style.display = 'inline-block';
+        const diff = end - now;
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        timer.textContent = `${h}h ${m}min ${s}s`;
+      } else {
+        timer.style.display = 'none';
+      }
+    });
+  }, 1000);
 
 })();
