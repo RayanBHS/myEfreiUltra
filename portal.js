@@ -538,7 +538,6 @@ function initCustomHeaderEvents() {
     });
 
     // Clic procuration pour les boutons du sous-menu profil mobile
-    // Clic procuration pour les boutons du sous-menu profil mobile
     const clickOriginalByText = (searchText) => {
         // Le bouton de déconnexion d'Efrei a souvent l'attribut role="logoutButton"
         if (searchText.toLowerCase().includes("déconnecter")) {
@@ -546,6 +545,19 @@ function initCustomHeaderEvents() {
             if (logoutBtn) {
                 logoutBtn.click();
                 return;
+            }
+        }
+        
+        // Pour "Gérer mon compte", le texte varie (invité, étudiant, profil...)
+        // On cible le premier élément du menu de profil qui est généralement le lien du compte
+        if (searchText.toLowerCase().includes("compte")) {
+            const profileMenu = document.querySelector('[role="profileMenu"]');
+            if (profileMenu) {
+                const firstItem = profileMenu.querySelector('[role="menuitem"], .MuiMenuItem-root');
+                if (firstItem) {
+                    firstItem.click();
+                    return;
+                }
             }
         }
 
