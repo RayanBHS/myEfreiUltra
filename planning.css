@@ -1206,7 +1206,8 @@
    OLED BLACK DARK MODE
    ========================================================================== */
 
-body.dark-mode #mye-planning-container {
+body.dark-mode #mye-planning-container,
+body.dark-mode #mye-calendars-container {
   background-color: #000000 !important;
   color: #ffffff !important;
 }
