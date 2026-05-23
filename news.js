@@ -1,0 +1,253 @@
+// =============================================
+//  MYEFREI ULTRA — News Page (news.js)
+// =============================================
+
+(function () {
+  'use strict';
+
+  let currentPage = 0;
+  let isLoading = false;
+  let hasMore = true;
+
+  // Intersection Observer for scroll animation (fade-in)
+  const animationObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('mye-news-card-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  // Intersection Observer for infinite scrolling
+  const infiniteScrollObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !isLoading && hasMore) {
+      fetchNextPage();
+    }
+  }, { rootMargin: '200px' });
+
+  async function fetchNextPage() {
+    if (isLoading || !hasMore) return;
+    isLoading = true;
+    showSpinner();
+
+    try {
+      const res = await fetch(`/api/rest/common/news?page=${currentPage}`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch news');
+      const data = await res.json();
+      
+      let items = [];
+      if (Array.isArray(data)) {
+        items = data;
+        if (items.length === 0) hasMore = false;
+      } else if (data && data.content && Array.isArray(data.content)) {
+        items = data.content;
+        hasMore = !data.last;
+      } else if (data && data.data && Array.isArray(data.data)) {
+        items = data.data;
+      } else if (data && data.items && Array.isArray(data.items)) {
+        items = data.items;
+      } else if (data && data.news && Array.isArray(data.news)) {
+        items = data.news;
+      }
+
+      if (items.length > 0) {
+        renderNewsItems(items);
+        currentPage++;
+      } else {
+        hasMore = false;
+        if (currentPage === 0) {
+          const grid = document.getElementById('mye-news-grid');
+          if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; background:#333; color:#0f0; padding:20px; font-family:monospace; border-radius:10px; overflow:auto;">DEBUG DATA:<br>${JSON.stringify(data, null, 2)}</div>`;
+        }
+      }
+    } catch (e) {
+      console.error('Erreur chargement news:', e);
+      if (currentPage === 0) {
+        const grid = document.getElementById('mye-news-grid');
+        if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; background:#f00; color:#fff; padding:20px; border-radius:10px;">ERREUR FETCH: ${e.message}</div>`;
+      }
+    }
+
+    isLoading = false;
+    hideSpinner();
+  }
+
+  function renderNewsItems(items) {
+    const grid = document.getElementById('mye-news-grid');
+    if (!grid) return;
+
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'mye-news-card';
+      
+      const title = item.title || 'Actualité';
+      const description = item.head || item.description || item.summary || item.text || '';
+      
+      const idSuffix = item._id || Math.random().toString(36).substr(2, 9);
+      
+      let imgUrl = item.picture ? `/api/rest/common/news/images/thumbnail/${item.picture}` : '';
+      
+      let imgHtml = '';
+      if (imgUrl) {
+        imgHtml = `<div class="mye-news-image-wrapper" id="mye-news-img-wrapper-${idSuffix}">
+                     <div class="mye-news-placeholder-image">Chargement...</div>
+                   </div>`;
+      } else {
+        imgHtml = `<div class="mye-news-image-wrapper"><div class="mye-news-placeholder-image">Pas d'image</div></div>`;
+      }
+
+      const dateStr = item.publicationDate || item.date || item.createdAt;
+      let dateHtml = '';
+      if (dateStr) {
+        const d = new Date(dateStr);
+        if (!isNaN(d)) {
+          dateHtml = `<div class="mye-news-date">${d.toLocaleDateString('fr-FR')}</div>`;
+        }
+      }
+
+      let tagsHtml = '';
+      if (item.tags && Array.isArray(item.tags) && item.tags.length > 0) {
+        const tagsStr = item.tags.map(t => `<span class="mye-news-tag">${t.replace(/</g, '&lt;')}</span>`).join('');
+        tagsHtml = `<div class="mye-news-tags">${tagsStr}</div>`;
+      }
+
+      card.innerHTML = `
+        ${imgHtml}
+        <div class="mye-news-content">
+          <h3 class="mye-news-title" title="${title.replace(/"/g, '&quot;')}">${title}</h3>
+          ${dateHtml}
+          <div class="mye-news-desc">${description}</div>
+          ${tagsHtml}
+        </div>
+      `;
+      
+      grid.appendChild(card);
+      animationObserver.observe(card);
+
+      // Si une image est présente, on la charge asynchrone pour gérer le format (base64 brut ou binaire)
+      if (imgUrl) {
+        fetch(imgUrl)
+          .then(res => {
+            if (!res.ok) throw new Error('Image fetch failed');
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('image/')) {
+              return res.blob().then(blob => URL.createObjectURL(blob));
+            } else {
+              return res.text().then(txt => txt.startsWith('data:') ? txt : `data:image/jpeg;base64,${txt}`);
+            }
+          })
+          .then(src => {
+            const wrapper = document.getElementById(`mye-news-img-wrapper-${idSuffix}`);
+            if (wrapper) {
+              wrapper.innerHTML = `<img src="${src}" alt="${title.replace(/"/g, '&quot;')}" class="mye-news-image" style="opacity:0; transition:opacity 0.3s ease;" onload="this.style.opacity=1">`;
+            }
+          })
+          .catch(err => {
+            const wrapper = document.getElementById(`mye-news-img-wrapper-${idSuffix}`);
+            if (wrapper) wrapper.innerHTML = `<div class="mye-news-placeholder-image">Pas d'image</div>`;
+          });
+      }
+    });
+  }
+
+  function showSpinner() {
+    const spinner = document.getElementById('mye-news-spinner');
+    if (spinner) spinner.style.display = 'flex';
+  }
+
+  function hideSpinner() {
+    const spinner = document.getElementById('mye-news-spinner');
+    if (spinner) spinner.style.display = 'none';
+  }
+
+  function buildPageStructure() {
+    if (document.getElementById('mye-news-container')) return;
+    
+    document.body.classList.add('mye-clean-screen');
+
+    const container = document.createElement('div');
+    container.id = 'mye-news-container';
+    container.className = 'mye-page-container';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'center';
+    
+    container.innerHTML = `
+      <div class="mye-news-header">
+        <h1 class="mye-news-main-title">Actualités</h1>
+      </div>
+      <div id="mye-news-grid" class="mye-news-grid"></div>
+      <div id="mye-news-spinner" class="mye-news-spinner" style="display:none;">
+        <div class="mye-spinner-icon"></div>
+      </div>
+      <div id="mye-news-sentinel" style="height: 20px; width: 100%;"></div>
+    `;
+
+    document.body.appendChild(container);
+    
+    const sentinel = document.getElementById('mye-news-sentinel');
+    if (sentinel) {
+      infiniteScrollObserver.observe(sentinel);
+    }
+  }
+
+  function init() {
+    console.log('📰 Initialisation de la page Actualités...');
+    buildPageStructure();
+    currentPage = 0;
+    hasMore = true;
+    const grid = document.getElementById('mye-news-grid');
+    if (grid) grid.innerHTML = '';
+    fetchNextPage();
+  }
+
+  function waitAndInit() {
+    document.body.classList.add('mye-clean-screen');
+
+    const checkHeader = setInterval(() => {
+      if (document.getElementById('mye-custom-header-wrapper') || document.getElementById('mye-custom-header')) {
+        clearInterval(checkHeader);
+        if (!document.getElementById('mye-news-container')) {
+          setTimeout(init, 200);
+        }
+      }
+    }, 200);
+
+    setTimeout(() => {
+      clearInterval(checkHeader);
+      if (!document.getElementById('mye-news-container')) {
+        init();
+      }
+    }, 5000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.location.pathname.includes('/portal/common/news')) waitAndInit();
+    });
+  } else {
+    if (window.location.pathname.includes('/portal/common/news')) waitAndInit();
+  }
+
+  let lastUrl = window.location.href;
+  setInterval(() => {
+    if (lastUrl !== window.location.href) {
+      lastUrl = window.location.href;
+      
+      if (window.location.pathname.includes('/portal/common/news')) {
+        if (!document.getElementById('mye-news-container')) {
+          waitAndInit();
+        } else {
+          document.body.classList.add('mye-clean-screen');
+          document.getElementById('mye-news-container').style.display = 'flex';
+        }
+      } else {
+        document.body.classList.remove('mye-clean-screen');
+        const container = document.getElementById('mye-news-container');
+        if (container) container.style.display = 'none';
+      }
+    }
+  }, 500);
+
+})();

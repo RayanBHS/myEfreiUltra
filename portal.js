@@ -729,7 +729,7 @@ function extractOriginalAssets() {
 
     startDOMScraping();
     injectMainWorldBridge();
-    fetchProfileFromAPI();
+    // fetchProfileFromAPI(); // Removed because it returns 404
 }
 
 function injectCustomHeader() {
