@@ -248,7 +248,7 @@
     const container = document.createElement('div');
     container.id = 'mye-news-container';
     container.className = 'mye-page-container';
-    container.style.display = 'flex';
+    container.style.display = 'block';
     container.style.flexDirection = 'column';
     container.style.alignItems = 'center';
     
@@ -356,12 +356,15 @@
           waitAndInit();
         } else {
           document.body.classList.add('mye-clean-screen');
-          document.getElementById('mye-news-container').style.display = 'flex';
+          document.getElementById('mye-news-container').style.display = 'block';
         }
       } else {
-        document.body.classList.remove('mye-clean-screen');
         const container = document.getElementById('mye-news-container');
         if (container) container.style.display = 'none';
+        
+        if (!window.location.pathname.match(/\/portal\/common\/news\/([a-f0-9]+)/i)) {
+          document.body.classList.remove('mye-clean-screen');
+        }
       }
     }
   }, 500);
