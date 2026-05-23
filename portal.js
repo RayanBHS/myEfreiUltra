@@ -538,14 +538,27 @@ function initCustomHeaderEvents() {
     });
 
     // Clic procuration pour les boutons du sous-menu profil mobile
+    // Clic procuration pour les boutons du sous-menu profil mobile
     const clickOriginalByText = (searchText) => {
-        const elements = document.querySelectorAll('span, p, h6, a');
+        // Le bouton de déconnexion d'Efrei a souvent l'attribut role="logoutButton"
+        if (searchText.toLowerCase().includes("déconnecter")) {
+            const logoutBtn = document.querySelector('[role="logoutButton"]');
+            if (logoutBtn) {
+                logoutBtn.click();
+                return;
+            }
+        }
+
+        const elements = document.querySelectorAll('span, p, h6, a, div, li');
         for (const el of elements) {
+            // Ignorer le DOM trop haut pour éviter des correspondances accidentelles
+            if (el.children.length > 2) continue;
+
             if (el.textContent.trim().toLowerCase().includes(searchText.toLowerCase())) {
                 // Ignorer les éléments qui font partie de notre extension
                 if (el.closest('#mye-custom-header-wrapper')) continue;
                 
-                const btn = el.closest('button, [role="button"], .MuiButtonBase-root, .MuiMenuItem-root') || el;
+                const btn = el.closest('button, [role="button"], .MuiButtonBase-root, .MuiMenuItem-root, [role="logoutButton"], [role="menuitem"]') || el;
                 btn.click();
                 return;
             }
@@ -572,7 +585,8 @@ function initCustomHeaderEvents() {
         deskAccountBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             document.getElementById('mye-dropdown-profile').classList.remove('show');
-            setTimeout(() => clickOriginalByText("Gérer mon compte"), 350);
+            triggerOriginalProfileClick();
+            setTimeout(() => clickOriginalByText("Gérer mon compte"), 100);
         });
     }
 
@@ -581,7 +595,8 @@ function initCustomHeaderEvents() {
         deskLogoutBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             document.getElementById('mye-dropdown-profile').classList.remove('show');
-            setTimeout(() => clickOriginalByText("Se déconnecter"), 350);
+            triggerOriginalProfileClick();
+            setTimeout(() => clickOriginalByText("Se déconnecter"), 100);
         });
     }
 
@@ -590,7 +605,8 @@ function initCustomHeaderEvents() {
         mobAccountBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             closeDrawer();
-            setTimeout(() => clickOriginalByText("Gérer mon compte"), 350);
+            triggerOriginalProfileClick();
+            setTimeout(() => clickOriginalByText("Gérer mon compte"), 100);
         });
     }
 
@@ -599,7 +615,8 @@ function initCustomHeaderEvents() {
         mobLogoutBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             closeDrawer();
-            setTimeout(() => clickOriginalByText("Se déconnecter"), 350);
+            triggerOriginalProfileClick();
+            setTimeout(() => clickOriginalByText("Se déconnecter"), 100);
         });
     }
 }

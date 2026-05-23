@@ -422,7 +422,13 @@ body.mye-clean-screen {
 }
 
 /* STYLISATION DU POPUP DE PROFIL ORIGINAL */
-/* On cible le conteneur Popper et on désactive le transform en ligne de React */
+/* On cible le conteneur Popper et on le cache complètement car on a notre propre menu maintenant */
+[role="dropDownMenu"].MuiPopperUnstyled-root {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 [role="dropDownMenu"].MuiPopperUnstyled-root .MuiPaper-root {
   background-color: white !important;
   border: 2px solid #1d3b64 !important;
