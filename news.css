@@ -23,6 +23,90 @@
   margin: 0;
 }
 
+/* Filters */
+.mye-news-filters-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.mye-news-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  padding: 5px 0;
+  scroll-behavior: smooth;
+}
+
+.mye-news-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.mye-news-filter-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #1a365d;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 10;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.mye-news-filter-arrow:hover {
+  background-color: #f8fafc;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.mye-news-filter-arrow.left {
+  left: -15px;
+}
+
+.mye-news-filter-arrow.right {
+  right: -15px;
+}
+
+.mye-news-filter-btn {
+  background-color: #f0f4f8; /* Très léger bleu/gris pour inactif */
+  color: #1a365d; /* Bleu marine foncé */
+  border: none;
+  border-radius: 999px; /* Forme pilule parfaite */
+  padding: 10px 24px; /* Plus d'espace sur les côtés */
+  font-family: 'Alliance No.2 Bold', -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.mye-news-filter-btn:hover {
+  background-color: #e2e8f0;
+}
+
+.mye-news-filter-btn.active {
+  background-color: #1a365d; /* Bleu marine foncé pour actif */
+  color: #ffffff;
+}
+
 .mye-news-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

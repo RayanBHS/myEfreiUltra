@@ -8,6 +8,8 @@
   let currentPage = 0;
   let isLoading = false;
   let hasMore = true;
+  let allKnownTags = new Set();
+  let currentFilter = 'TOUTES';
 
   // Intersection Observer for scroll animation (fade-in)
   const animationObserver = new IntersectionObserver((entries, observer) => {
@@ -73,13 +75,78 @@
     hideSpinner();
   }
 
+  function renderFilters() {
+    const filtersContainer = document.getElementById('mye-news-filters');
+    if (!filtersContainer) return;
+    
+    const tagsArray = Array.from(allKnownTags).sort();
+    
+    let html = `<button class="mye-news-filter-btn ${currentFilter === 'TOUTES' ? 'active' : ''}" data-tag="TOUTES">TOUTES</button>`;
+    tagsArray.forEach(tag => {
+      html += `<button class="mye-news-filter-btn ${currentFilter === tag ? 'active' : ''}" data-tag="${tag.replace(/"/g, '&quot;')}">${tag}</button>`;
+    });
+    
+    filtersContainer.innerHTML = html;
+    
+    // Allow DOM to update before checking scroll width
+    setTimeout(updateArrows, 50);
+  }
+
+  function updateArrows() {
+    const container = document.getElementById('mye-news-filters');
+    const leftArrow = document.getElementById('mye-filter-arrow-left');
+    const rightArrow = document.getElementById('mye-filter-arrow-right');
+    if (!container || !leftArrow || !rightArrow) return;
+    
+    if (container.scrollWidth > container.clientWidth) {
+      leftArrow.style.display = container.scrollLeft > 0 ? 'flex' : 'none';
+      rightArrow.style.display = container.scrollLeft < (container.scrollWidth - container.clientWidth - 1) ? 'flex' : 'none';
+    } else {
+      leftArrow.style.display = 'none';
+      rightArrow.style.display = 'none';
+    }
+  }
+
+  function setFilter(tag) {
+    currentFilter = tag;
+    renderFilters();
+    
+    const cards = document.querySelectorAll('.mye-news-card');
+    cards.forEach(card => {
+      const tagsAttr = card.getAttribute('data-tags') || '';
+      if (currentFilter === 'TOUTES' || tagsAttr.includes(`|${currentFilter}|`)) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
   function renderNewsItems(items) {
     const grid = document.getElementById('mye-news-grid');
     if (!grid) return;
+    
+    let newTagsAdded = false;
 
     items.forEach(item => {
+      if (item.tags && Array.isArray(item.tags)) {
+        item.tags.forEach(t => {
+          if (!allKnownTags.has(t)) {
+            allKnownTags.add(t);
+            newTagsAdded = true;
+          }
+        });
+      }
+
       const card = document.createElement('div');
       card.className = 'mye-news-card';
+      
+      const tagsStr = item.tags ? `|${item.tags.join('|')}|` : '';
+      card.setAttribute('data-tags', tagsStr);
+      
+      if (currentFilter !== 'TOUTES' && !tagsStr.includes(`|${currentFilter}|`)) {
+        card.style.display = 'none';
+      }
       
       const title = item.title || 'Actualité';
       const description = item.head || item.description || item.summary || item.text || '';
@@ -157,6 +224,10 @@
           });
       }
     });
+    
+    if (newTagsAdded) {
+      renderFilters();
+    }
   }
 
   function showSpinner() {
@@ -185,6 +256,11 @@
       <div class="mye-news-header">
         <h1 class="mye-news-main-title">Actualités</h1>
       </div>
+      <div class="mye-news-filters-wrapper" id="mye-news-filters-wrapper">
+        <button class="mye-news-filter-arrow left" id="mye-filter-arrow-left" style="display:none;">&#10094;</button>
+        <div id="mye-news-filters" class="mye-news-filters"></div>
+        <button class="mye-news-filter-arrow right" id="mye-filter-arrow-right" style="display:none;">&#10095;</button>
+      </div>
       <div id="mye-news-grid" class="mye-news-grid"></div>
       <div id="mye-news-spinner" class="mye-news-spinner" style="display:none;">
         <div class="mye-spinner-icon"></div>
@@ -193,6 +269,31 @@
     `;
 
     document.body.appendChild(container);
+    
+    const filtersContainer = document.getElementById('mye-news-filters');
+    if (filtersContainer) {
+      filtersContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mye-news-filter-btn')) {
+          setFilter(e.target.getAttribute('data-tag'));
+        }
+      });
+      filtersContainer.addEventListener('scroll', updateArrows);
+      window.addEventListener('resize', updateArrows);
+    }
+    
+    const leftArrow = document.getElementById('mye-filter-arrow-left');
+    if (leftArrow) {
+      leftArrow.addEventListener('click', () => {
+        if (filtersContainer) filtersContainer.scrollBy({ left: -300, behavior: 'smooth' });
+      });
+    }
+    
+    const rightArrow = document.getElementById('mye-filter-arrow-right');
+    if (rightArrow) {
+      rightArrow.addEventListener('click', () => {
+        if (filtersContainer) filtersContainer.scrollBy({ left: 300, behavior: 'smooth' });
+      });
+    }
     
     const sentinel = document.getElementById('mye-news-sentinel');
     if (sentinel) {
@@ -205,8 +306,11 @@
     buildPageStructure();
     currentPage = 0;
     hasMore = true;
+    allKnownTags.clear();
+    currentFilter = 'TOUTES';
     const grid = document.getElementById('mye-news-grid');
     if (grid) grid.innerHTML = '';
+    renderFilters();
     fetchNextPage();
   }
 
