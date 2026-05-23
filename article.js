@@ -67,16 +67,22 @@
         tagsHtml = metadata.tags.map(t => `<span class="mye-article-tag">${t}</span>`).join('');
       }
 
-      let dateHtml = '';
-      if (metadata.date) {
-        const d = new Date(metadata.date);
-        dateHtml = `<span>${d.toLocaleDateString('fr-FR')}</span>`;
+      const dateStr = metadata.publicationDate || metadata.date || metadata.createdAt;
+      let dateHtml = `Date d'écriture de l'article`;
+      if (dateStr) {
+        const d = new Date(dateStr);
+        if (!isNaN(d)) {
+          dateHtml = `Date d'écriture : ${d.toLocaleDateString('fr-FR')}`;
+        }
       }
+      
+      let authorHtml = metadata.author || 'Efrei Paris';
 
       let coverHtml = '';
-      if (metadata.picture) {
-        const imgUrl = `/api/rest/common/news/images/${metadata.picture}`;
-        coverHtml = `<div class="mye-news-image-wrapper" id="mye-article-cover-wrapper" style="width:100%; max-height:400px; margin-bottom:30px; border-radius:12px; overflow:hidden; display:flex; justify-content:center; align-items:center; background:#eee;">
+      if (metadata.picture || metadata.illustrationId) {
+        const picId = metadata.picture || metadata.illustrationId;
+        const imgUrl = `/api/rest/common/news/images/thumbnail/${picId}`;
+        coverHtml = `<div class="mye-article-cover-wrapper" id="mye-article-cover-wrapper">
                        <div class="mye-news-placeholder-image">Chargement de l'image...</div>
                      </div>`;
         
@@ -103,7 +109,7 @@
             const wrapper = document.getElementById('mye-article-cover-wrapper');
             if (wrapper) {
               wrapper.style.background = 'transparent';
-              wrapper.innerHTML = `<img src="${src}" alt="Cover" class="mye-article-cover" style="opacity:0; transition:opacity 0.3s ease; width:100%; max-height:400px; object-fit:cover; border-radius:12px;" onload="this.style.opacity=1">`;
+              wrapper.innerHTML = `<img src="${src}" alt="Cover" class="mye-article-cover" onload="this.style.opacity=1">`;
             }
           })
           .catch(err => {
@@ -115,18 +121,75 @@
 
       if (content) {
         content.innerHTML = `
-          ${coverHtml}
-          <div class="mye-article-meta">
-            ${dateHtml}
+          <div class="mye-article-header-card">
+            <h1 class="mye-article-title">${title}</h1>
+            ${coverHtml}
+          </div>
+          <div class="mye-article-info-bar">
+            <div class="mye-article-date">${dateHtml}</div>
+            <div class="mye-article-author">${authorHtml}</div>
+          </div>
+          <div class="mye-article-tags-row">
             ${tagsHtml}
           </div>
-          <h1 class="mye-article-title">${title}</h1>
           <div class="mye-article-body">
             ${htmlContent}
           </div>
         `;
         content.style.display = 'block';
         
+        const bodyEl = content.querySelector('.mye-article-body');
+        let currentGallery = null;
+        
+        Array.from(bodyEl.children).forEach(child => {
+          const imgs = child.querySelectorAll('img');
+          if (imgs.length === 0) {
+            currentGallery = null;
+            return;
+          }
+          
+          const clone = child.cloneNode(true);
+          Array.from(clone.querySelectorAll('img')).forEach(i => i.remove());
+          // Consider a child "pure" if it only has images and maybe empty text/br
+          const hasText = clone.textContent.trim().length > 0;
+          
+          if (!hasText) {
+            if (!currentGallery) {
+              currentGallery = document.createElement('div');
+              currentGallery.className = 'mye-article-gallery';
+              bodyEl.insertBefore(currentGallery, child);
+            }
+            Array.from(imgs).forEach(img => currentGallery.appendChild(img));
+            child.remove();
+          } else {
+            currentGallery = null;
+          }
+        });
+        
+        // --- CLEANUP EMPTY SPACES ---
+        const textElements = bodyEl.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6');
+        textElements.forEach(el => {
+          if (el.classList && el.classList.contains('mye-article-gallery')) return;
+          if (el.querySelector('img, iframe, video, audio')) return;
+          
+          const text = el.textContent.replace(/[\s\u00A0]/g, '');
+          if (text.length === 0) {
+            el.remove();
+          }
+        });
+        
+        const brs = bodyEl.querySelectorAll('br');
+        brs.forEach(br => {
+          let prev = br.previousSibling;
+          while (prev && prev.nodeType === 3 && prev.textContent.trim() === '') {
+            prev = prev.previousSibling;
+          }
+          if (prev && prev.nodeName === 'BR') {
+            br.remove();
+          }
+        });
+        // ----------------------------
+
         const contentImages = content.querySelectorAll('.mye-article-body img');
         contentImages.forEach(img => {
           const originalSrc = img.getAttribute('src');
