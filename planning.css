@@ -1427,3 +1427,322 @@ body.dark-mode .mye-month-day-cell.other-month .mye-month-day-number {
 body.dark-mode .mye-month-more-events {
   color: #aaaaaa !important;
 }
+/* Calendar UI Dark Mode */
+body.dark-mode .mac-cal-main,
+body.dark-mode .mac-cal-time-col,
+body.dark-mode .mac-cal-header,
+body.dark-mode .mac-cal-time-col-header,
+body.dark-mode .mac-cal-wrapper {
+  background-color: #000000 !important;
+}
+
+body.dark-mode .mye-cal-day-col {
+  background-color: #000000 !important;
+  border-right-color: #333333 !important;
+}
+
+/* Mini calendar dark mode */
+body.dark-mode .mac-minical-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-minical-nav button {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mac-minical-nav button:hover {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-minical-dow {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mac-minical-day {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-minical-day.selected-week {
+  background-color: rgba(255,255,255,0.15) !important;
+}
+
+body.dark-mode .mac-minical-day.today {
+  background-color: #ff3b30 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode #mye-settings-btn {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode #mye-settings-btn:hover {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mye-cal-header-top {
+  background-color: #000000 !important;
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mye-countdown-item {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-cd-value {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+/* Settings Modal Dark Mode */
+body.dark-mode .mye-modal {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-modal-header {
+  background-color: #000000 !important;
+}
+
+body.dark-mode .mye-modal-body {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-mode .mye-modal-body h4 {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-modal-footer {
+  background-color: #000000 !important;
+  border-top-color: #333333 !important;
+}
+
+body.dark-mode .mye-color-card {
+  background: #000000 !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-color-card:hover {
+  background: #111111 !important;
+}
+
+body.dark-mode .mye-color-card-header {
+  background: transparent !important;
+}
+
+body.dark-mode .mye-color-card-header:hover {
+  background: transparent !important;
+}
+
+body.dark-mode .mye-color-card-title,
+body.dark-mode span.mye-color-card-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-color-hex {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #555555 !important;
+}
+
+body.dark-mode .mye-reset-btn {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-reset-btn:hover {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-settings-row {
+  background-color: #000000 !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-settings-row > div:first-child {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-dual-slider-track {
+  background: #333333 !important;
+}
+
+body.dark-mode .mye-dual-slider-input::-webkit-slider-thumb {
+  background: #1a1a1a !important;
+  border-color: #555555 !important;
+}
+
+body.dark-mode .mye-dual-slider-input::-moz-range-thumb {
+  background: #1a1a1a !important;
+  border-color: #555555 !important;
+}
+
+body.dark-mode #mye-settings-reset {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode #mye-settings-reset:hover {
+  background-color: #444444 !important;
+}
+
+/* Calendar Toolbar Dark Mode */
+body.dark-mode .mac-cal-toolbar {
+  background-color: #000000 !important;
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mac-cal-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-cal-title span.year {
+  color: #aaaaaa !important;
+}
+
+/* View Toggles (Jour/Semaine/Mois wrapper) */
+body.dark-mode .mac-cal-view-toggles {
+  background-color: #1a1a1a !important;
+  box-shadow: none !important;
+}
+
+/* Toggles Buttons */
+body.dark-mode .mac-cal-toggle-btn {
+  background: transparent !important;
+  color: #aaaaaa !important;
+  border-color: transparent !important;
+}
+
+body.dark-mode .mac-cal-toggle-btn:hover {
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-cal-toggle-btn.active {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+}
+
+/* Nav Buttons (< Aujourd'hui >) */
+body.dark-mode .mac-cal-icon-btn,
+body.dark-mode .mac-cal-today-btn {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-cal-icon-btn:hover,
+body.dark-mode .mac-cal-today-btn:hover {
+  background-color: #333333 !important;
+}
+
+/* Month View New DA */
+
+/* 1. Header (Days of week) */
+.mac-cal-month-header {
+  text-align: center !important;
+  padding: 8px 0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid #d2d2d7 !important;
+}
+
+.mac-cal-month-header div {
+  padding-right: 0 !important;
+  text-transform: uppercase !important;
+}
+
+.mac-cal-month-header div:last-child {
+  color: #ff3b30 !important;
+}
+
+/* 2. Grid Cells */
+.mac-cal-month-date {
+  text-align: center !important;
+  padding-right: 0 !important;
+  margin-top: 2px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.mac-cal-month-cell:nth-child(7n) .mac-cal-month-date {
+  color: #ff3b30 !important;
+}
+
+.mac-cal-month-cell:nth-child(7n).mac-cal-month-cell-dim .mac-cal-month-date {
+  color: #ff8b85 !important;
+}
+
+/* 3. Today Date Highlight */
+.mac-cal-month-date.today {
+  color: #ffffff !important;
+  background-color: #1a1a1a !important; /* Black pill for light mode */
+  border-radius: 4px !important;
+  display: inline-block !important;
+  padding: 2px 6px !important;
+  margin: 0 auto 4px auto !important;
+}
+
+/* Wrapper to allow centered pill to behave like block */
+.mac-cal-month-cell {
+  text-align: center !important;
+}
+
+.mac-cal-month-events {
+  text-align: left !important;
+}
+
+/* 4. Events */
+.mac-cal-month-event {
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  margin-bottom: 1px !important;
+}
+
+/* 5. Dark mode overrides */
+body.dark-mode .mac-cal-month-header {
+  background-color: #000000 !important;
+  border-bottom-color: #333333 !important;
+}
+
+body.dark-mode .mac-cal-month-header div {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-cal-month-header div:last-child {
+  color: #ff3b30 !important;
+}
+
+body.dark-mode .mac-cal-month-grid {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mac-cal-month-cell {
+  background-color: #000000 !important;
+}
+
+body.dark-mode .mac-cal-month-date {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mac-cal-month-cell:nth-child(7n) .mac-cal-month-date {
+  color: #ff3b30 !important;
+}
+
+body.dark-mode .mac-cal-month-cell-dim .mac-cal-month-date {
+  color: #555555 !important;
+}
+
+body.dark-mode .mac-cal-month-cell:nth-child(7n).mac-cal-month-cell-dim .mac-cal-month-date {
+  color: #88221b !important;
+}
+
+body.dark-mode .mac-cal-month-date.today {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+body.dark-mode .mac-cal-month-event-inner {
+  color: #ffffff !important;
+}

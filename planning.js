@@ -957,7 +957,7 @@
     let html = `
       <div class="mac-apple-calendar-month">
         <div class="mac-cal-month-header">
-          <div>LUN</div><div>MAR</div><div>MER</div><div>JEU</div><div>VEN</div><div>SAM</div><div>DIM</div>
+          <div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div>
         </div>
         <div class="mac-cal-month-grid">
     `;
