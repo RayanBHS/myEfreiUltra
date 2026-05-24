@@ -12,7 +12,7 @@
   position: relative;
   z-index: 10;
   display: none; /* Affiché par JS */
-  background-color: #f2f2f7; /* Gris clair très doux type Apple/OneUI */
+  background-color: #f0f0f0; /* Gris clair très doux type Apple/OneUI */
 }
 
 /* =========================================

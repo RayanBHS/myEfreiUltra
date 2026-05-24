@@ -1,0 +1,524 @@
+/* dashboard.css - Custom Dashboard Styles for myEfrei ULTRA */
+
+#mye-custom-dashboard {
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
+    font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* When dashboard is active, hide EVERYTHING in the body except our custom elements */
+html.mye-dashboard-active body > *:not(#mye-custom-header-wrapper):not(#mye-custom-dashboard):not(script):not(style):not(link),
+body.mye-dashboard-active > *:not(#mye-custom-header-wrapper):not(#mye-custom-dashboard):not(script):not(style):not(link) {
+    display: none !important;
+}
+
+html.mye-dashboard-active body,
+body.mye-dashboard-active {
+    background-color: #f0f2f5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html.mye-dashboard-active.dark-mode body,
+html.mye-dashboard-active body.dark-mode,
+body.mye-dashboard-active.dark-mode {
+    background-color: #000000 !important; /* OLED black */
+}
+
+/* Spinner for loading state */
+#mye-dash-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #f0f2f5;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 30px;
+}
+.mye-dash-loader-text {
+    margin-top: 20px;
+    font-weight: 500;
+    color: #555;
+}
+
+/* Spinner for loading state */
+.mye-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 119, 194, 0.2);
+    border-top-color: #0077c2;
+    border-radius: 50%;
+    animation: mye-spin 1s linear infinite;
+}
+.mye-small-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(0, 122, 255, 0.2);
+    border-top-color: #007aff;
+    border-radius: 50%;
+    animation: mye-spin 1s linear infinite;
+    display: inline-block;
+}
+@keyframes mye-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* CARDS COMMON */
+.mye-dash-card {
+    background: #1D3B64;
+    border-radius: 22px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+/* TOP ROW */
+.mye-dash-top-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+/* LEFT CARD (Profile & Stats) */
+.mye-dash-left-card {
+    flex: 7;
+    min-width: 500px;
+    box-sizing: border-box;
+}
+
+.mye-dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0 20px 0;
+}
+
+.mye-dash-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+}
+
+.mye-dash-period-badge {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.mye-dash-stats-grid {
+    display: flex;
+    gap: 12px;
+    height: 200px;
+}
+
+.mye-stat-box {
+    border-radius: 12px;
+    padding: 16px;
+    color: #1d1d1f;
+    background: #fff;
+    border: 1px solid #e5e5ea;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.mye-clickable-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mye-clickable-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.mye-stat-blue .mye-stat-value { color: #007aff; }
+.mye-stat-red .mye-middle-value { color: #ef4444; }
+.mye-stat-green .mye-middle-value { color: #10b981; }
+
+.mye-stat-middle-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 0.8;
+}
+
+.mye-stat-middle-box {
+    flex: 1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    color: #1d1d1f;
+    background: #fff;
+    border: 1px solid #e5e5ea;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.mye-stat-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #8e8e93;
+}
+
+.mye-stat-value {
+    font-size: 80px;
+    font-weight: 700;
+    line-height: 1;
+    margin-top: 10px;
+}
+
+.mye-middle-value {
+    font-size: 68px;
+    font-weight: 700;
+    line-height: 1;
+    margin-right: 15px;
+    position: relative;
+    top: -4px;
+}
+.mye-middle-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #8e8e93;
+    position: relative;
+    top: -2px;
+}
+
+.mye-stat-progress {
+    height: 24px;
+    background: #e5e5ea;
+    border-radius: 12px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+.mye-stat-progress-bar {
+    height: 100%;
+    background: #007aff;
+    border-radius: 12px;
+}
+
+.mye-dash-subtitle {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 15px;
+    margin-bottom: 0;
+}
+
+/* RIGHT CARD (Planning) */
+.mye-dash-right-card {
+    flex: 3;
+    min-width: 350px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.mye-planning-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 10px 0 20px 0;
+    color: #fff;
+}
+
+.mye-planning-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.mye-planning-list::-webkit-scrollbar {
+    width: 6px;
+}
+.mye-planning-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.mye-planning-list::-webkit-scrollbar-thumb {
+    background: #d1d1d6;
+    border-radius: 3px;
+}
+html.dark-mode .mye-planning-list::-webkit-scrollbar-thumb,
+body.dark-mode .mye-planning-list::-webkit-scrollbar-thumb {
+    background: #48484a;
+}
+
+.mye-planning-item {
+    background: #f9f9fb;
+    border: 1px solid #e5e5ea;
+    border-radius: 12px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #1d1d1f;
+    flex-shrink: 0;
+}
+
+.mye-planning-date {
+    background: #fff;
+    color: #1d1d1f;
+    border: 1px solid #e5e5ea;
+    border-radius: 8px;
+    padding: 4px 8px;
+    text-align: center;
+    min-width: 45px;
+}
+
+.mye-planning-month {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: #8e8e93;
+}
+
+.mye-planning-day {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.mye-planning-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.mye-planning-course {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mye-planning-details {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* BOTTOM CAROUSEL CARD */
+.mye-dash-carousel-card {
+    width: 100%;
+    position: relative;
+    padding: 15px;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border: 1px solid #e5e5ea;
+    box-sizing: border-box;
+}
+
+.mye-carousel-container {
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    background: #111;
+    min-height: 250px;
+}
+
+.mye-carousel-slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.mye-carousel-slide.active {
+    display: block;
+}
+
+.mye-carousel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.mye-carousel-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 40px 20px 20px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: white;
+}
+
+.mye-carousel-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.mye-carousel-controls {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    pointer-events: none;
+}
+
+.mye-carousel-btn {
+    pointer-events: auto;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.mye-carousel-btn:hover {
+    background: rgba(0,0,0,0.8);
+}
+
+.mye-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.mye-carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid #5c7099;
+    background: transparent;
+    cursor: pointer;
+}
+
+.mye-carousel-dot.active {
+    background: #364b73;
+    border-color: #364b73;
+}
+
+/* FOOTER NAV */
+.mye-dash-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    gap: 10px;
+}
+
+.mye-footer-btn {
+    flex: 1;
+    background: #e5e7eb;
+    color: #333;
+    border-radius: 20px;
+    padding: 15px;
+    text-align: center;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+.mye-footer-btn:hover {
+    background: #d1d5db;
+}
+
+.mye-footer-btn.active {
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* DARK MODE SUPPORT */
+html.dark-mode #mye-custom-dashboard,
+body.dark-mode #mye-custom-dashboard {
+    color: #eee;
+}
+html.dark-mode #mye-dash-loader,
+body.dark-mode #mye-dash-loader {
+    background: #000000;
+}
+html.dark-mode .mye-dash-loader-text,
+body.dark-mode .mye-dash-loader-text {
+    color: #ccc;
+}
+html.dark-mode .mye-dash-card,
+html.dark-mode .mye-dash-carousel-card,
+body.dark-mode .mye-dash-card,
+body.dark-mode .mye-dash-carousel-card {
+    background: #1c1c1e;
+    border-color: #2c2c2e;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+html.dark-mode .mye-small-spinner,
+body.dark-mode .mye-small-spinner {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-top-color: #ffffff;
+}
+html.dark-mode .mye-stat-box,
+html.dark-mode .mye-stat-middle-box,
+body.dark-mode .mye-stat-box,
+body.dark-mode .mye-stat-middle-box {
+    background: #2c2c2e;
+    border-color: #3a3a3c;
+    color: #fff;
+}
+html.dark-mode .mye-stat-progress,
+body.dark-mode .mye-stat-progress {
+    background: #3a3a3c;
+}
+html.dark-mode .mye-dash-title,
+html.dark-mode .mye-planning-title,
+body.dark-mode .mye-dash-title,
+body.dark-mode .mye-planning-title {
+    color: #fff;
+}
+html.dark-mode .mye-footer-btn,
+body.dark-mode .mye-footer-btn {
+    background: #2c2c2e;
+    color: #ddd;
+    border-color: #3a3a3c;
+}
+html.dark-mode .mye-footer-btn:hover,
+body.dark-mode .mye-footer-btn:hover {
+    background: #3a3a3c;
+}
+html.dark-mode .mye-footer-btn.active,
+body.dark-mode .mye-footer-btn.active {
+    background: #444;
+}
+html.dark-mode .mye-planning-item,
+body.dark-mode .mye-planning-item {
+    background: #2c2c2e;
+    border-color: #3a3a3c;
+    color: #fff;
+}
+html.dark-mode .mye-planning-date,
+body.dark-mode .mye-planning-date {
+    background: #1c1c1e;
+    border-color: #3a3a3c;
+    color: #fff;
+}

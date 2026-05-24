@@ -24,6 +24,7 @@
       ],
       "css": [
         "portal.css",
+        "dashboard.css",
         "grades.css",
         "planning.css",
         "moodle.css",
@@ -40,6 +41,7 @@
         "lib/pdf.min.js",
         "lib/leaflet/leaflet.js",
         "portal.js",
+        "dashboard.js",
         "grades.js",
         "planning.js",
         "calendars.js",
