@@ -28,9 +28,9 @@ function getHeaderHTML() {
         <div class="mye-nav-item" data-target="link" data-href="/portal/student/planning">Planning</div>
         <div class="mye-nav-item mye-has-dropdown" data-target="mye-dropdown-scolarite">Scolarité</div>
         <div class="mye-nav-item mye-has-dropdown" data-target="mye-dropdown-ecole">L'École</div>
-        <div class="mye-nav-item mye-has-dropdown" data-target="mye-dropdown-vie">Vie Étudiante</div>
+        <div class="mye-nav-item mye-has-dropdown" data-target="mye-dropdown-vie">Association</div>
         <div class="mye-nav-item mye-has-dropdown" data-target="mye-dropdown-outils">Outils</div>
-        <div class="mye-nav-item mye-has-dropdown" data-target="mye-dropdown-stages">Stages et alternances</div>
+        <div class="mye-nav-item mye-has-dropdown" data-target="mye-dropdown-stages">Emploi</div>
         <div class="mye-nav-item mye-has-dropdown" data-target="mye-dropdown-aides">Aides</div>
       </div>
       <div class="mye-header-right">
@@ -227,10 +227,10 @@ function getHeaderHTML() {
           </div>
         </div>
         
-        <!-- Vie étudiante (Collapsible) -->
+        <!-- Association (Collapsible) -->
         <div class="mye-drawer-collapsible">
           <div class="mye-drawer-item mye-drawer-trigger">
-            <span>Vie étudiante</span>
+            <span>Association</span>
             <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </div>
           <div class="mye-drawer-submenu">
@@ -258,10 +258,10 @@ function getHeaderHTML() {
           </div>
         </div>
         
-        <!-- Stages et alternances (Collapsible) -->
+        <!-- Emploi (Collapsible) -->
         <div class="mye-drawer-collapsible">
           <div class="mye-drawer-item mye-drawer-trigger">
-            <span>Stages et alternances</span>
+            <span>Emploi</span>
             <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </div>
           <div class="mye-drawer-submenu">
@@ -787,6 +787,7 @@ function startDOMScraping() {
         }
     }, 500);
 }
+
 
 function extractOriginalAssets() {
     const fallbackNotif = `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>`;
