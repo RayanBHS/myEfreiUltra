@@ -6,6 +6,7 @@
 
   let allDocs = [];
   let currentFilter = 'Tous'; // 'Tous', 'Administratif', 'Factures', 'Résultats'
+  let currentSort = 'recent'; // 'recent', 'old', 'cat_asc', 'cat_desc'
 
   function initDocumentsPage() {
     if (document.getElementById('mye-documents-container')) {
@@ -94,15 +95,34 @@
       groups[cat].push(doc);
     });
 
-    // Trier les groupes par nom (optionnel, on garde l'ordre logique)
     const categoryOrder = ['Documents Administratifs', 'Factures', 'Résultats Académiques', 'Autres'];
-    const sortedCategories = Object.keys(groups).sort((a, b) => {
-      let ia = categoryOrder.indexOf(a);
-      let ib = categoryOrder.indexOf(b);
-      if (ia === -1) ia = 99;
-      if (ib === -1) ib = 99;
-      return ia - ib;
-    });
+    let sortedCategories = Object.keys(groups);
+
+    if (currentSort === 'cat_asc') {
+      sortedCategories.sort((a, b) => a.localeCompare(b, 'fr'));
+    } else if (currentSort === 'cat_desc') {
+      sortedCategories.sort((a, b) => b.localeCompare(a, 'fr'));
+    } else {
+      // Pour recent et old, on garde l'ordre par défaut MyEfrei (Logique)
+      sortedCategories.sort((a, b) => {
+        let ia = categoryOrder.indexOf(a);
+        let ib = categoryOrder.indexOf(b);
+        if (ia === -1) ia = 99;
+        if (ib === -1) ib = 99;
+        return ia - ib;
+      });
+    }
+
+    // Helper function for sort label
+    function getSortLabel(val) {
+      switch(val) {
+        case 'recent': return 'Récents';
+        case 'old': return 'Anciens';
+        case 'cat_asc': return 'Catégorie A-Z';
+        case 'cat_desc': return 'Catégorie Z-A';
+        default: return 'Récents';
+      }
+    }
 
     let html = `
       <div class="mye-doc-header">
@@ -113,10 +133,18 @@
           <button class="mye-doc-filter-btn ${currentFilter === 'Résultats' ? 'active' : ''}" data-filter="Résultats">Résultats</button>
         </div>
         <div class="mye-doc-sort">
-          <button class="mye-doc-sort-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-            Trier : Récents
-          </button>
+          <div class="mye-custom-select" id="mye-doc-sort-container">
+            <button class="mye-custom-select-btn" id="mye-doc-sort-btn">
+              <span class="mye-custom-select-label">${getSortLabel(currentSort)}</span>
+              <span class="mye-custom-select-arrow">▼</span>
+            </button>
+            <div class="mye-custom-select-dropdown" id="mye-doc-sort-dropdown">
+              <button class="mye-custom-select-option ${currentSort === 'recent' ? 'active' : ''}" data-value="recent">Récents</button>
+              <button class="mye-custom-select-option ${currentSort === 'old' ? 'active' : ''}" data-value="old">Anciens</button>
+              <button class="mye-custom-select-option ${currentSort === 'cat_asc' ? 'active' : ''}" data-value="cat_asc">Catégorie A-Z</button>
+              <button class="mye-custom-select-option ${currentSort === 'cat_desc' ? 'active' : ''}" data-value="cat_desc">Catégorie Z-A</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="mye-doc-list">
@@ -133,32 +161,40 @@
       const docs = groups[cat];
       totalDocs += docs.length;
 
-      // Trier les documents du plus récent au plus ancien
-      docs.sort((a, b) => new Date(b.lastUpload || 0) - new Date(a.lastUpload || 0));
+      // Trier les documents à l'intérieur du groupe
+      docs.sort((a, b) => {
+        const d1 = new Date(a.lastUpload || 0);
+        const d2 = new Date(b.lastUpload || 0);
+        return currentSort === 'old' ? d1 - d2 : d2 - d1;
+      });
 
       html += `
         <div class="mye-doc-group">
-          <div class="mye-doc-group-title">${cat.toUpperCase()}</div>
-          <div class="mye-doc-card">
+          <div class="mye-doc-group-title">${cat}</div>
+          <div class="mye-doc-grid">
       `;
 
-      docs.forEach((doc, index) => {
-        const isLast = index === docs.length - 1;
+      docs.forEach((doc) => {
         const dlUrl = getDownloadUrl(doc);
         
         html += `
-            <div class="mye-doc-item ${isLast ? 'last' : ''}">
-              <div class="mye-doc-info">
-                <div class="mye-doc-name">${doc.name || 'Document sans nom'}</div>
-                <div class="mye-doc-date">${formatDate(doc.lastUpload)}</div>
+            <div class="mye-doc-card">
+              <div class="mye-doc-card-left">
+                <div class="mye-doc-info">
+                  <div class="mye-doc-name">${doc.name || 'Document sans nom'}</div>
+                  <div class="mye-doc-date">${formatDate(doc.lastUpload)}</div>
+                </div>
               </div>
-              <div class="mye-doc-actions">
-                <button class="mye-doc-action-btn view-btn" data-url="${dlUrl}" data-title="${doc.name || 'Document'}">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                </button>
-                <a href="${dlUrl}" class="mye-doc-action-btn dl-btn" download target="_blank">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                </a>
+              <div class="mye-doc-card-right">
+                <div class="mye-doc-actions">
+                  <button class="mye-doc-action-btn view-btn" data-url="${dlUrl}" data-title="${doc.name || 'Document'}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    Voir
+                  </button>
+                  <a href="${dlUrl}" class="mye-doc-action-btn dl-btn" download target="_blank">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  </a>
+                </div>
               </div>
             </div>
         `;
@@ -186,6 +222,34 @@
         renderPage();
       });
     });
+
+    // Événement Tri (Custom Select)
+    const sortBtn = container.querySelector('#mye-doc-sort-btn');
+    const sortDropdown = container.querySelector('#mye-doc-sort-dropdown');
+    
+    if (sortBtn && sortDropdown) {
+      sortBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sortBtn.classList.toggle('open');
+        sortDropdown.classList.toggle('show');
+      });
+
+      // Fermer si clic ailleurs
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#mye-doc-sort-container')) {
+          sortBtn.classList.remove('open');
+          sortDropdown.classList.remove('show');
+        }
+      });
+
+      // Clic sur une option
+      container.querySelectorAll('.mye-custom-select-option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          currentSort = e.target.getAttribute('data-value');
+          renderPage(); // Va refermer le menu en recréant le HTML
+        });
+      });
+    }
 
     // Événements PDF Viewer
     container.querySelectorAll('.view-btn').forEach(btn => {
