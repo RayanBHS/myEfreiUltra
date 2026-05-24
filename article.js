@@ -263,11 +263,14 @@
 
   // Initial check
   if (isArticlePage()) {
+    if (document.body) document.body.classList.add('mye-clean-screen');
+    else document.addEventListener('DOMContentLoaded', () => document.body.classList.add('mye-clean-screen'));
+
     const checkHeader = setInterval(() => {
       if (document.getElementById('mye-custom-header-wrapper') || document.getElementById('mye-custom-header')) {
         clearInterval(checkHeader);
         if (!document.getElementById('mye-article-container')) {
-          document.body.classList.add('mye-clean-screen');
+          if (document.body) document.body.classList.add('mye-clean-screen');
           setTimeout(initArticle, 200);
         }
       }

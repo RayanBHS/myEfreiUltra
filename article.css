@@ -298,3 +298,17 @@ body.dark-mode .mye-article-body li::before {
 body.dark-mode .mye-article-spinner {
   color: #aaaaaa !important;
 }
+
+/* Fix loading screen and article container background in dark mode before body gets the class */
+html.dark-mode body.mye-clean-screen {
+  background-color: #000000 !important;
+}
+
+html.dark-mode .mye-article-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+html.dark-mode .mye-article-spinner {
+  color: #aaaaaa !important;
+}

@@ -373,3 +373,68 @@
     font-size: 15px;
   }
 }
+
+/* ==========================================================================
+   DARK MODE OVERRIDES
+   ========================================================================== */
+html.dark-mode #mye-right,
+body.dark-mode #mye-right {
+  background-color: #1a1a1a !important;
+}
+
+html.dark-mode #mye-title,
+body.dark-mode #mye-title {
+  color: #ffffff !important;
+}
+
+html.dark-mode #mye-legal,
+body.dark-mode #mye-legal {
+  color: #aaaaaa !important;
+}
+
+html.dark-mode #mye-legal a,
+body.dark-mode #mye-legal a {
+  color: #aaaaaa !important;
+}
+
+html.dark-mode #mye-legal a:hover,
+body.dark-mode #mye-legal a:hover {
+  color: #cccccc !important;
+}
+
+html.dark-mode #mye-username,
+html.dark-mode #mye-password,
+body.dark-mode #mye-username,
+body.dark-mode #mye-password {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+html.dark-mode #mye-username:focus,
+html.dark-mode #mye-password:focus,
+body.dark-mode #mye-username:focus,
+body.dark-mode #mye-password:focus {
+  background-color: #333333 !important;
+}
+
+html.dark-mode #mye-username::placeholder,
+html.dark-mode #mye-password::placeholder,
+body.dark-mode #mye-username::placeholder,
+body.dark-mode #mye-password::placeholder {
+  color: #aaaaaa !important;
+}
+
+html.dark-mode #mye-toggle-password,
+body.dark-mode #mye-toggle-password {
+  color: #aaaaaa !important;
+}
+
+html.dark-mode #mye-toggle-password:hover,
+body.dark-mode #mye-toggle-password:hover {
+  color: #1a7fd4 !important;
+}
+
+html.dark-mode #mye-logo,
+body.dark-mode #mye-logo {
+  filter: brightness(0) invert(1) !important;
+}

@@ -151,9 +151,8 @@
     const c = code.toUpperCase();
     if (c.startsWith('SM')) return 'Mathématiques (SM)';
     if (c.startsWith('TI')) return 'Informatique (TI)';
-    if (c.startsWith('SP')) return 'Sciences Physiques (SP)';
+    if (c.startsWith('SP') || c.startsWith('TE')) return 'Sciences Physiques & Systèmes Électroniques (SP/TE)';
     if (c.startsWith('FE') || c.startsWith('FH') || c.startsWith('FL') || c.startsWith('FHS')) return 'Formation Humaine, Langues & Économie';
-    if (c.startsWith('TE')) return 'Systèmes Électroniques (TE)';
     if (c.startsWith('LXP')) return 'Projets & LXP';
     if (c.startsWith('ST')) return 'Stages (ST)';
     if (c.startsWith('RE')) return 'Relations Entreprises (RE)';

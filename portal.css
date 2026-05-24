@@ -1158,3 +1158,17 @@ body.dark-mode #simple-popper-efrei .MuiTypography-root:first-child {
   color: #ffffff !important;
   border-bottom-color: #333333 !important;
 }
+
+/* Fix loading screen and article container background in dark mode before body gets the class */
+html.dark-mode body.mye-clean-screen {
+  background-color: #000000 !important;
+}
+
+html.dark-mode .mye-article-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+html.dark-mode .mye-article-spinner {
+  color: #aaaaaa !important;
+}

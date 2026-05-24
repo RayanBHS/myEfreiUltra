@@ -349,8 +349,7 @@ body.dark-mode .mye-moodle-card-title {
 }
 
 body.dark-mode .mye-moodle-card-footer {
-  border-top-color: #333333 !important;
-  background-color: #0a0a0a !important;
+  background-color: transparent !important;
 }
 
 body.dark-mode .mye-moodle-card-id {
