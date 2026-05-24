@@ -276,6 +276,16 @@
     }).filter(ev => ev.start !== null);
     state.events.sort((a, b) => a.start - b.start);
     renderPlanning();
+
+    const targetEventTime = sessionStorage.getItem('mye_open_event_time');
+    if (targetEventTime) {
+      sessionStorage.removeItem('mye_open_event_time');
+      const targetTime = new Date(targetEventTime).getTime();
+      const targetIndex = state.events.findIndex(e => e.start && e.start.getTime() === targetTime);
+      if (targetIndex !== -1) {
+        setTimeout(() => openEventModal(targetIndex), 100);
+      }
+    }
   }
 
   function mapEvent(raw) {
@@ -1666,6 +1676,13 @@
     console.log('📅 Initialisation de la page du planning…');
     loadSettings();
     applyColors();
+
+    const targetEventTime = sessionStorage.getItem('mye_open_event_time');
+    if (targetEventTime) {
+      state.currentDate = new Date(targetEventTime);
+      state.currentView = 'week';
+    }
+
     buildPageStructure();
     fetchPlanningForPeriod(state.currentDate);
     fetchFutureEvents();

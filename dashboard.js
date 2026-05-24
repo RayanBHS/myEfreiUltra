@@ -183,7 +183,7 @@ function renderPlanning(classes) {
         const { title, room } = extractRoomAndTitle(c);
         
         const html = `
-            <div class="mye-planning-item">
+            <div class="mye-planning-item mye-clickable-card" onclick="sessionStorage.setItem('mye_open_event_time', '${d.toISOString()}'); window.location.href='/portal/student/planning';">
                 <div class="mye-planning-date">
                     <div class="mye-planning-month">${month}</div>
                     <div class="mye-planning-day">${day}</div>
