@@ -123,13 +123,12 @@
       return;
     }
 
-
-
     const container = document.createElement('div');
     container.id = 'mye-campus-container';
     container.className = 'mye-page-container';
 
-
+    const inner = document.createElement('div');
+    inner.className = 'mye-campus-inner';
 
     // Tabs
     const tabsWrapper = document.createElement('div');
@@ -158,7 +157,7 @@
     });
 
     tabsWrapper.appendChild(tabsContainer);
-    container.appendChild(tabsWrapper);
+    inner.appendChild(tabsWrapper);
 
     // Content Wrapper
     const content = document.createElement('div');
@@ -171,8 +170,8 @@
         <!-- Accordions injected here -->
       </div>
     `;
-    container.appendChild(content);
-
+    inner.appendChild(content);
+    container.appendChild(inner);
     document.body.appendChild(container);
 
     // Event listeners for tabs
