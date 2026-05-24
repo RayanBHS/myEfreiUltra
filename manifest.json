@@ -22,9 +22,34 @@
         "*://auth.efrei.fr/*",
         "*://auth.myefrei.fr/*"
       ],
-      "css": ["portal.css", "grades.css", "planning.css", "moodle.css", "pdfViewer.css", "absences.css", "news.css", "article.css"],
-      "js": ["fonts.js", "lib/pdf.min.js", "portal.js", "grades.js", "planning.js", "calendars.js", "moodle.js", "pdfViewer.js", "absences.js", "news.js", "article.js"],
-      "run_at": "document_end"
+      "css": [
+        "portal.css",
+        "grades.css",
+        "planning.css",
+        "moodle.css",
+        "pdfViewer.css",
+        "absences.css",
+        "news.css",
+        "article.css",
+        "campus.css",
+        "lib/leaflet/leaflet.css"
+      ],
+      "js": [
+        "fonts.js",
+        "lib/pdf.min.js",
+        "lib/leaflet/leaflet.js",
+        "portal.js",
+        "grades.js",
+        "planning.js",
+        "calendars.js",
+        "moodle.js",
+        "pdfViewer.js",
+        "absences.js",
+        "news.js",
+        "article.js",
+        "campus.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
@@ -37,7 +62,8 @@
         "img/tourAssas.png",
         "Police/Alliance No.2 Bold.otf",
         "Police/Alliance No.2 Regular.otf",
-        "lib/pdf.worker.min.js"
+        "lib/pdf.worker.min.js",
+        "lib/leaflet/images/*"
       ],
       "matches": ["*://*.efrei.fr/*", "*://*.myefrei.fr/*"]
     }

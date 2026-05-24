@@ -1,0 +1,355 @@
+/* =============================================
+   MYEFREI ULTRA - Nos Campus (campus.css) - V2
+   ============================================= */
+
+#mye-campus-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 100px 40px 40px 40px; /* 100px top to account for fixed header */
+  box-sizing: border-box;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  position: relative;
+  z-index: 10;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: #f8fafc; /* light mode bg */
+}
+
+
+
+/* Tabs */
+.mye-campus-tabs-wrapper {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.mye-campus-tabs {
+  display: inline-flex;
+  justify-content: center;
+  background-color: #e2e8f0;
+  border-radius: 999px;
+  padding: 6px;
+  gap: 0;
+}
+
+.mye-campus-tab {
+  background-color: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 32px;
+  font-size: 16px;
+  font-family: 'Alliance No.2 Bold', sans-serif;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: none;
+}
+
+.mye-campus-tab:hover {
+  color: #1d3b64;
+}
+
+.mye-campus-tab.active {
+  background-color: white;
+  color: #1d3b64;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Content Layout */
+.mye-campus-content {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+@media (max-width: 1024px) {
+  .mye-campus-content {
+    flex-direction: column;
+  }
+}
+
+/* Map Section */
+.mye-campus-map-wrapper {
+  flex: 1;
+  width: 100%;
+  background-color: #e2e8f0;
+  border-radius: 40px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  position: relative;
+  min-height: 600px;
+  display: block;
+}
+
+.mye-campus-map-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  max-width: 400px;
+  width: 100%;
+  transition: transform 0.3s ease;
+}
+
+.mye-campus-map-card:hover {
+  transform: translateY(-5px);
+}
+
+.mye-campus-map-card h3 {
+  font-family: 'Alliance No.2 Bold', sans-serif;
+  color: #1d3b64;
+  font-size: 24px;
+  margin: 0 0 15px 0;
+}
+
+.mye-campus-map-card p {
+  color: #64748b;
+  font-size: 16px;
+  margin: 0 0 30px 0;
+  line-height: 1.5;
+}
+
+.mye-campus-map-button {
+  display: inline-block;
+  background-color: #1d3b64;
+  color: white;
+  text-decoration: none;
+  font-family: 'Alliance No.2 Bold', sans-serif;
+  font-size: 16px;
+  padding: 16px 32px;
+  border-radius: 999px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(29, 59, 100, 0.3);
+}
+
+.mye-campus-map-button:hover {
+  background-color: #0f213b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(29, 59, 100, 0.4);
+}
+
+/* Accordion Section */
+.mye-campus-list {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mye-campus-accordion {
+  background-color: white;
+  border: 2px solid #1d3b64;
+  border-radius: 30px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.mye-campus-accordion-header {
+  padding: 24px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background-color: transparent;
+  user-select: none;
+}
+
+.mye-campus-accordion-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-family: 'Alliance No.2 Bold', sans-serif;
+  color: #1d3b64;
+  font-size: 18px;
+}
+
+.mye-campus-accordion-title span {
+  font-family: 'Alliance No.2 Regular', sans-serif;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.mye-campus-accordion-icon {
+  color: #1d3b64;
+  transition: transform 0.3s ease;
+}
+
+.mye-campus-accordion.open .mye-campus-accordion-icon {
+  transform: rotate(180deg);
+}
+
+.mye-campus-accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+  background-color: transparent;
+}
+
+.mye-campus-accordion-content {
+  padding: 0 30px 24px 30px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #1d1d1f;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.mye-campus-accordion-content h4 {
+  font-family: 'Alliance No.2 Bold', sans-serif;
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #1d1d1f;
+}
+
+.mye-campus-accordion-content p {
+  margin: 0 0 8px 0;
+  color: #334155;
+}
+
+.mye-campus-accordion-content a {
+  color: #1d3b64;
+  text-decoration: none;
+}
+.mye-campus-accordion-content a:hover {
+  text-decoration: underline;
+}
+
+.mye-campus-col {
+  flex: 1;
+}
+
+.mye-campus-plan-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1d3b64;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: 'Alliance No.2 Bold', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+  text-decoration: none;
+}
+
+.mye-campus-plan-btn:hover {
+  background-color: #0f213b;
+}
+
+/* ==========================================================================
+   OLED BLACK DARK MODE
+   ========================================================================== */
+
+body.dark-mode #mye-campus-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+
+
+body.dark-mode .mye-campus-tabs {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-mode .mye-campus-tab {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-campus-tab:hover {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-campus-tab.active {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .mye-campus-accordion {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-campus-accordion-header {
+  background-color: transparent !important;
+}
+
+body.dark-mode .mye-campus-accordion-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-campus-accordion-title span {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-campus-accordion-icon {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-campus-accordion-body {
+  background-color: transparent !important;
+}
+
+body.dark-mode .mye-campus-accordion-content h4 {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-campus-accordion-content p {
+  color: #dddddd !important;
+}
+
+body.dark-mode .mye-campus-accordion-content a {
+  color: #60a5fa !important;
+}
+
+body.dark-mode .mye-campus-plan-btn {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-campus-plan-btn:hover {
+  background-color: #555555 !important;
+}
+
+body.dark-mode .mye-campus-map-wrapper {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-mode .mye-campus-map-card {
+  background: rgba(30, 30, 30, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .mye-campus-map-card h3 {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-campus-map-card p {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-campus-map-button {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .mye-campus-map-button:hover {
+  background-color: #555555 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
+}
