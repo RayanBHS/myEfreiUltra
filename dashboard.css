@@ -13,8 +13,8 @@
 }
 
 /* When dashboard is active, hide EVERYTHING in the body except our custom elements */
-html.mye-dashboard-active body > *:not(#mye-custom-header-wrapper):not(#mye-custom-dashboard):not(script):not(style):not(link),
-body.mye-dashboard-active > *:not(#mye-custom-header-wrapper):not(#mye-custom-dashboard):not(script):not(style):not(link) {
+html.mye-dashboard-active body > *:not(#mye-custom-header-wrapper):not(#mye-custom-dashboard):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper):not(.MuiPopperUnstyled-root):not(.cdk-overlay-container):not(.mat-menu-panel),
+body.mye-dashboard-active > *:not(#mye-custom-header-wrapper):not(#mye-custom-dashboard):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper):not(.MuiPopperUnstyled-root):not(.cdk-overlay-container):not(.mat-menu-panel) {
     display: none !important;
 }
 
