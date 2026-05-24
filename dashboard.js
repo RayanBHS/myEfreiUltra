@@ -284,7 +284,7 @@ function renderSlides(slides) {
     dotsContainer.innerHTML = '';
     
     slides.forEach((slide, index) => {
-        let picId = slide.picture || slide.illustrationId || slide.imageId || slide.image;
+        let picId = slide.picture || slide.illustrationId || slide.imageId || slide.image || slide.token;
         let imgUrl = '';
         
         if (picId) {
