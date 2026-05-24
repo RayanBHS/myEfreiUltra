@@ -209,7 +209,7 @@
       acc.className = 'mye-campus-accordion' + (isFirst ? ' open' : '');
       
       const contactHtml = campus.contact.map(c => `<p>${c}</p>`).join('');
-      const planHtml = campus.plan ? `<a href="#" class="mye-campus-plan-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15v3H6v-3H4v3c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-3h-2zm-1-4-1.41-1.41L13 12.17V4h-2v8.17L8.41 9.59 7 11l5 5 5-5z"></path></svg> PLAN DU SITE</a>` : '';
+      const planHtml = campus.plan ? `<button type="button" class="mye-campus-plan-btn mye-campus-trigger-download" data-campus="${campus.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15v3H6v-3H4v3c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-3h-2zm-1-4-1.41-1.41L13 12.17V4h-2v8.17L8.41 9.59 7 11l5 5 5-5z"></path></svg> PLAN DU SITE</button>` : '';
 
       acc.innerHTML = `
         <div class="mye-campus-accordion-header">
@@ -260,6 +260,29 @@
           injectLeafletMap('mye-campus-map-wrapper', campus.coords);
         }
       });
+
+      // Bind download button to open in PDF Viewer
+      // Bind download button to original DOM
+      const dlBtn = acc.querySelector('.mye-campus-trigger-download');
+      if (dlBtn) {
+        dlBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const origBtns = Array.from(document.querySelectorAll('button')).filter(b => b.textContent && b.textContent.includes('PLAN DU SITE'));
+          if (origBtns.length > 0) {
+            const campusId = dlBtn.getAttribute('data-campus');
+            let targetBtn = origBtns[0]; // Par défaut, le premier (La maison)
+            
+            if (campusId === 'aquarium' && origBtns.length > 1) {
+              targetBtn = origBtns[1]; // Le deuxième (L'aquarium)
+            }
+            
+            targetBtn.click();
+          } else {
+            console.error('MyEfrei Ultra: Impossible de trouver le bouton de téléchargement original.');
+          }
+        });
+      }
 
       list.appendChild(acc);
 

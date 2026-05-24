@@ -234,9 +234,9 @@
   align-items: center;
   gap: 8px;
   background-color: #1d3b64;
-  color: white;
+  color: white !important;
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 10px 16px;
   font-family: 'Alliance No.2 Bold', sans-serif;
   font-size: 13px;
@@ -316,7 +316,7 @@ body.dark-mode .mye-campus-accordion-content a {
   color: #60a5fa !important;
 }
 
-body.dark-mode .mye-campus-plan-btn {
+body.dark-mode button.mye-campus-plan-btn {
   background-color: #333333 !important;
   color: #ffffff !important;
 }
