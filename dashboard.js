@@ -284,12 +284,25 @@ function renderSlides(slides) {
     dotsContainer.innerHTML = '';
     
     slides.forEach((slide, index) => {
-        // Build image URL using token
-        const imgUrl = `https://www.myefrei.fr/api/rest/common/resources/${slide._id}/content?token=${slide.token}`;
+        let picId = slide.picture || slide.illustrationId || slide.imageId || slide.image;
+        let imgUrl = '';
         
+        if (picId) {
+            imgUrl = `/api/rest/common/slides/images/${picId}`;
+        } else if (slide._id) {
+            imgUrl = `/api/rest/common/slides/images/${slide._id}`;
+        } else if (slide.imageUrl || slide.image_url || slide.pictureUrl) {
+            imgUrl = slide.imageUrl || slide.image_url || slide.pictureUrl;
+        } else {
+            imgUrl = `/api/rest/common/slides/images/unknown.jpg`;
+        }
+
+        const rawFallback = picId || slide._id || '';
+
         const slideHtml = `
-            <div class="mye-carousel-slide ${index === 0 ? 'active' : ''}" data-index="${index}">
-                <img class="mye-carousel-img" src="${imgUrl}" alt="${slide.title}">
+            <div class="mye-carousel-slide ${index === 0 ? 'active' : ''}" data-index="${index}" data-raw='${JSON.stringify(slide).replace(/'/g, "&apos;")}'>
+                <img class="mye-carousel-img" src="${imgUrl}" alt="${slide.title}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.innerHTML += '<div style=\\'margin-top:10px;font-size:10px;font-family:monospace;background:rgba(0,0,0,0.8);padding:10px;border-radius:8px;max-height:100px;overflow-y:auto;\\'>DEBUG: ' + this.parentNode.dataset.raw + '</div>';">
                 <div class="mye-carousel-overlay">
                     <h3 class="mye-carousel-title">${slide.title}</h3>
                 </div>

@@ -15,7 +15,12 @@
 /* When dashboard is active, hide EVERYTHING in the body except our custom elements */
 html.mye-dashboard-active body > *:not(#mye-custom-header-wrapper):not(#mye-custom-dashboard):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper):not(.MuiPopperUnstyled-root):not(.cdk-overlay-container):not(.mat-menu-panel),
 body.mye-dashboard-active > *:not(#mye-custom-header-wrapper):not(#mye-custom-dashboard):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper):not(.MuiPopperUnstyled-root):not(.cdk-overlay-container):not(.mat-menu-panel) {
-    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
 }
 
 html.mye-dashboard-active body,
@@ -321,12 +326,7 @@ body.dark-mode .mye-planning-list::-webkit-scrollbar-thumb {
 .mye-dash-carousel-card {
     width: 100%;
     position: relative;
-    padding: 15px;
-    border-radius: 16px;
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    border: 1px solid #e5e5ea;
-    box-sizing: border-box;
+    margin-top: 10px;
 }
 
 .mye-carousel-container {
@@ -334,8 +334,15 @@ body.dark-mode .mye-planning-list::-webkit-scrollbar-thumb {
     border-radius: 20px;
     overflow: hidden;
     position: relative;
-    background: #111;
-    min-height: 250px;
+    background: transparent;
+    aspect-ratio: 774 / 258;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+@media (max-width: 768px) {
+    .mye-carousel-container {
+        aspect-ratio: 376 / 220;
+    }
 }
 
 .mye-carousel-slide {
