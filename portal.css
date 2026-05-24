@@ -740,7 +740,7 @@ body.mye-clean-screen {
    MEDIA QUERIES - RESPONSIVE BREAKPOINTS
    ========================================================================== */
 
-@media (max-width: 992px) {
+@media (max-width: 1150px) {
   /* Cacher la navigation horizontale de bureau */
   .mye-header-nav {
     display: none !important;
@@ -1157,6 +1157,11 @@ body.dark-mode #simple-popper-efrei .MuiTypography-root:first-child {
   background-color: #000000 !important;
   color: #ffffff !important;
   border-bottom-color: #333333 !important;
+}
+
+body.dark-mode #simple-popper-efrei .MuiPaper-root {
+  background-color: #000000 !important;
+  border-color: #333333 !important;
 }
 
 /* Fix loading screen and article container background in dark mode before body gets the class */

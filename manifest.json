@@ -60,8 +60,7 @@
         "img/logoEfreiDepInf.png",
         "img/Campus.png",
         "img/tourAssas.png",
-        "Police/Alliance No.2 Bold.otf",
-        "Police/Alliance No.2 Regular.otf",
+        "Police/*",
         "lib/pdf.worker.min.js",
         "lib/leaflet/images/*"
       ],
