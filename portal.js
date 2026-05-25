@@ -8,6 +8,30 @@ if (savedTheme === 'dark') {
   else document.addEventListener('DOMContentLoaded', () => document.body.classList.add('dark-mode'));
 }
 
+// INITIALISATION DE LA COULEUR DU THEME
+const THEME_COLORS = {
+    navy: 'var(--mye-primary-color)',
+    emerald: '#0F5132',
+    purple: '#4A154B',
+    ruby: '#721C24',
+    slate: '#2D3748',
+    oled: '#1a1a1a'
+};
+
+function applyGlobalTheme(colorName) {
+    const theme = colorName || localStorage.getItem('mye-dash-theme') || 'navy';
+    const hex = THEME_COLORS[theme] || THEME_COLORS.navy;
+    document.documentElement.style.setProperty('--mye-primary-color', hex);
+}
+
+// Appliquer immédiatement la couleur du thème
+applyGlobalTheme();
+
+// Écouter les changements de couleur du thème
+window.addEventListener('mye-theme-changed', (e) => {
+    applyGlobalTheme(e.detail);
+});
+
 // URLs des assets (scope global pour être accessibles partout)
 const LOGO_URL = chrome.runtime.getURL('img/logoEfrei.png');
 const LOGO_MYEFREI_URL = chrome.runtime.getURL('img/logoMyEfrei.png');

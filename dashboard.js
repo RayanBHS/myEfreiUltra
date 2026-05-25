@@ -288,23 +288,52 @@ function renderSlides(slides) {
         let imgUrl = '';
         
         if (picId) {
-            imgUrl = `/api/rest/common/slides/images/${picId}`;
+            if (picId.includes('.')) {
+                imgUrl = `/api/rest/common/slides/images/${picId}`;
+            } else {
+                imgUrl = `/api/rest/common/slides/images/${picId}-lg.jpg`;
+            }
         } else if (slide._id) {
-            imgUrl = `/api/rest/common/slides/images/${slide._id}`;
+            imgUrl = `/api/rest/common/slides/images/${slide._id}-lg.jpg`;
         } else if (slide.imageUrl || slide.image_url || slide.pictureUrl) {
             imgUrl = slide.imageUrl || slide.image_url || slide.pictureUrl;
         } else {
             imgUrl = `/api/rest/common/slides/images/unknown.jpg`;
         }
 
-        const rawFallback = picId || slide._id || '';
+        const slideCode = slide.token || slide._id || '';
 
         const slideHtml = `
-            <div class="mye-carousel-slide ${index === 0 ? 'active' : ''}" data-index="${index}" data-raw='${JSON.stringify(slide).replace(/'/g, "&apos;")}'>
-                <img class="mye-carousel-img" src="${imgUrl}" alt="${slide.title}" 
-                     onerror="this.style.display='none'; this.nextElementSibling.innerHTML += '<div style=\\'margin-top:10px;font-size:10px;font-family:monospace;background:rgba(0,0,0,0.8);padding:10px;border-radius:8px;max-height:100px;overflow-y:auto;\\'>DEBUG: ' + this.parentNode.dataset.raw + '</div>';">
+            <div class="mye-carousel-slide ${index === 0 ? 'active' : ''}" data-index="${index}" onclick="window.location.href='/portal/student/slides/${slideCode}';">
+                <img class="mye-carousel-img" src="${imgUrl}" alt="${slide.title || 'Slide'}" 
+                     onerror="
+                        var currentSrc = this.getAttribute('src');
+                        var attempts = this.dataset.attempts ? this.dataset.attempts.split(',') : [];
+                        var picId = '${fallbackPicId}';
+                        if (picId) {
+                            var candidates = [
+                                '/api/rest/common/slides/images/' + picId + '-lg.jpg',
+                                '/api/rest/common/slides/images/' + picId + '.jpg',
+                                '/api/rest/common/slides/images/' + picId
+                            ];
+                            var nextUrl = '';
+                            for (var i = 0; i < candidates.length; i++) {
+                                if (candidates[i] !== currentSrc && attempts.indexOf(candidates[i]) === -1) {
+                                    nextUrl = candidates[i];
+                                    break;
+                                }
+                            }
+                            if (nextUrl) {
+                                attempts.push(currentSrc);
+                                this.dataset.attempts = attempts.join(',');
+                                this.src = nextUrl;
+                                return;
+                            }
+                        }
+                        this.style.display = 'none';
+                     ">
                 <div class="mye-carousel-overlay">
-                    <h3 class="mye-carousel-title">${slide.title}</h3>
+                    <h3 class="mye-carousel-title">${slide.title || ''}</h3>
                 </div>
             </div>
         `;
@@ -363,7 +392,7 @@ function buildDashboardHTML() {
     const lastName = document.getElementById('mye-last-name')?.textContent || 'Nom';
     
     return `
-        <div id="mye-custom-dashboard">
+        <div id="mye-custom-dashboard" data-mye-theme="${localStorage.getItem('mye-dash-theme') || 'navy'}">
             <div id="mye-dash-loader">
                 <div class="mye-spinner"></div>
                 <div class="mye-dash-loader-text">Chargement de votre espace...</div>
@@ -373,7 +402,29 @@ function buildDashboardHTML() {
                 <div class="mye-dash-card mye-dash-left-card">
                     <div class="mye-dash-header">
                         <h1 class="mye-dash-title">${lastName} ${firstName}</h1>
-                        <span class="mye-dash-period-badge" id="mye-dash-period-badge-el">...</span>
+                        <div class="mye-dash-header-right-col">
+                            <span class="mye-dash-period-badge" id="mye-dash-period-badge-el">...</span>
+                            <div class="mye-dash-header-settings">
+                                <button id="mye-dash-settings-btn" class="mye-dash-settings-btn" title="Personnaliser le thème">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                    </svg>
+                                    <span>Thème</span>
+                                </button>
+                                <div id="mye-dash-theme-menu" class="mye-dash-theme-menu">
+                                    <div class="mye-theme-menu-title">Couleur du dashboard</div>
+                                    <div class="mye-theme-colors-grid">
+                                        <div class="mye-color-option option-navy" data-color="navy" title="Bleu Classique"></div>
+                                        <div class="mye-color-option option-emerald" data-color="emerald" title="Vert Émeraude"></div>
+                                        <div class="mye-color-option option-purple" data-color="purple" title="Violet Royal"></div>
+                                        <div class="mye-color-option option-ruby" data-color="ruby" title="Rouge Rubis"></div>
+                                        <div class="mye-color-option option-slate" data-color="slate" title="Gris Ardoise"></div>
+                                        <div class="mye-color-option option-oled" data-color="oled" title="Noir OLED"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="mye-dash-stats-grid">
                         <div class="mye-stat-box mye-stat-blue mye-clickable-card" id="mye-dash-card-moyenne">
@@ -502,6 +553,53 @@ function injectDashboard() {
     document.getElementById('mye-dash-card-lxp')?.addEventListener('click', () => {
         window.location.href = '/portal/student/lxp';
     });
+
+    // Theme personalized settings menu
+    const themeBtn = document.getElementById('mye-dash-settings-btn');
+    const themeMenu = document.getElementById('mye-dash-theme-menu');
+    const dashboardEl = document.getElementById('mye-custom-dashboard');
+    
+    if (themeBtn && themeMenu && dashboardEl) {
+        themeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            themeMenu.classList.toggle('show');
+        });
+        
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!themeMenu.contains(e.target) && e.target !== themeBtn && !themeBtn.contains(e.target)) {
+                themeMenu.classList.remove('show');
+            }
+        });
+        
+        // Active color indicator
+        const currentTheme = localStorage.getItem('mye-dash-theme') || 'navy';
+        const activeOption = themeMenu.querySelector(`.mye-color-option[data-color="${currentTheme}"]`);
+        if (activeOption) activeOption.classList.add('active');
+        
+        // Change color event
+        themeMenu.querySelectorAll('.mye-color-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Remove active from others
+                themeMenu.querySelectorAll('.mye-color-option').forEach(o => o.classList.remove('active'));
+                
+                // Add active to current
+                option.classList.add('active');
+                
+                const selectedColor = option.getAttribute('data-color');
+                localStorage.setItem('mye-dash-theme', selectedColor);
+                
+                // Apply theme
+                dashboardEl.setAttribute('data-mye-theme', selectedColor);
+                window.dispatchEvent(new CustomEvent('mye-theme-changed', { detail: selectedColor }));
+                
+                // Close menu
+                themeMenu.classList.remove('show');
+            });
+        });
+    }
 }
 
 // Watch for route changes (Angular SPA)

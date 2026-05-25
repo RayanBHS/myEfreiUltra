@@ -104,7 +104,7 @@
 
 .mye-campus-map-card h3 {
   font-family: 'Alliance No.2 Bold', sans-serif;
-  color: #1d3b64;
+  color: var(--mye-primary-color);
   font-size: 24px;
   margin: 0 0 15px 0;
 }
@@ -118,7 +118,7 @@
 
 .mye-campus-map-button {
   display: inline-block;
-  background-color: #1d3b64;
+  background-color: var(--mye-primary-color);
   color: white;
   text-decoration: none;
   font-family: 'Alliance No.2 Bold', sans-serif;
@@ -146,7 +146,7 @@
 
 .mye-campus-accordion {
   background-color: white;
-  border: 2px solid #1d3b64;
+  border: 2px solid var(--mye-primary-color);
   border-radius: 30px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -168,7 +168,7 @@
   gap: 12px;
   margin: 0;
   font-family: 'Alliance No.2 Bold', sans-serif;
-  color: #1d3b64;
+  color: var(--mye-primary-color);
   font-size: 18px;
 }
 
@@ -180,7 +180,7 @@
 }
 
 .mye-campus-accordion-icon {
-  color: #1d3b64;
+  color: var(--mye-primary-color);
   transition: transform 0.3s ease;
 }
 
@@ -218,7 +218,7 @@
 }
 
 .mye-campus-accordion-content a {
-  color: #1d3b64;
+  color: var(--mye-primary-color);
   text-decoration: none;
 }
 .mye-campus-accordion-content a:hover {
@@ -233,7 +233,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #1d3b64;
+  background-color: var(--mye-primary-color);
   color: white !important;
   border: none;
   border-radius: 999px;

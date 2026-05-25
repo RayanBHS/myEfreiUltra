@@ -649,7 +649,7 @@
         <div class="mye-grades-error">
           <div class="mye-grades-error-icon">⚠️</div>
           <div class="mye-grades-error-text">Le format des données a changé ! J'ai besoin de ce code :</div>
-          <textarea style="width:100%; height:300px; font-family:monospace; font-size:11px; margin-top:15px; padding:10px; border:2px solid #1d3b64; border-radius:10px;" onclick="this.select()">${rawDataStr}</textarea>
+          <textarea style="width:100%; height:300px; font-family:monospace; font-size:11px; margin-top:15px; padding:10px; border:2px solid var(--mye-primary-color); border-radius:10px;" onclick="this.select()">${rawDataStr}</textarea>
         </div>
       `;
       updateCircle();
@@ -668,7 +668,7 @@
 
     // Couleur selon la moyenne
     const getGradeColor = (val) => {
-      if (val == null || isNaN(val)) return '#1d3b64';
+      if (val == null || isNaN(val)) return 'var(--mye-primary-color)';
       const n = parseFloat(val);
       if (n < 10) return '#ef4444';       // Rouge
       if (n < 13) return '#f59e0b';       // Orange
@@ -679,7 +679,7 @@
     // 1. Moyenne Réelle
     if (realAverage == null || isNaN(realAverage)) {
       arc.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
-      arc.style.stroke = '#1d3b64';
+      arc.style.stroke = 'var(--mye-primary-color)';
       valueEl.innerHTML = '—';
     } else {
       const ratio = Math.min(realAverage / 20, 1);
@@ -758,7 +758,7 @@
 
     // Couleur selon la moyenne
     const getGradeColor = (val) => {
-      if (val == null || isNaN(val)) return '#1d3b64'; // Couleur par défaut
+      if (val == null || isNaN(val)) return 'var(--mye-primary-color)'; // Couleur par défaut
       const n = parseFloat(val);
       if (n < 10) return '#ef4444';       // Rouge
       if (n < 13) return '#f59e0b';       // Orange
@@ -1336,7 +1336,7 @@
         <div class="mye-grades-error">
           <div class="mye-grades-error-icon">⚠️</div>
           <div class="mye-grades-error-text">Le format des données a changé ! J'ai besoin de ce code :</div>
-          <textarea style="width:100%; height:300px; font-family:monospace; font-size:11px; margin-top:15px; padding:10px; border:2px solid #1d3b64; border-radius:10px;">${rawDataStr}</textarea>
+          <textarea style="width:100%; height:300px; font-family:monospace; font-size:11px; margin-top:15px; padding:10px; border:2px solid var(--mye-primary-color); border-radius:10px;">${rawDataStr}</textarea>
         </div>
       `;
     }

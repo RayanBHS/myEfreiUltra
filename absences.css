@@ -41,8 +41,8 @@
 
 /* ── Carte absence style liste horizontale ── */
 .mye-absence-card {
-  background-color: #1d3b64;
-  border: 3px solid #1d3b64;
+  background-color: var(--mye-primary-color);
+  border: 3px solid var(--mye-primary-color);
   border-radius: 20px;
   box-sizing: border-box;
   display: flex;
@@ -76,7 +76,7 @@
 }
 
 .mye-absence-bottom {
-  background-color: #1d3b64;
+  background-color: var(--mye-primary-color);
   padding: 15px 25px;
   display: flex;
   flex-direction: column;

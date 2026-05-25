@@ -116,7 +116,7 @@
 
 .mye-article-tag {
   background-color: #F0F4F8;
-  color: #1D3B64;
+  color: var(--mye-primary-color);
   padding: 4px 10px;
   border-radius: 99px;
   font-family: 'Alliance No.2 Bold', -apple-system, sans-serif;

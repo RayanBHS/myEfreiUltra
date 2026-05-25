@@ -2,6 +2,10 @@
    MYEFREI — Interface Personnalisée v8 (Portail)
    ============================================= */
 
+:root {
+  --mye-primary-color: rgb(29, 59, 100);
+}
+
 
 /* ══════════════════════════════════════
    HEADER PERSONNALISÉ
@@ -18,7 +22,7 @@
   left: 10px;
   right: 10px;
   height: 60px;
-  background-color: #1d3b64; /* Bleu foncé MyEfrei */
+  background-color: var(--mye-primary-color); /* Bleu foncé MyEfrei */
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -99,7 +103,7 @@
   padding: 0 0 0 15px;
   gap: 10px;
   cursor: pointer;
-  color: #1d3b64;
+  color: var(--mye-primary-color);
   height: 40px;
 }
 
@@ -147,7 +151,7 @@
   background-color: white;
   color: initial;
   cursor: default;
-  border: 2px solid #1d3b64;
+  border: 2px solid var(--mye-primary-color);
   border-radius: 20px;
   padding: 15px 0;
   min-width: 280px;
@@ -192,7 +196,7 @@
 
 .mye-dropdown-link:hover {
   background-color: #f0f4f8;
-  color: #1d3b64;
+  color: var(--mye-primary-color);
 }
 
 .mye-link-icon {
@@ -256,7 +260,7 @@
 
   /* L'habillage unique du conteneur */
   background-color: #f0f4f8 !important; /* Le fond gris clair */
-  border: 2px solid #1d3b64 !important;  /* La bordure bleue */
+  border: 2px solid var(--mye-primary-color) !important;  /* La bordure bleue */
   border-radius: 20px !important;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
   overflow: hidden !important;
@@ -326,7 +330,7 @@ body.mye-clean-screen {
   font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
   font-size: 15px !important;
   padding: 12px 0 !important; /* Centrage vertical parfait */
-  color: #1d3b64 !important;
+  color: var(--mye-primary-color) !important;
   width: 100% !important; /* Prendre toute la place */
   height: auto !important;
   line-height: 1.2 !important;
@@ -349,7 +353,7 @@ body.mye-clean-screen {
 
 .MuiAutocomplete-popper .MuiPaper-root {
   background-color: white !important;
-  border: 2px solid #1d3b64 !important;
+  border: 2px solid var(--mye-primary-color) !important;
   border-radius: 20px !important;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
   overflow: hidden !important;
@@ -376,13 +380,13 @@ body.mye-clean-screen {
 
 .MuiAutocomplete-option[aria-selected="true"], .MuiAutocomplete-option:hover {
   background-color: #f0f4f8 !important;
-  color: #1d3b64 !important;
+  color: var(--mye-primary-color) !important;
 }
 
 /* STYLISATION DU POPUP DE NOTIFICATIONS ORIGINAL */
 #simple-popper-efrei .MuiPaper-root {
   background-color: white !important;
-  border: 2px solid #1d3b64 !important;
+  border: 2px solid var(--mye-primary-color) !important;
   border-radius: 20px !important;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
   overflow: hidden !important;
@@ -406,7 +410,7 @@ body.mye-clean-screen {
 #simple-popper-efrei .MuiTypography-root:first-child {
   /* En-tête "Notifications" */
   background-color: white !important;
-  color: #1d3b64 !important;
+  color: var(--mye-primary-color) !important;
   font-size: 16px !important;
   font-weight: 700 !important;
   padding: 15px 25px !important;
@@ -431,7 +435,7 @@ body.mye-clean-screen {
 
 [role="dropDownMenu"].MuiPopperUnstyled-root .MuiPaper-root {
   background-color: white !important;
-  border: 2px solid #1d3b64 !important;
+  border: 2px solid var(--mye-primary-color) !important;
   border-radius: 20px !important;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
   overflow: hidden !important;
@@ -471,7 +475,7 @@ body.mye-clean-screen {
 
 [role="dropDownMenu"] .MuiMenuItem-root:hover {
   background-color: #f0f4f8 !important;
-  color: #1d3b64 !important;
+  color: var(--mye-primary-color) !important;
 }
 
 [role="dropDownMenu"] .MuiMenuItem-root .MuiSvgIcon-root {
@@ -481,7 +485,7 @@ body.mye-clean-screen {
 }
 
 [role="dropDownMenu"] .MuiMenuItem-root:hover .MuiSvgIcon-root {
-  color: #1d3b64 !important;
+  color: var(--mye-primary-color) !important;
 }
 
 /* ==========================================================================
@@ -545,7 +549,7 @@ body.mye-clean-screen {
   background: none !important;
   border: none !important;
   cursor: pointer !important;
-  color: #1d3b64 !important;
+  color: var(--mye-primary-color) !important;
   padding: 8px !important;
   border-radius: 50% !important;
   display: flex;
@@ -603,7 +607,7 @@ body.mye-clean-screen {
 .mye-drawer-name {
   font-size: 15px !important;
   font-weight: 700 !important;
-  color: #1d3b64 !important;
+  color: var(--mye-primary-color) !important;
   flex-grow: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -643,7 +647,7 @@ body.mye-clean-screen {
   justify-content: space-between !important;
   align-items: center !important;
   padding: 14px 20px !important;
-  color: #1d3b64 !important;
+  color: var(--mye-primary-color) !important;
   font-size: 15px !important;
   font-weight: 700 !important;
   text-decoration: none !important;

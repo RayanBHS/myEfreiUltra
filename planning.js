@@ -1421,13 +1421,13 @@
       
       body.innerHTML = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-          <div style="background-color: #1d3b64; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+          <div style="background-color: var(--mye-primary-color); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
             <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Horaire</div>
             <div style="font-size: 15px; font-weight: 600; color: white; text-align: center;">${cap(dateStr)}</div>
             <div style="font-size: 13px; color: rgba(255,255,255,0.8);">${formatTime(ev.start)} - ${formatTime(ev.end)}</div>
           </div>
           
-          <div style="background-color: #1d3b64; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+          <div style="background-color: var(--mye-primary-color); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
             <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Type</div>
             <div style="font-size: 18px; font-weight: 600; color: white;">${escapeHTML(ev.type)}</div>
             <div class="mye-event-type-pill" style="background-color: ${bgColor}; color: #1d1d1f; margin-top: 4px;">${escapeHTML(ev.type)}</div>

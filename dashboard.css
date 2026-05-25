@@ -81,7 +81,7 @@ body.mye-dashboard-active.dark-mode {
 
 /* CARDS COMMON */
 .mye-dash-card {
-    background: #1D3B64;
+    background: var(--mye-primary-color);
     border-radius: 22px;
     padding: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.03);
@@ -92,7 +92,7 @@ body.mye-dashboard-active.dark-mode {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
 /* LEFT CARD (Profile & Stats) */
@@ -117,11 +117,11 @@ body.mye-dashboard-active.dark-mode {
 }
 
 .mye-dash-period-badge {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #fff;
     background: rgba(255, 255, 255, 0.15);
-    padding: 6px 12px;
+    padding: 5px 12px;
     border-radius: 20px;
 }
 
@@ -340,15 +340,98 @@ body.dark-mode .mye-planning-list::-webkit-scrollbar-thumb {
 }
 
 @media (max-width: 768px) {
+    #mye-custom-dashboard {
+        padding: 10px !important;
+        gap: 15px !important;
+    }
+    
+    .mye-dash-left-card,
+    .mye-dash-right-card {
+        min-width: unset !important;
+        width: 100% !important;
+    }
+    
+    .mye-dash-title,
+    .mye-planning-title {
+        font-size: 26px !important;
+    }
+    
+    .mye-dash-stats-grid {
+        flex-direction: column !important;
+        height: auto !important;
+        gap: 12px !important;
+    }
+    
+    .mye-stat-box {
+        width: 100% !important;
+        min-height: 120px !important;
+        padding: 12px 16px !important;
+    }
+    
+    .mye-stat-middle-col {
+        flex-direction: row !important;
+        width: 100% !important;
+        height: auto !important;
+        gap: 12px !important;
+    }
+    
+    .mye-stat-middle-box {
+        flex: 1 !important;
+        height: 80px !important;
+        padding: 0 12px !important;
+        justify-content: center !important;
+    }
+    
+    .mye-stat-value {
+        font-size: 48px !important;
+        margin-top: 5px !important;
+    }
+    
+    .mye-middle-value {
+        font-size: 36px !important;
+        margin-right: 8px !important;
+        top: 0 !important;
+    }
+    
+    .mye-middle-title {
+        font-size: 13px !important;
+        top: 0 !important;
+    }
+    
+    .mye-stat-progress {
+        margin-top: 8px !important;
+        height: 16px !important;
+    }
+    
     .mye-carousel-container {
         aspect-ratio: 376 / 220;
+    }
+    .mye-carousel-overlay {
+        padding: 20px 15px 15px;
+    }
+    .mye-carousel-title {
+        font-size: 1.2rem;
+    }
+
+    .mye-dash-footer {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    .mye-footer-btn {
+        flex: 1 1 calc(50% - 8px) !important;
+        padding: 10px 5px !important;
+        font-size: 0.8rem !important;
+        border-radius: 12px !important;
     }
 }
 
 .mye-carousel-slide {
-    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    display: none;
 }
 
 .mye-carousel-slide.active {
@@ -429,6 +512,16 @@ body.dark-mode .mye-planning-list::-webkit-scrollbar-thumb {
     border-color: #364b73;
 }
 
+html.dark-mode .mye-carousel-dot,
+body.dark-mode .mye-carousel-dot {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+html.dark-mode .mye-carousel-dot.active,
+body.dark-mode .mye-carousel-dot.active {
+    background: #ffffff;
+    border-color: #ffffff;
+}
+
 /* FOOTER NAV */
 .mye-dash-footer {
     display: flex;
@@ -473,12 +566,16 @@ body.dark-mode .mye-dash-loader-text {
     color: #ccc;
 }
 html.dark-mode .mye-dash-card,
-html.dark-mode .mye-dash-carousel-card,
-body.dark-mode .mye-dash-card,
-body.dark-mode .mye-dash-carousel-card {
+body.dark-mode .mye-dash-card {
     background: #1c1c1e;
     border-color: #2c2c2e;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+html.dark-mode .mye-dash-carousel-card,
+body.dark-mode .mye-dash-carousel-card {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 html.dark-mode .mye-small-spinner,
 body.dark-mode .mye-small-spinner {
@@ -529,3 +626,152 @@ body.dark-mode .mye-planning-date {
     border-color: #3a3a3c;
     color: #fff;
 }
+
+/* THEME CUSTOMIZATION STYLE */
+.mye-dash-header-right-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    position: relative;
+}
+
+.mye-dash-header-settings {
+    position: relative;
+}
+
+.mye-dash-settings-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 20px;
+    padding: 5px 12px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mye-dash-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.mye-dash-settings-btn svg {
+    transition: transform 0.4s ease;
+}
+
+.mye-dash-settings-btn:hover svg {
+    transform: rotate(45deg);
+}
+
+.mye-dash-theme-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e5ea;
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    z-index: 10000;
+    display: none;
+    width: 172px;
+    box-sizing: border-box;
+}
+
+html.dark-mode .mye-dash-theme-menu,
+body.dark-mode .mye-dash-theme-menu {
+    background: #1c1c1e;
+    border-color: #2c2c2e;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+.mye-dash-theme-menu.show {
+    display: block;
+    animation: myeFadeIn 0.2s ease;
+}
+
+@keyframes myeFadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.mye-theme-menu-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #8e8e93;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.mye-theme-colors-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    justify-items: center;
+}
+
+.mye-color-option {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    border-style: solid;
+}
+
+.mye-color-option:hover {
+    transform: scale(1.1);
+}
+
+.mye-color-option.active {
+    border-color: #007aff;
+}
+
+html.dark-mode .mye-color-option.active,
+body.dark-mode .mye-color-option.active {
+    border-color: #ffffff;
+}
+
+/* Predefined Color Option Styles */
+.option-navy { background: var(--mye-primary-color); }
+.option-emerald { background: #0F5132; }
+.option-purple { background: #4A154B; }
+.option-ruby { background: #721C24; }
+.option-slate { background: #2D3748; }
+.option-oled { background: #000000; border: 1px solid rgba(255,255,255,0.1) !important; }
+
+/* Light Mode theme backgrounds for cards */
+#mye-custom-dashboard[data-mye-theme="navy"] .mye-dash-card { background: var(--mye-primary-color); }
+#mye-custom-dashboard[data-mye-theme="emerald"] .mye-dash-card { background: #0F5132; }
+#mye-custom-dashboard[data-mye-theme="purple"] .mye-dash-card { background: #4A154B; }
+#mye-custom-dashboard[data-mye-theme="ruby"] .mye-dash-card { background: #721C24; }
+#mye-custom-dashboard[data-mye-theme="slate"] .mye-dash-card { background: #2D3748; }
+#mye-custom-dashboard[data-mye-theme="oled"] .mye-dash-card { background: #000000; border: 1px solid rgba(255,255,255,0.1); }
+
+/* Dark Mode theme backgrounds for cards */
+html.dark-mode #mye-custom-dashboard[data-mye-theme="navy"] .mye-dash-card,
+body.dark-mode #mye-custom-dashboard[data-mye-theme="navy"] .mye-dash-card { background: #1c1c1e; border-color: #2c2c2e; }
+
+html.dark-mode #mye-custom-dashboard[data-mye-theme="emerald"] .mye-dash-card,
+body.dark-mode #mye-custom-dashboard[data-mye-theme="emerald"] .mye-dash-card { background: #0a2215; border-color: #123e26; }
+
+html.dark-mode #mye-custom-dashboard[data-mye-theme="purple"] .mye-dash-card,
+body.dark-mode #mye-custom-dashboard[data-mye-theme="purple"] .mye-dash-card { background: #210a22; border-color: #38123a; }
+
+html.dark-mode #mye-custom-dashboard[data-mye-theme="ruby"] .mye-dash-card,
+body.dark-mode #mye-custom-dashboard[data-mye-theme="ruby"] .mye-dash-card { background: #2f0b0f; border-color: #4b1218; }
+
+html.dark-mode #mye-custom-dashboard[data-mye-theme="slate"] .mye-dash-card,
+body.dark-mode #mye-custom-dashboard[data-mye-theme="slate"] .mye-dash-card { background: #1a202c; border-color: #2d3748; }
+
+html.dark-mode #mye-custom-dashboard[data-mye-theme="oled"] .mye-dash-card,
+body.dark-mode #mye-custom-dashboard[data-mye-theme="oled"] .mye-dash-card { background: #000000; border-color: #111111; }
