@@ -651,26 +651,407 @@ function buildDashboardHTML() {
                 </div>
             </div>
             
-            <!-- Footer -->
-            <div class="mye-dash-footer">
-                <div class="mye-footer-btn" data-link="actualite">Actualité</div>
-                <div class="mye-footer-btn" data-link="evenements">Evenements</div>
-                <div class="mye-footer-btn" data-link="contact">Contact</div>
-                <div class="mye-footer-btn" data-link="reseaux">Réseaux Sociaux</div>
+            <!-- Footer Segmented Selector -->
+            <div class="mye-segmented-container">
+                <div class="mye-segmented-selector">
+                    <div class="mye-segmented-item active" data-link="actualite">Actualité</div>
+                    <div class="mye-segmented-item" data-link="evenements">Evenements</div>
+                    <div class="mye-segmented-item" data-link="contact">Contact</div>
+                    <div class="mye-segmented-item" data-link="reseaux">Réseaux Sociaux</div>
+                </div>
             </div>
+            
+            <!-- Dynamic Content Area -->
+            <div id="mye-dash-footer-content" style="margin-top: 20px; width: 100%;"></div>
         </div>
     `;
 }
 
 function handleFooterClicks() {
-    document.querySelectorAll('.mye-footer-btn').forEach(btn => {
+    document.querySelectorAll('.mye-segmented-item').forEach(btn => {
         btn.addEventListener('click', () => {
-            // User requested: "pour l'instant, ca ouvre un page vide avec un texte écrit "en constuction""
-            const win = window.open('', '_blank');
-            win.document.write('<h1 style="font-family: sans-serif; text-align: center; margin-top: 50px;">En construction</h1>');
-            win.document.close();
+            const category = btn.getAttribute('data-link');
+            const label = btn.textContent;
+            
+            // Prevent reloading if already active
+            if (btn.classList.contains('active')) return;
+            
+            // Update active state in selector
+            document.querySelectorAll('.mye-segmented-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if (category === 'actualite') {
+                loadFooterNews();
+            } else if (category === 'evenements') {
+                loadFooterEvents();
+            } else {
+                loadFooterConstruction(label);
+            }
         });
     });
+}
+
+async function loadFooterNews() {
+    const container = document.getElementById('mye-dash-footer-content');
+    if (!container) return;
+    
+    // Show spinner
+    container.innerHTML = `
+        <div class="mye-news-spinner">
+            <div class="mye-spinner"></div>
+        </div>
+    `;
+    
+    try {
+        const res = await fetch('/api/rest/common/news?page=0', { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to fetch news');
+        const data = await res.json();
+        
+        let items = [];
+        if (Array.isArray(data)) {
+            items = data;
+        } else if (data && data.content && Array.isArray(data.content)) {
+            items = data.content;
+        } else if (data && data.data && Array.isArray(data.data)) {
+            items = data.data;
+        } else if (data && data.items && Array.isArray(data.items)) {
+            items = data.items;
+        } else if (data && data.news && Array.isArray(data.news)) {
+            items = data.news;
+        }
+        
+        if (items.length === 0) {
+            container.innerHTML = `<div class="mye-dash-card" style="text-align:center; padding: 40px; border-radius:24px; color: #888;">Aucune actualité disponible</div>`;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div id="mye-news-grid" class="mye-news-grid"></div>
+            <div class="mye-dash-more-news-container">
+                <button id="mye-dash-more-news-btn" class="mye-dash-more-news-btn">
+                    Voir toutes les actualités
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        `;
+        const grid = document.getElementById('mye-news-grid');
+        const moreBtn = document.getElementById('mye-dash-more-news-btn');
+        if (moreBtn) {
+            moreBtn.addEventListener('click', () => {
+                window.location.href = '/portal/common/news';
+            });
+        }
+        
+        items.slice(0, 20).forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'mye-news-card mye-news-card-visible';
+            
+            const title = item.title || 'Actualité';
+            const description = item.head || item.description || item.summary || item.text || '';
+            const idSuffix = item._id || Math.random().toString(36).substr(2, 9);
+            let imgUrl = item.picture ? `/api/rest/common/news/images/thumbnail/${item.picture}` : '';
+            
+            let imgHtml = '';
+            if (imgUrl) {
+                imgHtml = `<div class="mye-news-image-wrapper" id="mye-dash-news-img-wrapper-${idSuffix}">
+                             <div class="mye-news-placeholder-image">Chargement...</div>
+                           </div>`;
+            } else {
+                imgHtml = `<div class="mye-news-image-wrapper"><div class="mye-news-placeholder-image">Pas d'image</div></div>`;
+            }
+
+            const dateStr = item.publicationDate || item.date || item.createdAt;
+            let dateHtml = '';
+            if (dateStr) {
+                const d = new Date(dateStr);
+                if (!isNaN(d)) {
+                    dateHtml = `<div class="mye-news-date">${d.toLocaleDateString('fr-FR')}</div>`;
+                }
+            }
+
+            let tagsHtml = '';
+            if (item.tags && Array.isArray(item.tags) && item.tags.length > 0) {
+                const tagsStr = item.tags.map(t => `<span class="mye-news-tag">${t.replace(/</g, '&lt;')}</span>`).join('');
+                tagsHtml = `<div class="mye-news-tags">${tagsStr}</div>`;
+            }
+
+            card.innerHTML = `
+                ${imgHtml}
+                <div class="mye-news-content">
+                  <h3 class="mye-news-title" title="${title.replace(/"/g, '&quot;')}">${title}</h3>
+                  ${dateHtml}
+                  <div class="mye-news-desc">${description}</div>
+                  ${tagsHtml}
+                </div>
+            `;
+            
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.mye-news-tags')) return;
+                const url = item.url || `/portal/common/news/${item._id}`;
+                window.location.href = url;
+            });
+            
+            grid.appendChild(card);
+            
+            // Async load image
+            if (imgUrl) {
+                fetch(imgUrl)
+                  .then(res => {
+                    if (!res.ok) throw new Error('Image fetch failed');
+                    const ct = res.headers.get('content-type') || '';
+                    if (ct.includes('image/')) {
+                      return res.blob().then(blob => URL.createObjectURL(blob));
+                    } else {
+                      return res.text().then(txt => txt.startsWith('data:') ? txt : `data:image/jpeg;base64,${txt}`);
+                    }
+                  })
+                  .then(src => {
+                    const wrapper = document.getElementById(`mye-dash-news-img-wrapper-${idSuffix}`);
+                    if (wrapper) {
+                      wrapper.innerHTML = `<img src="${src}" alt="${title.replace(/"/g, '&quot;')}" class="mye-news-image" style="opacity:0; transition:opacity 0.3s ease;" onload="this.style.opacity=1">`;
+                    }
+                  })
+                  .catch(err => {
+                    const wrapper = document.getElementById(`mye-dash-news-img-wrapper-${idSuffix}`);
+                    if (wrapper) wrapper.innerHTML = `<div class="mye-news-placeholder-image">Pas d'image</div>`;
+                  });
+            }
+        });
+        
+    } catch (e) {
+        console.error('Erreur chargement news dashboard:', e);
+        container.innerHTML = `<div class="mye-dash-card" style="text-align:center; padding: 40px; border-radius:24px; color: red;">Erreur de chargement des actualités</div>`;
+    }
+}
+
+async function loadFooterEvents() {
+    const container = document.getElementById('mye-dash-footer-content');
+    if (!container) return;
+    
+    // Show spinner
+    container.innerHTML = `
+        <div class="mye-news-spinner">
+            <div class="mye-spinner"></div>
+        </div>
+    `;
+    
+    try {
+        const now = new Date();
+        
+        // Fetch from 15 days ago to 60 days in the future to capture all relevant events
+        const s = new Date(now);
+        s.setDate(s.getDate() - 15);
+        s.setHours(0,0,0,0);
+        
+        const e = new Date(now);
+        e.setDate(e.getDate() + 60);
+        e.setHours(23,59,59,999);
+        
+        const fetchCampusEvents = async (campus) => {
+            const url = new URL(`/api/rest/student/calendar/association/${campus}`, window.location.origin);
+            url.searchParams.set('startDate', s.toISOString());
+            url.searchParams.set('endDate', e.toISOString());
+            
+            const res = await fetch(url.toString(), { credentials: 'include' });
+            if (!res.ok) return [];
+            const data = await res.json();
+            
+            let items = [];
+            if (Array.isArray(data)) {
+                items = data;
+            } else if (data && typeof data === 'object') {
+                for (const key of ['events', 'planning', 'agenda', 'data', 'lessons', 'courses', 'content']) {
+                    if (Array.isArray(data[key])) {
+                        items = data[key];
+                        break;
+                    }
+                }
+            }
+            return items;
+        };
+        
+        // Fetch both Paris and Bordeaux concurrently
+        const [parisEvents, bdxEvents] = await Promise.all([
+            fetchCampusEvents('paris'),
+            fetchCampusEvents('bdx')
+        ]);
+        
+        // Merge and deduplicate by event ID or unique key
+        const merged = [...parisEvents, ...bdxEvents];
+        const seenKeys = new Set();
+        const uniqueItems = [];
+        
+        merged.forEach(item => {
+            const title = item.subject || item.title || item.name || item.label || item.summary || '';
+            const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut || '';
+            // Unique key to prevent exact duplicates
+            const key = `${title}_${startVal}`;
+            if (title && startVal && !seenKeys.has(key)) {
+                seenKeys.add(key);
+                uniqueItems.push(item);
+            }
+        });
+        
+        // Filter: Keep only upcoming or ongoing events (end time >= now)
+        const upcomingItems = uniqueItems.filter(item => {
+            const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
+            if (!endVal) return true;
+            return new Date(endVal) >= now;
+        });
+        
+        if (upcomingItems.length === 0) {
+            container.innerHTML = `
+                <div class="mye-dash-card" style="text-align:center; padding: 40px; border-radius:24px; color: #888;">
+                    Aucun événement associatif à venir trouvé pour les prochains jours.
+                    <div style="margin-top: 15px;">
+                        <button class="mye-slide-back-btn" style="align-self: center; display: inline-flex;" onclick="window.location.href='/portal/student/planning'">
+                            Ouvrir le Planning Complet
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Sort events chronologically
+        upcomingItems.sort((a, b) => {
+            const da = new Date(a.start || a.startDate || a.startTime || a.begin || a.debut || a.dateDebut);
+            const db = new Date(b.start || b.startDate || b.startTime || b.begin || b.debut || b.dateDebut);
+            return da - db;
+        });
+        
+        // Render planning items list
+        container.innerHTML = `
+            <div class="mye-dash-events-title">Événements Associatifs à venir</div>
+            <div id="mye-events-grid" class="mye-events-grid"></div>
+        `;
+        const grid = document.getElementById('mye-events-grid');
+        
+        // Limit display to maximum 12 items to avoid page overflow
+        upcomingItems.slice(0, 12).forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'mye-event-card';
+            
+            const title = item.subject || item.title || item.name || item.label || item.summary || 'Événement';
+            
+            const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut;
+            const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
+            const start = startVal ? new Date(startVal) : null;
+            const end = endVal ? new Date(endVal) : null;
+            
+            let dateHtml = '';
+            let timeHtml = '';
+            if (start) {
+                const day = start.getDate();
+                const month = start.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+                dateHtml = `
+                    <div class="mye-event-date-badge">
+                        <span class="mye-event-date-day">${day}</span>
+                        <span class="mye-event-date-month">${month}</span>
+                    </div>
+                `;
+                
+                const timeStart = start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const timeEnd = end ? end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+                timeHtml = timeEnd ? `${timeStart} - ${timeEnd}` : timeStart;
+            } else {
+                dateHtml = `
+                    <div class="mye-event-date-badge">
+                        <span class="mye-event-date-day">?</span>
+                        <span class="mye-event-date-month">Even.</span>
+                    </div>
+                `;
+            }
+            
+            // Salle / Localisation
+            let possibleRooms = [item.rooms, item.room, item.classrooms, item.classroom, item.locations, item.location, item.salles, item.salle, item.building, item.bat, item.site, item.campus];
+            let allRooms = [];
+            possibleRooms.forEach(r => {
+                if (Array.isArray(r)) {
+                    r.forEach(x => {
+                        if (typeof x === 'object' && x) allRooms.push(x.room || x.name || x.label || x.code || '');
+                        else if (x) allRooms.push(String(x));
+                    });
+                } else if (typeof r === 'object' && r) {
+                    allRooms.push(r.room || r.name || r.label || r.code || '');
+                } else if (r) {
+                    allRooms.push(String(r));
+                }
+            });
+            const location = [...new Set(allRooms)].filter(Boolean).join(', ') || 'Non spécifié';
+            
+            // Intervenant / Organisateur / Description
+            let org = item.teacher || item.teachers || item.professor || item.intervenant || item.enseignant || item.organizer || item.organisateurs || '';
+            if (Array.isArray(org)) {
+                org = org.map(o => typeof o === 'object' ? (o.name || `${o.firstName || ''} ${o.lastName || ''}`.trim()) : String(o)).filter(Boolean).join(', ');
+            } else if (typeof org === 'object' && org) {
+                org = org.name || `${org.firstName || ''} ${org.lastName || ''}`.trim() || JSON.stringify(org);
+            }
+            
+            card.innerHTML = `
+                ${dateHtml}
+                <div class="mye-event-card-content">
+                    <h3 class="mye-event-card-title" title="${title.replace(/"/g, '&quot;')}">${title}</h3>
+                    <div class="mye-event-card-meta">
+                        <div class="mye-event-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>${timeHtml}</span>
+                        </div>
+                        <div class="mye-event-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>${location}</span>
+                        </div>
+                        ${org ? `
+                        <div class="mye-event-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>${org}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                if (start) {
+                    sessionStorage.setItem('mye_open_event_time', start.toISOString());
+                    sessionStorage.setItem('mye_default_calendar_category', 'association');
+                    window.location.href = '/portal/student/planning';
+                }
+            });
+            
+            grid.appendChild(card);
+        });
+    } catch (e) {
+        console.error('Erreur chargement événements dashboard:', e);
+        container.innerHTML = `<div class="mye-dash-card" style="text-align:center; padding: 40px; border-radius:24px; color: red;">Erreur de chargement des événements</div>`;
+    }
+}
+
+function loadFooterConstruction(categoryName) {
+    const container = document.getElementById('mye-dash-footer-content');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="mye-dash-card" style="padding: 40px; text-align: center; border-radius: 24px; color: #888;">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; opacity: 0.5; color: var(--mye-primary-color); display: inline-block;">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            </svg>
+            <h3 style="margin: 0 0 8px 0; font-size: 1.2rem; font-weight: 600; color: var(--mye-primary-color);">Section en construction</h3>
+            <p style="margin: 0; font-size: 0.9rem;">La section "${categoryName}" sera bientôt disponible sur votre accueil.</p>
+        </div>
+    `;
 }
 
 function isSlideDetailPage() {
@@ -861,6 +1242,7 @@ function injectDashboard() {
 
     fetchDashboardData();
     handleFooterClicks();
+    loadFooterNews();
 
     // Click events for dashboard cards
     document.getElementById('mye-dash-card-moyenne')?.addEventListener('click', () => {

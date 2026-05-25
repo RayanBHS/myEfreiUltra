@@ -10,7 +10,7 @@ if (savedTheme === 'dark') {
 
 // INITIALISATION DE LA COULEUR DU THEME
 const THEME_COLORS = {
-    navy: 'var(--mye-primary-color)',
+    navy: '#163767',
     emerald: '#0F5132',
     purple: '#4A154B',
     ruby: '#721C24',

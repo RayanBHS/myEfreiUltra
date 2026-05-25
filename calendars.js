@@ -1684,6 +1684,12 @@
     loadSettings();
     applyColors();
 
+    const defaultCategory = sessionStorage.getItem('mye_default_calendar_category');
+    if (defaultCategory) {
+      state.category = defaultCategory;
+      sessionStorage.removeItem('mye_default_calendar_category');
+    }
+
     const targetEventTime = sessionStorage.getItem('mye_open_event_time');
     if (targetEventTime) {
       state.currentDate = new Date(targetEventTime);
