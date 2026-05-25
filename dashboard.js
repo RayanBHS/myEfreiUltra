@@ -304,12 +304,12 @@ function renderSlides(slides) {
         const slideCode = slide.token || slide._id || '';
 
         const slideHtml = `
-            <div class="mye-carousel-slide ${index === 0 ? 'active' : ''}" data-index="${index}" onclick="window.location.href='/portal/student/slides/${slideCode}';">
+            <div class="mye-carousel-slide ${index === 0 ? 'active' : ''}" data-index="${index}" data-slide-code="${slideCode}">
                 <img class="mye-carousel-img" src="${imgUrl}" alt="${slide.title || 'Slide'}" 
                      onerror="
                         var currentSrc = this.getAttribute('src');
                         var attempts = this.dataset.attempts ? this.dataset.attempts.split(',') : [];
-                        var picId = '${fallbackPicId}';
+                        var picId = '${slideCode}';
                         if (picId) {
                             var candidates = [
                                 '/api/rest/common/slides/images/' + picId + '-lg.jpg',
@@ -341,6 +341,16 @@ function renderSlides(slides) {
         
         const dotHtml = `<div class="mye-carousel-dot ${index === 0 ? 'active' : ''}" data-index="${index}"></div>`;
         dotsContainer.insertAdjacentHTML('beforeend', dotHtml);
+    });
+
+    // Bind click events to open slide modal
+    container.querySelectorAll('.mye-carousel-slide').forEach(slideEl => {
+        slideEl.addEventListener('click', () => {
+            const slideCode = slideEl.getAttribute('data-slide-code');
+            if (slideCode) {
+                openSlideModal(slideCode);
+            }
+        });
     });
     
     initCarousel();
@@ -384,6 +394,164 @@ function initCarousel() {
         const carousel = document.getElementById('mye-custom-dashboard');
         if (carousel) showSlide((currentSlide + 1) % totalSlides);
     }, 5000);
+}
+
+async function openSlideModal(slideCode) {
+    if (!slideCode) return;
+    
+    // Prevent multiple modals from opening simultaneously
+    if (document.getElementById('mye-slide-modal')) return;
+    
+    // Create the modal element
+    const modal = document.createElement('div');
+    modal.id = 'mye-slide-modal';
+    
+    modal.innerHTML = `
+        <div class="mye-modal-card">
+            <button class="mye-modal-close-btn" id="mye-modal-close-btn" aria-label="Fermer">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="mye-modal-scrollable" id="mye-modal-scrollable">
+                <div class="mye-modal-inner-loading" style="display:flex; justify-content:center; align-items:center; height:300px; flex-direction:column; gap:16px;">
+                    <div class="mye-spinner"></div>
+                    <div style="color:var(--mye-primary-color); font-weight:600;">Chargement des détails...</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Trigger CSS transition by adding class on next frame
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+    });
+    
+    // Disable body scroll, keeping current scroll position intact
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    
+    // Close modal helper
+    const closeModal = () => {
+        modal.classList.remove('show');
+        document.body.style.overflow = originalOverflow;
+        
+        // Remove from DOM after transition
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+        
+        // Cleanup global listeners
+        document.removeEventListener('keydown', handleEsc);
+    };
+    
+    // Event listeners for closing
+    modal.addEventListener('click', (e) => {
+        // If clicked on backdrop (mye-slide-modal itself)
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    const closeBtn = modal.querySelector('#mye-modal-close-btn');
+    closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeModal();
+    });
+    
+    const handleEsc = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    };
+    document.addEventListener('keydown', handleEsc);
+    
+    // Fetch slide details
+    try {
+        const res = await fetch(`/api/rest/common/slides/${slideCode}`, { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to fetch slide details');
+        const slide = await res.json();
+        
+        const scrollable = modal.querySelector('#mye-modal-scrollable');
+        
+        const title = slide.title || 'Détails de l\'évènement';
+        const author = slide.author || 'Efrei Paris';
+        const dateStr = slide.updateDate || slide.date;
+        let dateHtml = '';
+        if (dateStr) {
+            const d = new Date(dateStr);
+            if (!isNaN(d)) {
+                dateHtml = `Mis à jour le ${d.toLocaleDateString('fr-FR')} à ${d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}`;
+            }
+        }
+        
+        const picId = slide.token || slide.picture || slide._id;
+        const imgUrl = picId ? `/api/rest/common/slides/images/${picId}` : '';
+        
+        let coverHtml = '';
+        if (imgUrl) {
+            coverHtml = `
+                <div class="mye-modal-cover-wrapper">
+                    <img class="mye-modal-cover-img" src="${imgUrl}" alt="${title}" 
+                         onerror="
+                            var currentSrc = this.getAttribute('src');
+                            var attempts = this.dataset.attempts ? this.dataset.attempts.split(',') : [];
+                            var picId = '${picId}';
+                            if (picId) {
+                                var candidates = [
+                                    '/api/rest/common/slides/images/' + picId,
+                                    '/api/rest/common/slides/images/' + picId + '.jpg',
+                                    '/api/rest/common/slides/images/' + picId + '-lg.jpg'
+                                ];
+                                var nextUrl = '';
+                                for (var i = 0; i < candidates.length; i++) {
+                                    if (candidates[i] !== currentSrc && attempts.indexOf(candidates[i]) === -1) {
+                                        nextUrl = candidates[i];
+                                        break;
+                                    }
+                                }
+                                if (nextUrl) {
+                                    attempts.push(currentSrc);
+                                    this.dataset.attempts = attempts.join(',');
+                                    this.src = nextUrl;
+                                    return;
+                                }
+                            }
+                            this.parentNode.style.display = 'none';
+                         ">
+                </div>
+            `;
+        }
+        
+        scrollable.innerHTML = `
+            <div class="mye-article-header-card" style="background-color: var(--mye-primary-color); margin-bottom: 16px;">
+                <h1 class="mye-article-title" style="margin-bottom: 0; color: white !important; font-size: 32px;">${title}</h1>
+            </div>
+            
+            <div class="mye-article-info-bar" style="background-color: var(--mye-primary-color); border: none; margin-bottom: 24px;">
+                <div class="mye-article-date" style="color: white !important;">${dateHtml ? dateHtml : 'Actualité'}</div>
+                <div class="mye-article-author" style="background-color: white !important; color: var(--mye-primary-color) !important; font-weight: bold;">${author}</div>
+            </div>
+            
+            ${coverHtml}
+            
+            <div class="mye-article-body" style="margin-top: 24px;">
+                ${slide.text || '<p>Aucun contenu supplémentaire disponible.</p>'}
+            </div>
+        `;
+    } catch (err) {
+        console.error(err);
+        const scrollable = modal.querySelector('#mye-modal-scrollable');
+        scrollable.innerHTML = `
+            <div style="padding:40px; text-align:center;">
+                <h2 style="color:red; margin-bottom:10px;">Erreur de chargement</h2>
+                <p style="color:#666;">Impossible de charger les détails de cet évènement.</p>
+            </div>
+        `;
+    }
 }
 
 function buildDashboardHTML() {
@@ -505,15 +673,169 @@ function handleFooterClicks() {
     });
 }
 
+function isSlideDetailPage() {
+    return window.location.pathname.includes('/portal/student/slides/');
+}
+
+function getSlideCode() {
+    const match = window.location.pathname.match(/\/portal\/student\/slides\/([a-zA-Z0-9_-]+)/i);
+    return match ? match[1] : null;
+}
+
+function buildSlideDetailHTML(slide) {
+    const title = slide.title || 'Détails de l\'évènement';
+    const author = slide.author || 'Efrei Paris';
+    const dateStr = slide.updateDate || slide.date;
+    let dateHtml = '';
+    if (dateStr) {
+        const d = new Date(dateStr);
+        if (!isNaN(d)) {
+            dateHtml = `Mis à jour le ${d.toLocaleDateString('fr-FR')} à ${d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}`;
+        }
+    }
+    
+    const picId = slide.token || slide.picture || slide._id;
+    const imgUrl = picId ? `/api/rest/common/slides/images/${picId}` : '';
+    
+    let coverHtml = '';
+    if (imgUrl) {
+        coverHtml = `
+            <div class="mye-slide-cover-wrapper">
+                <img class="mye-slide-cover-img" src="${imgUrl}" alt="${title}" 
+                     onerror="
+                        var currentSrc = this.getAttribute('src');
+                        var attempts = this.dataset.attempts ? this.dataset.attempts.split(',') : [];
+                        var picId = '${picId}';
+                        if (picId) {
+                            var candidates = [
+                                '/api/rest/common/slides/images/' + picId,
+                                '/api/rest/common/slides/images/' + picId + '.jpg',
+                                '/api/rest/common/slides/images/' + picId + '-lg.jpg'
+                            ];
+                            var nextUrl = '';
+                            for (var i = 0; i < candidates.length; i++) {
+                                if (candidates[i] !== currentSrc && attempts.indexOf(candidates[i]) === -1) {
+                                    nextUrl = candidates[i];
+                                    break;
+                                }
+                            }
+                            if (nextUrl) {
+                                attempts.push(currentSrc);
+                                this.dataset.attempts = attempts.join(',');
+                                this.src = nextUrl;
+                                return;
+                            }
+                        }
+                        this.parentNode.style.display = 'none';
+                     ">
+            </div>
+        `;
+    }
+
+    return `
+        <div class="mye-slide-inner">
+            <button class="mye-slide-back-btn" onclick="window.location.href='/portal/student/home';">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Retour à l'accueil
+            </button>
+            <div class="mye-article-header-card" style="background-color: var(--mye-primary-color); margin-bottom: 16px;">
+                <h1 class="mye-article-title" style="margin-bottom: 0; color: white !important; font-size: 36px;">${title}</h1>
+            </div>
+            
+            <div class="mye-article-info-bar" style="background-color: var(--mye-primary-color); border: none; margin-bottom: 24px;">
+                <div class="mye-article-date" style="color: white !important;">${dateHtml ? dateHtml : 'Actualité'}</div>
+                <div class="mye-article-author" style="background-color: white !important; color: var(--mye-primary-color) !important; font-weight: bold;">${author}</div>
+            </div>
+            
+            ${coverHtml}
+            
+            <div class="mye-article-body" style="margin-top: 24px; padding: 0 10px;">
+                ${slide.text || '<p>Aucun contenu supplémentaire disponible.</p>'}
+            </div>
+        </div>
+    `;
+}
+
+async function injectSlideDetail() {
+    const slideCode = getSlideCode();
+    if (!slideCode) return;
+    
+    if (document.getElementById('mye-custom-slide-detail')) {
+        document.body.classList.add('mye-dashboard-active');
+        return;
+    }
+    
+    const existingDash = document.getElementById('mye-custom-dashboard');
+    if (existingDash) existingDash.remove();
+    
+    document.body.classList.add('mye-dashboard-active');
+    
+    const wrapper = document.createElement('div');
+    wrapper.id = 'mye-custom-slide-detail';
+    wrapper.className = 'mye-page-container';
+    wrapper.style.marginTop = '80px';
+    
+    wrapper.innerHTML = `
+        <div class="mye-slide-inner" style="display:flex; justify-content:center; align-items:center; height:300px; flex-direction:column; gap:16px;">
+            <div class="mye-spinner"></div>
+            <div style="color:var(--mye-primary-color); font-weight:600;">Chargement des détails...</div>
+        </div>
+    `;
+    
+    document.body.appendChild(wrapper);
+    
+    try {
+        const res = await fetch(`/api/rest/common/slides/${slideCode}`, { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to fetch slide details');
+        const slide = await res.json();
+        
+        wrapper.innerHTML = buildSlideDetailHTML(slide);
+    } catch (err) {
+        console.error(err);
+        wrapper.innerHTML = `
+            <div class="mye-slide-inner">
+                <button class="mye-slide-back-btn" onclick="window.location.href='/portal/student/home';">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Retour à l'accueil
+                </button>
+                <div class="mye-slide-card mye-dash-card" style="padding:40px; text-align:center;">
+                    <h2 style="color:red; margin-bottom:10px;">Erreur de chargement</h2>
+                    <p style="color:#666;">Impossible de charger les détails de cet évènement.</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
 function injectDashboard() {
+    if (isSlideDetailPage()) {
+        const existingDash = document.getElementById('mye-custom-dashboard');
+        if (existingDash) existingDash.remove();
+        injectSlideDetail();
+        return;
+    }
+
     // Only inject if on student home
     if (!window.location.pathname.includes('/portal/student/home')) {
-        const existing = document.getElementById('mye-custom-dashboard');
-        if (existing) {
-            existing.remove();
-            document.body.classList.remove('mye-dashboard-active');
-        }
+        const existingDash = document.getElementById('mye-custom-dashboard');
+        if (existingDash) existingDash.remove();
+        
+        const existingDetail = document.getElementById('mye-custom-slide-detail');
+        if (existingDetail) existingDetail.remove();
+        
+        document.body.classList.remove('mye-dashboard-active');
         return;
+    }
+    
+    const existingDetail = document.getElementById('mye-custom-slide-detail');
+    if (existingDetail) {
+        existingDetail.remove();
     }
     
     // Prevent multiple injections
