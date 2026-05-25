@@ -657,7 +657,7 @@ function buildDashboardHTML() {
                     <div class="mye-segmented-item active" data-link="actualite">Actualité</div>
                     <div class="mye-segmented-item" data-link="evenements">Evenements</div>
                     <div class="mye-segmented-item" data-link="contact">Contact</div>
-                    <div class="mye-segmented-item" data-link="social">Social</div>
+                    <div class="mye-segmented-item" data-link="reseaux">Sociale</div>
                 </div>
             </div>
             
@@ -684,6 +684,8 @@ function handleFooterClicks() {
                 loadFooterNews();
             } else if (category === 'evenements') {
                 loadFooterEvents();
+            } else if (category === 'reseaux') {
+                loadFooterSocials();
             } else {
                 loadFooterConstruction(label);
             }
@@ -874,194 +876,331 @@ async function loadFooterEvents() {
         };
         
         // Fetch both Paris and Bordeaux concurrently
-        const [parisRaw, bdxRaw] = await Promise.all([
+        const [parisEvents, bdxEvents] = await Promise.all([
             fetchCampusEvents('paris'),
             fetchCampusEvents('bdx')
         ]);
         
-        // Deduplicate and filter lists separately
-        const cleanList = (list) => {
-            const seen = new Set();
-            const unique = [];
-            list.forEach(item => {
+        const processEvents = (eventsList) => {
+            const seenKeys = new Set();
+            const uniqueItems = [];
+            
+            eventsList.forEach(item => {
                 const title = item.subject || item.title || item.name || item.label || item.summary || '';
                 const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut || '';
                 const key = `${title}_${startVal}`;
-                if (title && startVal && !seen.has(key)) {
-                    seen.add(key);
-                    unique.push(item);
+                if (title && startVal && !seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    uniqueItems.push(item);
                 }
             });
-            // Filter: end time >= now
-            return unique.filter(item => {
+            
+            const upcomingItems = uniqueItems.filter(item => {
                 const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
                 if (!endVal) return true;
                 return new Date(endVal) >= now;
-            }).sort((a, b) => {
+            });
+            
+            upcomingItems.sort((a, b) => {
                 const da = new Date(a.start || a.startDate || a.startTime || a.begin || a.debut || a.dateDebut);
                 const db = new Date(b.start || b.startDate || b.startTime || b.begin || b.debut || b.dateDebut);
                 return da - db;
             });
+            
+            return upcomingItems;
         };
+
+        const upcomingParis = processEvents(parisEvents);
+        const upcomingBdx = processEvents(bdxEvents);
         
-        const cachedEvents = {
-            paris: cleanList(parisRaw),
-            bdx: cleanList(bdxRaw)
-        };
-        
-        // Default selected campus (stored or fallback to paris)
-        const defaultCampus = localStorage.getItem('mye_default_campus') || 'paris';
-        
-        // Render header with dropdown select
         container.innerHTML = `
-            <div class="mye-dash-events-header">
-                <div class="mye-dash-events-title">Événements Associatifs à venir</div>
-                <div class="mye-events-select-wrapper">
-                    <select id="mye-events-campus-select" class="mye-events-campus-select">
-                        <option value="paris" ${defaultCampus === 'paris' ? 'selected' : ''}>Paris</option>
-                        <option value="bdx" ${defaultCampus === 'bdx' ? 'selected' : ''}>Bordeaux</option>
-                    </select>
+            <div class="mye-dash-events-title" style="margin-bottom: 24px; font-size: 1.2rem;">Événements Associatifs à venir</div>
+            <div style="display: flex; gap: 24px; flex-wrap: wrap; width: 100%;">
+                
+                <!-- Paris Popup Card -->
+                <div class="mye-dash-card" style="flex: 1; min-width: 320px; padding: 24px; border-radius: 24px; display: flex; flex-direction: column; background: var(--mye-primary-color, #163767);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255, 255, 255, 0.2); color: #ffffff; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </div>
+                        <h2 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #ffffff;">Campus Paris</h2>
+                    </div>
+                    <div id="mye-events-list-paris" style="display: flex; flex-direction: column; gap: 12px;">
+                        ${upcomingParis.length === 0 ? '<div style="color: rgba(255,255,255,0.7); text-align: center; padding: 30px 0;">Aucun événement prévu</div>' : ''}
+                    </div>
                 </div>
+
+                <!-- Bordeaux Popup Card -->
+                <div class="mye-dash-card" style="flex: 1; min-width: 320px; padding: 24px; border-radius: 24px; display: flex; flex-direction: column; background: var(--mye-primary-color, #163767);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255, 255, 255, 0.2); color: #ffffff; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </div>
+                        <h2 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #ffffff;">Campus Bordeaux</h2>
+                    </div>
+                    <div id="mye-events-list-bdx" style="display: flex; flex-direction: column; gap: 12px;">
+                        ${upcomingBdx.length === 0 ? '<div style="color: rgba(255,255,255,0.7); text-align: center; padding: 30px 0;">Aucun événement prévu</div>' : ''}
+                    </div>
+                </div>
+
             </div>
-            <div id="mye-events-grid" class="mye-events-grid"></div>
+            
+            <div class="mye-dash-more-news-container">
+                <button id="mye-dash-more-events-btn" class="mye-dash-more-news-btn">
+                    Voir tous les événements
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
         `;
         
-        const grid = document.getElementById('mye-events-grid');
-        const select = document.getElementById('mye-events-campus-select');
-        
-        const renderGridForCampus = (campus) => {
-            grid.innerHTML = '';
-            const events = cachedEvents[campus] || [];
-            
-            if (events.length === 0) {
-                grid.innerHTML = `
-                    <div class="mye-dash-card" style="grid-column: 1/-1; text-align:center; padding: 40px; border-radius:24px; color: #888; width: 100%;">
-                        Aucun événement associatif à venir trouvé pour ce campus.
-                        <div style="margin-top: 15px;">
-                            <button class="mye-slide-back-btn" style="align-self: center; display: inline-flex;" onclick="window.location.href='/portal/common/calendars'">
-                                Ouvrir le Planning Complet
-                            </button>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            events.slice(0, 12).forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'mye-event-card';
-                
-                const title = item.subject || item.title || item.name || item.label || item.summary || 'Événement';
-                const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut;
-                const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
-                const start = startVal ? new Date(startVal) : null;
-                const end = endVal ? new Date(endVal) : null;
-                
-                let dateHtml = '';
-                let timeHtml = '';
-                if (start) {
-                    const day = start.getDate();
-                    const month = start.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
-                    dateHtml = `
-                        <div class="mye-event-date-badge">
-                            <span class="mye-event-date-day">${day}</span>
-                            <span class="mye-event-date-month">${month}</span>
-                        </div>
-                    `;
-                    
-                    const timeStart = start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                    const timeEnd = end ? end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
-                    timeHtml = timeEnd ? `${timeStart} - ${timeEnd}` : timeStart;
-                } else {
-                    dateHtml = `
-                        <div class="mye-event-date-badge">
-                            <span class="mye-event-date-day">?</span>
-                            <span class="mye-event-date-month">Even.</span>
-                        </div>
-                    `;
-                }
-                
-                let possibleRooms = [item.rooms, item.room, item.classrooms, item.classroom, item.locations, item.location, item.salles, item.salle, item.building, item.bat, item.site, item.campus];
-                let allRooms = [];
-                possibleRooms.forEach(r => {
-                    if (Array.isArray(r)) {
-                        r.forEach(x => {
-                            if (typeof x === 'object' && x) allRooms.push(x.room || x.name || x.label || x.code || '');
-                            else if (x) allRooms.push(String(x));
-                        });
-                    } else if (typeof r === 'object' && r) {
-                        allRooms.push(r.room || r.name || r.label || r.code || '');
-                    } else if (r) {
-                        allRooms.push(String(r));
-                    }
-                });
-                const location = [...new Set(allRooms)].filter(Boolean).join(', ') || 'Non spécifié';
-                
-                let org = item.teacher || item.teachers || item.professor || item.intervenant || item.enseignant || item.organizer || item.organisateurs || '';
-                if (Array.isArray(org)) {
-                    org = org.map(o => typeof o === 'object' ? (o.name || `${o.firstName || ''} ${o.lastName || ''}`.trim()) : String(o)).filter(Boolean).join(', ');
-                } else if (typeof org === 'object' && org) {
-                    org = org.name || `${org.firstName || ''} ${org.lastName || ''}`.trim() || JSON.stringify(org);
-                }
-                
-                card.innerHTML = `
-                    ${dateHtml}
-                    <div class="mye-event-card-content">
-                        <h3 class="mye-event-card-title" title="${title.replace(/"/g, '&quot;')}">${title}</h3>
-                        <div class="mye-event-card-meta">
-                            <div class="mye-event-meta-item">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                <span>${timeHtml}</span>
-                            </div>
-                            <div class="mye-event-meta-item">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                    <circle cx="12" cy="10" r="3"></circle>
-                                </svg>
-                                <span>${location}</span>
-                            </div>
-                            ${org ? `
-                            <div class="mye-event-meta-item">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
-                                <span>${org}</span>
-                            </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-                
-                card.addEventListener('click', () => {
-                    if (start) {
-                        sessionStorage.setItem('mye_open_event_time', start.toISOString());
-                        sessionStorage.setItem('mye_default_calendar_category', 'ilab');
-                        window.location.href = '/portal/common/calendars';
-                    }
-                });
-                
-                grid.appendChild(card);
-            });
-        };
-        
-        // Initial render
-        renderGridForCampus(defaultCampus);
-        
-        // Select listener
-        if (select) {
-            select.addEventListener('change', (e) => {
-                const selected = e.target.value;
-                localStorage.setItem('mye_default_campus', selected);
-                renderGridForCampus(selected);
+        const moreEvtBtn = document.getElementById('mye-dash-more-events-btn');
+        if (moreEvtBtn) {
+            moreEvtBtn.addEventListener('click', () => {
+                sessionStorage.setItem('mye_default_calendar_category', 'ilab');
+                window.location.href = '/portal/common/calendars';
             });
         }
+
+        const renderEventCard = (item, parentGrid) => {
+            const card = document.createElement('div');
+            card.className = 'mye-event-card';
+            
+            const title = item.subject || item.title || item.name || item.label || item.summary || 'Événement';
+            
+            const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut;
+            const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
+            const start = startVal ? new Date(startVal) : null;
+            const end = endVal ? new Date(endVal) : null;
+            
+            let dateHtml = '';
+            let timeHtml = '';
+            if (start) {
+                const day = start.getDate();
+                const month = start.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+                dateHtml = `
+                    <div class="mye-event-date-badge">
+                        <span class="mye-event-date-day">${day}</span>
+                        <span class="mye-event-date-month">${month}</span>
+                    </div>
+                `;
+                
+                const timeStart = start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const timeEnd = end ? end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+                timeHtml = timeEnd ? `${timeStart} - ${timeEnd}` : timeStart;
+            } else {
+                dateHtml = `
+                    <div class="mye-event-date-badge">
+                        <span class="mye-event-date-day">?</span>
+                        <span class="mye-event-date-month">Even.</span>
+                    </div>
+                `;
+            }
+            
+            let possibleRooms = [item.rooms, item.room, item.classrooms, item.classroom, item.locations, item.location, item.salles, item.salle, item.building, item.bat, item.site, item.campus];
+            let allRooms = [];
+            possibleRooms.forEach(r => {
+                if (Array.isArray(r)) {
+                    r.forEach(x => {
+                        if (typeof x === 'object' && x) allRooms.push(x.room || x.name || x.label || x.code || '');
+                        else if (x) allRooms.push(String(x));
+                    });
+                } else if (typeof r === 'object' && r) {
+                    allRooms.push(r.room || r.name || r.label || r.code || '');
+                } else if (r) {
+                    allRooms.push(String(r));
+                }
+            });
+            const location = [...new Set(allRooms)].filter(Boolean).join(', ') || 'Non spécifié';
+            
+            let org = item.teacher || item.teachers || item.professor || item.intervenant || item.enseignant || item.organizer || item.organisateurs || '';
+            if (Array.isArray(org)) {
+                org = org.map(o => typeof o === 'object' ? (o.name || `${o.firstName || ''} ${o.lastName || ''}`.trim()) : String(o)).filter(Boolean).join(', ');
+            } else if (typeof org === 'object' && org) {
+                org = org.name || `${org.firstName || ''} ${org.lastName || ''}`.trim() || JSON.stringify(org);
+            }
+            
+            card.innerHTML = `
+                ${dateHtml}
+                <div class="mye-event-card-content">
+                    <h3 class="mye-event-card-title" title="${title.replace(/"/g, '&quot;')}">${title}</h3>
+                    <div class="mye-event-card-meta">
+                        <div class="mye-event-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>${timeHtml}</span>
+                        </div>
+                        <div class="mye-event-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>${location}</span>
+                        </div>
+                        ${org ? `
+                        <div class="mye-event-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>${org}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                if (start) {
+                    sessionStorage.setItem('mye_open_event_time', start.toISOString());
+                }
+                sessionStorage.setItem('mye_default_calendar_category', 'ilab');
+                window.location.href = '/portal/common/calendars';
+            });
+            
+            parentGrid.appendChild(card);
+        };
+
+        const gridParis = document.getElementById('mye-events-list-paris');
+        const gridBdx = document.getElementById('mye-events-list-bdx');
+        
+        upcomingParis.slice(0, 6).forEach(item => renderEventCard(item, gridParis));
+        upcomingBdx.slice(0, 6).forEach(item => renderEventCard(item, gridBdx));
     } catch (e) {
         console.error('Erreur chargement événements dashboard:', e);
         container.innerHTML = `<div class="mye-dash-card" style="text-align:center; padding: 40px; border-radius:24px; color: red;">Erreur de chargement des événements</div>`;
+    }
+}
+
+async function loadFooterSocials() {
+    const container = document.getElementById('mye-dash-footer-content');
+    if (!container) return;
+    
+    // Show spinner
+    container.innerHTML = `
+        <div class="mye-news-spinner">
+            <div class="mye-spinner"></div>
+        </div>
+    `;
+    
+    try {
+        const [ytRes, instaRes] = await Promise.all([
+            fetch('/api/rest/common/socials/last-youtube', { credentials: 'include' }).catch(() => null),
+            fetch('/api/rest/common/socials/last-instagram', { credentials: 'include' }).catch(() => null)
+        ]);
+        
+        let ytItems = [];
+        let instaItems = [];
+        
+        if (ytRes && ytRes.ok) ytItems = await ytRes.json();
+        if (instaRes && instaRes.ok) instaItems = await instaRes.json();
+        
+        container.innerHTML = `
+            <div class="mye-dash-events-title" style="margin-bottom: 24px; font-size: 1.2rem;">Derniers posts sur nos réseaux</div>
+            <div style="display: flex; gap: 24px; flex-wrap: wrap; width: 100%;">
+                
+                <!-- YouTube Column -->
+                <div class="mye-dash-card" style="flex: 1; min-width: 320px; padding: 24px; border-radius: 24px; display: flex; flex-direction: column; background: var(--mye-card-bg, #ffffff);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255, 0, 0, 0.1); color: #ff0000; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+                            </svg>
+                        </div>
+                        <h2 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--mye-text-primary, #1d1d1f);">Dernières Vidéos YouTube</h2>
+                    </div>
+                    <div id="mye-social-list-yt" style="display: flex; flex-direction: column; gap: 16px;">
+                        ${ytItems.length === 0 ? '<div style="color: #888; text-align: center; padding: 30px 0;">Aucune vidéo trouvée</div>' : ''}
+                    </div>
+                </div>
+
+                <!-- Instagram Column -->
+                <div class="mye-dash-card" style="flex: 1; min-width: 320px; padding: 24px; border-radius: 24px; display: flex; flex-direction: column; background: var(--mye-card-bg, #ffffff);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(225, 48, 108, 0.1); color: #e1306c; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </div>
+                        <h2 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--mye-text-primary, #1d1d1f);">Derniers Posts Instagram</h2>
+                    </div>
+                    <div id="mye-social-list-insta" style="display: flex; flex-direction: column; gap: 16px;">
+                        ${instaItems.length === 0 ? '<div style="color: #888; text-align: center; padding: 30px 0;">Aucun post trouvé</div>' : ''}
+                    </div>
+                </div>
+
+            </div>
+            <div class="mye-dash-more-news-container">
+                <button id="mye-dash-more-social-btn" class="mye-dash-more-news-btn">
+                    Visiter myEfrei
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        const moreBtn = document.getElementById('mye-dash-more-social-btn');
+        if (moreBtn) {
+            moreBtn.addEventListener('click', () => {
+                window.open('https://www.efrei.fr', '_blank');
+            });
+        }
+        
+        const ytGrid = document.getElementById('mye-social-list-yt');
+        const instaGrid = document.getElementById('mye-social-list-insta');
+        
+        ytItems.slice(0, 4).forEach(item => {
+            const card = document.createElement('a');
+            card.href = `https://www.youtube.com/watch?v=${item.id}`;
+            card.target = '_blank';
+            card.className = 'mye-social-card yt-card';
+            
+            card.innerHTML = `
+                <div class="mye-social-thumb" style="background-image: url('https://img.youtube.com/vi/${item.id}/mqdefault.jpg');"></div>
+                <div class="mye-social-content">
+                    <div class="mye-social-title">${item.text || 'Vidéo YouTube'}</div>
+                </div>
+            `;
+            ytGrid.appendChild(card);
+        });
+
+        instaItems.slice(0, 4).forEach(item => {
+            const card = document.createElement('a');
+            card.href = item.link || '#';
+            card.target = '_blank';
+            card.className = 'mye-social-card insta-card';
+            
+            const thumbUrl = item.media || '';
+            const caption = item.text || 'Post Instagram';
+            
+            card.innerHTML = `
+                <div class="mye-social-thumb" style="background-image: url('${thumbUrl}');"></div>
+                <div class="mye-social-content">
+                    <div class="mye-social-title">${caption}</div>
+                    <div class="mye-social-date">${item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('fr-FR') : ''}</div>
+                </div>
+            `;
+            instaGrid.appendChild(card);
+        });
+        
+    } catch (e) {
+        console.error('Erreur chargement reseaux sociaux:', e);
+        container.innerHTML = `<div class="mye-dash-card" style="text-align:center; padding: 40px; border-radius:24px; color: red;">Erreur de chargement des réseaux sociaux</div>`;
     }
 }
 
