@@ -851,7 +851,7 @@ async function loadFooterEvents() {
         e.setHours(23,59,59,999);
         
         const fetchCampusEvents = async (campus) => {
-            const url = new URL(`/api/rest/student/calendar/association/${campus}`, window.location.origin);
+            const url = new URL(`/api/rest/student/calendar/ilab/${campus}`, window.location.origin);
             url.searchParams.set('startDate', s.toISOString());
             url.searchParams.set('endDate', e.toISOString());
             
@@ -874,165 +874,191 @@ async function loadFooterEvents() {
         };
         
         // Fetch both Paris and Bordeaux concurrently
-        const [parisEvents, bdxEvents] = await Promise.all([
+        const [parisRaw, bdxRaw] = await Promise.all([
             fetchCampusEvents('paris'),
             fetchCampusEvents('bdx')
         ]);
         
-        // Merge and deduplicate by event ID or unique key
-        const merged = [...parisEvents, ...bdxEvents];
-        const seenKeys = new Set();
-        const uniqueItems = [];
+        // Deduplicate and filter lists separately
+        const cleanList = (list) => {
+            const seen = new Set();
+            const unique = [];
+            list.forEach(item => {
+                const title = item.subject || item.title || item.name || item.label || item.summary || '';
+                const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut || '';
+                const key = `${title}_${startVal}`;
+                if (title && startVal && !seen.has(key)) {
+                    seen.add(key);
+                    unique.push(item);
+                }
+            });
+            // Filter: end time >= now
+            return unique.filter(item => {
+                const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
+                if (!endVal) return true;
+                return new Date(endVal) >= now;
+            }).sort((a, b) => {
+                const da = new Date(a.start || a.startDate || a.startTime || a.begin || a.debut || a.dateDebut);
+                const db = new Date(b.start || b.startDate || b.startTime || b.begin || b.debut || b.dateDebut);
+                return da - db;
+            });
+        };
         
-        merged.forEach(item => {
-            const title = item.subject || item.title || item.name || item.label || item.summary || '';
-            const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut || '';
-            // Unique key to prevent exact duplicates
-            const key = `${title}_${startVal}`;
-            if (title && startVal && !seenKeys.has(key)) {
-                seenKeys.add(key);
-                uniqueItems.push(item);
-            }
-        });
+        const cachedEvents = {
+            paris: cleanList(parisRaw),
+            bdx: cleanList(bdxRaw)
+        };
         
-        // Filter: Keep only upcoming or ongoing events (end time >= now)
-        const upcomingItems = uniqueItems.filter(item => {
-            const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
-            if (!endVal) return true;
-            return new Date(endVal) >= now;
-        });
+        // Default selected campus (stored or fallback to paris)
+        const defaultCampus = localStorage.getItem('mye_default_campus') || 'paris';
         
-        if (upcomingItems.length === 0) {
-            container.innerHTML = `
-                <div class="mye-dash-card" style="text-align:center; padding: 40px; border-radius:24px; color: #888;">
-                    Aucun événement associatif à venir trouvé pour les prochains jours.
-                    <div style="margin-top: 15px;">
-                        <button class="mye-slide-back-btn" style="align-self: center; display: inline-flex;" onclick="window.location.href='/portal/student/planning'">
-                            Ouvrir le Planning Complet
-                        </button>
-                    </div>
-                </div>
-            `;
-            return;
-        }
-        
-        // Sort events chronologically
-        upcomingItems.sort((a, b) => {
-            const da = new Date(a.start || a.startDate || a.startTime || a.begin || a.debut || a.dateDebut);
-            const db = new Date(b.start || b.startDate || b.startTime || b.begin || b.debut || b.dateDebut);
-            return da - db;
-        });
-        
-        // Render planning items list
+        // Render header with dropdown select
         container.innerHTML = `
-            <div class="mye-dash-events-title">Événements Associatifs à venir</div>
+            <div class="mye-dash-events-header">
+                <div class="mye-dash-events-title">Événements Associatifs à venir</div>
+                <div class="mye-events-select-wrapper">
+                    <select id="mye-events-campus-select" class="mye-events-campus-select">
+                        <option value="paris" ${defaultCampus === 'paris' ? 'selected' : ''}>Paris</option>
+                        <option value="bdx" ${defaultCampus === 'bdx' ? 'selected' : ''}>Bordeaux</option>
+                    </select>
+                </div>
+            </div>
             <div id="mye-events-grid" class="mye-events-grid"></div>
         `;
-        const grid = document.getElementById('mye-events-grid');
         
-        // Limit display to maximum 12 items to avoid page overflow
-        upcomingItems.slice(0, 12).forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'mye-event-card';
+        const grid = document.getElementById('mye-events-grid');
+        const select = document.getElementById('mye-events-campus-select');
+        
+        const renderGridForCampus = (campus) => {
+            grid.innerHTML = '';
+            const events = cachedEvents[campus] || [];
             
-            const title = item.subject || item.title || item.name || item.label || item.summary || 'Événement';
+            if (events.length === 0) {
+                grid.innerHTML = `
+                    <div class="mye-dash-card" style="grid-column: 1/-1; text-align:center; padding: 40px; border-radius:24px; color: #888; width: 100%;">
+                        Aucun événement associatif à venir trouvé pour ce campus.
+                        <div style="margin-top: 15px;">
+                            <button class="mye-slide-back-btn" style="align-self: center; display: inline-flex;" onclick="window.location.href='/portal/common/calendars'">
+                                Ouvrir le Planning Complet
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
             
-            const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut;
-            const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
-            const start = startVal ? new Date(startVal) : null;
-            const end = endVal ? new Date(endVal) : null;
-            
-            let dateHtml = '';
-            let timeHtml = '';
-            if (start) {
-                const day = start.getDate();
-                const month = start.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
-                dateHtml = `
-                    <div class="mye-event-date-badge">
-                        <span class="mye-event-date-day">${day}</span>
-                        <span class="mye-event-date-month">${month}</span>
+            events.slice(0, 12).forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'mye-event-card';
+                
+                const title = item.subject || item.title || item.name || item.label || item.summary || 'Événement';
+                const startVal = item.start || item.startDate || item.startTime || item.begin || item.debut || item.dateDebut;
+                const endVal = item.end || item.endDate || item.endTime || item.fin || item.dateFin;
+                const start = startVal ? new Date(startVal) : null;
+                const end = endVal ? new Date(endVal) : null;
+                
+                let dateHtml = '';
+                let timeHtml = '';
+                if (start) {
+                    const day = start.getDate();
+                    const month = start.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+                    dateHtml = `
+                        <div class="mye-event-date-badge">
+                            <span class="mye-event-date-day">${day}</span>
+                            <span class="mye-event-date-month">${month}</span>
+                        </div>
+                    `;
+                    
+                    const timeStart = start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    const timeEnd = end ? end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+                    timeHtml = timeEnd ? `${timeStart} - ${timeEnd}` : timeStart;
+                } else {
+                    dateHtml = `
+                        <div class="mye-event-date-badge">
+                            <span class="mye-event-date-day">?</span>
+                            <span class="mye-event-date-month">Even.</span>
+                        </div>
+                    `;
+                }
+                
+                let possibleRooms = [item.rooms, item.room, item.classrooms, item.classroom, item.locations, item.location, item.salles, item.salle, item.building, item.bat, item.site, item.campus];
+                let allRooms = [];
+                possibleRooms.forEach(r => {
+                    if (Array.isArray(r)) {
+                        r.forEach(x => {
+                            if (typeof x === 'object' && x) allRooms.push(x.room || x.name || x.label || x.code || '');
+                            else if (x) allRooms.push(String(x));
+                        });
+                    } else if (typeof r === 'object' && r) {
+                        allRooms.push(r.room || r.name || r.label || r.code || '');
+                    } else if (r) {
+                        allRooms.push(String(r));
+                    }
+                });
+                const location = [...new Set(allRooms)].filter(Boolean).join(', ') || 'Non spécifié';
+                
+                let org = item.teacher || item.teachers || item.professor || item.intervenant || item.enseignant || item.organizer || item.organisateurs || '';
+                if (Array.isArray(org)) {
+                    org = org.map(o => typeof o === 'object' ? (o.name || `${o.firstName || ''} ${o.lastName || ''}`.trim()) : String(o)).filter(Boolean).join(', ');
+                } else if (typeof org === 'object' && org) {
+                    org = org.name || `${org.firstName || ''} ${org.lastName || ''}`.trim() || JSON.stringify(org);
+                }
+                
+                card.innerHTML = `
+                    ${dateHtml}
+                    <div class="mye-event-card-content">
+                        <h3 class="mye-event-card-title" title="${title.replace(/"/g, '&quot;')}">${title}</h3>
+                        <div class="mye-event-card-meta">
+                            <div class="mye-event-meta-item">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <span>${timeHtml}</span>
+                            </div>
+                            <div class="mye-event-meta-item">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                <span>${location}</span>
+                            </div>
+                            ${org ? `
+                            <div class="mye-event-meta-item">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span>${org}</span>
+                            </div>
+                            ` : ''}
+                        </div>
                     </div>
                 `;
                 
-                const timeStart = start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                const timeEnd = end ? end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
-                timeHtml = timeEnd ? `${timeStart} - ${timeEnd}` : timeStart;
-            } else {
-                dateHtml = `
-                    <div class="mye-event-date-badge">
-                        <span class="mye-event-date-day">?</span>
-                        <span class="mye-event-date-month">Even.</span>
-                    </div>
-                `;
-            }
-            
-            // Salle / Localisation
-            let possibleRooms = [item.rooms, item.room, item.classrooms, item.classroom, item.locations, item.location, item.salles, item.salle, item.building, item.bat, item.site, item.campus];
-            let allRooms = [];
-            possibleRooms.forEach(r => {
-                if (Array.isArray(r)) {
-                    r.forEach(x => {
-                        if (typeof x === 'object' && x) allRooms.push(x.room || x.name || x.label || x.code || '');
-                        else if (x) allRooms.push(String(x));
-                    });
-                } else if (typeof r === 'object' && r) {
-                    allRooms.push(r.room || r.name || r.label || r.code || '');
-                } else if (r) {
-                    allRooms.push(String(r));
-                }
+                card.addEventListener('click', () => {
+                    if (start) {
+                        sessionStorage.setItem('mye_open_event_time', start.toISOString());
+                        sessionStorage.setItem('mye_default_calendar_category', 'ilab');
+                        window.location.href = '/portal/common/calendars';
+                    }
+                });
+                
+                grid.appendChild(card);
             });
-            const location = [...new Set(allRooms)].filter(Boolean).join(', ') || 'Non spécifié';
-            
-            // Intervenant / Organisateur / Description
-            let org = item.teacher || item.teachers || item.professor || item.intervenant || item.enseignant || item.organizer || item.organisateurs || '';
-            if (Array.isArray(org)) {
-                org = org.map(o => typeof o === 'object' ? (o.name || `${o.firstName || ''} ${o.lastName || ''}`.trim()) : String(o)).filter(Boolean).join(', ');
-            } else if (typeof org === 'object' && org) {
-                org = org.name || `${org.firstName || ''} ${org.lastName || ''}`.trim() || JSON.stringify(org);
-            }
-            
-            card.innerHTML = `
-                ${dateHtml}
-                <div class="mye-event-card-content">
-                    <h3 class="mye-event-card-title" title="${title.replace(/"/g, '&quot;')}">${title}</h3>
-                    <div class="mye-event-card-meta">
-                        <div class="mye-event-meta-item">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                            <span>${timeHtml}</span>
-                        </div>
-                        <div class="mye-event-meta-item">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                            <span>${location}</span>
-                        </div>
-                        ${org ? `
-                        <div class="mye-event-meta-item">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                            <span>${org}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-            
-            card.addEventListener('click', () => {
-                if (start) {
-                    sessionStorage.setItem('mye_open_event_time', start.toISOString());
-                    sessionStorage.setItem('mye_default_calendar_category', 'association');
-                    window.location.href = '/portal/student/planning';
-                }
+        };
+        
+        // Initial render
+        renderGridForCampus(defaultCampus);
+        
+        // Select listener
+        if (select) {
+            select.addEventListener('change', (e) => {
+                const selected = e.target.value;
+                localStorage.setItem('mye_default_campus', selected);
+                renderGridForCampus(selected);
             });
-            
-            grid.appendChild(card);
-        });
+        }
     } catch (e) {
         console.error('Erreur chargement événements dashboard:', e);
         container.innerHTML = `<div class="mye-dash-card" style="text-align:center; padding: 40px; border-radius:24px; color: red;">Erreur de chargement des événements</div>`;
