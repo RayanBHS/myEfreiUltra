@@ -657,7 +657,7 @@ function buildDashboardHTML() {
                     <div class="mye-segmented-item active" data-link="actualite">Actualité</div>
                     <div class="mye-segmented-item" data-link="evenements">Evenements</div>
                     <div class="mye-segmented-item" data-link="contact">Contact</div>
-                    <div class="mye-segmented-item" data-link="reseaux">Réseaux Sociaux</div>
+                    <div class="mye-segmented-item" data-link="social">Social</div>
                 </div>
             </div>
             
