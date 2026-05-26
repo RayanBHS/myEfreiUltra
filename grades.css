@@ -1328,10 +1328,6 @@ body.dark-mode .mye-subject-coef {
   color: #ffffff !important;
 }
 
-body.dark-mode .mye-subject-grade .mye-grade-value,
-body.dark-mode .mye-subject-grade-val {
-  color: #ffffff !important;
-}
 
 body.dark-mode .mye-subject-grade-sim {
   background-color: rgba(16, 185, 129, 0.15) !important;
@@ -1357,7 +1353,7 @@ body.dark-mode .mye-detail-coef {
 }
 
 body.dark-mode .mye-detail-value {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 body.dark-mode .mye-subject-code {
