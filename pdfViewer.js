@@ -244,7 +244,14 @@
     const overlay = document.getElementById('mye-pdf-overlay');
     if (overlay) overlay.classList.remove('mye-pdf-show');
 
-    pdfDoc = null;
+    if (pdfDoc) {
+      try {
+        pdfDoc.destroy();
+      } catch (e) {
+        console.warn('Erreur lors de la destruction du document PDF:', e);
+      }
+      pdfDoc = null;
+    }
 
     if (downloadObjectUrl) {
       URL.revokeObjectURL(downloadObjectUrl);

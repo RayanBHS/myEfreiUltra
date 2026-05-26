@@ -74,12 +74,11 @@
   }
 
   function getDownloadUrl(doc) {
-    // Tentative de déduire l'URL de téléchargement.
-    // Si c'est une facture :
     if (doc.source === 'invoice') {
       return `/api/rest/student/schooling/invoices/${doc.id}/download`;
+    } else if (doc.source === 'legacy') {
+      return `/api/rest/student/schooling/legacy-documents/${doc.id}/download`;
     }
-    // Si c'est un document ou legacy
     return `/api/rest/student/schooling/documents/${doc.id}/download`;
   }
 
@@ -191,9 +190,9 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     Voir
                   </button>
-                  <a href="${dlUrl}" class="mye-doc-action-btn dl-btn" download target="_blank">
+                  <button class="mye-doc-action-btn dl-btn" data-url="${dlUrl}" data-title="${doc.name || 'Document'}" title="Télécharger">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -261,6 +260,56 @@
           window.myePdfViewer.open(url, title);
         } else {
           window.open(url, '_blank');
+        }
+      });
+    });
+    // Événements Téléchargement (Force download via Blob)
+    container.querySelectorAll('.dl-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const btnEl = e.currentTarget;
+        const url = btnEl.getAttribute('data-url');
+        const title = btnEl.getAttribute('data-title') || 'Document';
+        
+        const originalHtml = btnEl.innerHTML;
+        btnEl.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        btnEl.style.pointerEvents = 'none';
+        btnEl.style.opacity = '0.7';
+
+        try {
+          const res = await fetch(url, { credentials: 'include' });
+          if (!res.ok) throw new Error('Erreur réseau');
+          const blob = await res.blob();
+          
+          if (blob.type && blob.type.includes('application/json')) {
+            throw new Error('API returned JSON instead of file');
+          }
+
+          const objectUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = objectUrl;
+          
+          let ext = '.pdf';
+          if (blob.type) {
+            if (blob.type.includes('image/jpeg')) ext = '.jpg';
+            else if (blob.type.includes('image/png')) ext = '.png';
+            else if (blob.type.includes('application/zip')) ext = '.zip';
+          }
+          
+          const cleanTitle = title.replace(/[<>:"/\\|?*]+/g, '_');
+          a.download = cleanTitle.toLowerCase().endsWith(ext) ? cleanTitle : cleanTitle + ext;
+          
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        } catch (err) {
+          console.error('Erreur de téléchargement:', err);
+          alert('Impossible de télécharger ce document. Il est peut-être expiré ou non disponible.');
+        } finally {
+          btnEl.innerHTML = originalHtml;
+          btnEl.style.pointerEvents = 'auto';
+          btnEl.style.opacity = '1';
         }
       });
     });

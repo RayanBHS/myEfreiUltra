@@ -1231,14 +1231,16 @@ async function loadFooterContacts() {
             
             let contactsHtml = category.contacts.map(contact => {
                 let buttonsHtml = '';
+                let linkStyle = "color: var(--mye-primary-color); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; padding: 4px 0; word-break: break-all;";
                 if (contact.email) {
-                    buttonsHtml += `<a href="mailto:${contact.email}" class="mye-moodle-card-link" title="${contact.email}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> Email</a>`;
+                    buttonsHtml += `<a href="mailto:${contact.email}" style="${linkStyle}" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> ${contact.email}</a>`;
                 }
                 if (contact.phone) {
-                    buttonsHtml += `<a href="tel:${contact.phone}" class="mye-moodle-card-link" title="${contact.phone}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> Appeler</a>`;
+                    buttonsHtml += `<a href="tel:${contact.phone}" style="${linkStyle}" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> ${contact.phone}</a>`;
                 }
                 if (contact.link) {
-                    buttonsHtml += `<a href="${contact.link}" target="_blank" class="mye-moodle-card-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> Lien</a>`;
+                    let displayLink = contact.link.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                    buttonsHtml += `<a href="${contact.link}" target="_blank" style="${linkStyle}" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> ${displayLink}</a>`;
                 }
                 
                 return `
@@ -1248,7 +1250,7 @@ async function loadFooterContacts() {
                             ${contact.jobTitle ? `<div style="color: #888; font-size: 14px; font-weight: 500;">${contact.jobTitle}</div>` : ''}
                         </div>
                         <div style="width: 100%; height: 1px; background-color: rgba(0,0,0,0.05); margin: 15px 0;"></div>
-                        <div class="mye-moodle-card-footer" style="flex-wrap: wrap; gap: 10px; justify-content: flex-start;">
+                        <div class="mye-moodle-card-footer" style="display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; align-items: flex-start;">
                             ${buttonsHtml}
                         </div>
                     </div>
