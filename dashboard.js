@@ -408,12 +408,18 @@ async function openSlideModal(slideCode) {
     
     modal.innerHTML = `
         <div class="mye-modal-card">
-            <button class="mye-modal-close-btn" id="mye-modal-close-btn" aria-label="Fermer">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
+            <div class="mye-modal-top-header" style="background-color: var(--mye-primary-color); padding: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; width: 100%; box-sizing: border-box;">
+                <div style="flex: 1; padding-right: 16px;">
+                    <h1 id="mye-slide-title-el" style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #ffffff; line-height: 1.2;">Chargement...</h1>
+                    <div id="mye-slide-meta-el" style="font-size: 15px; font-weight: 500; color: rgba(255, 255, 255, 0.8);">Patientez s'il vous plaît</div>
+                </div>
+                <button class="mye-modal-close-btn mye-header-close-btn" id="mye-modal-close-btn" aria-label="Fermer" style="position: static;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
             <div class="mye-modal-scrollable" id="mye-modal-scrollable">
                 <div class="mye-modal-inner-loading" style="display:flex; justify-content:center; align-items:center; height:300px; flex-direction:column; gap:16px;">
                     <div class="mye-spinner"></div>
@@ -526,16 +532,13 @@ async function openSlideModal(slideCode) {
             `;
         }
         
+        const titleEl = modal.querySelector('#mye-slide-title-el');
+        const metaEl = modal.querySelector('#mye-slide-meta-el');
+        
+        if (titleEl) titleEl.textContent = title;
+        if (metaEl) metaEl.innerHTML = `${author}${dateHtml ? ' &bull; ' + dateHtml : ''}`;
+        
         scrollable.innerHTML = `
-            <div class="mye-article-header-card" style="background-color: var(--mye-primary-color); margin-bottom: 16px;">
-                <h1 class="mye-article-title" style="margin-bottom: 0; color: white !important; font-size: 32px;">${title}</h1>
-            </div>
-            
-            <div class="mye-article-info-bar" style="background-color: var(--mye-primary-color); border: none; margin-bottom: 24px;">
-                <div class="mye-article-date" style="color: white !important;">${dateHtml ? dateHtml : 'Actualité'}</div>
-                <div class="mye-article-author" style="background-color: white !important; color: var(--mye-primary-color) !important; font-weight: bold;">${author}</div>
-            </div>
-            
             ${coverHtml}
             
             <div class="mye-article-body" style="margin-top: 24px;">
