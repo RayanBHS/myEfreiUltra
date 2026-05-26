@@ -290,7 +290,7 @@
             // Attempt to fetch actions from API
             // Usually it's `/api/rest/student/lxp/actions` or similar. If we get 404, we mock data from user prompt.
             let actions = [];
-            const res = await fetch('/api/rest/student/lxp/actions?size=200').catch(() => null);
+            const res = await fetch('/api/rest/student/lxp/catalog/actions', { credentials: 'include' }).catch(() => null);
             if (res && res.ok) {
                 const data = await res.json();
                 actions = Array.isArray(data) ? data : (data.content || data.data || []);
@@ -315,14 +315,18 @@
                     const title = item.name || 'Action';
                     const axe = item.category?.axe || 'XP';
                     const catName = item.category?.name || 'Catégorie';
-                    const pic = item.picture ? `/api/rest/common/news/images/thumbnail/${item.picture}` : ''; // Best guess for picture path
+                    const picUrl1 = item.picture ? `/api/rest/student/lxp/images/${item.picture}` : '';
+                    const picUrl2 = item.picture ? `/api/rest/student/lxp/catalog/images/${item.picture}` : '';
+                    const fallbackHtml = `<div class="mye-lxp-ac-cover-fallback">Pas d'image</div>`;
+                    const imgTag = item.picture ? `<img src="${picUrl1}" class="mye-lxp-ac-cover-img" style="position: absolute; top:0; left:0; z-index:2;" onerror="this.onerror=null; this.src='${picUrl2}'; this.onerror=function(){this.style.display='none';};">` : '';
 
-                    let bgStyle = pic ? `background-image: url('${pic}');` : 'background: linear-gradient(135deg, #163767, #2b5c9e);';
                     let dateStr = item.isEvent && item.eventData?.startDatetime ? new Date(item.eventData.startDatetime).toLocaleDateString('fr-FR') : '';
                     return `
                         <div class="mye-lxp-card mye-lxp-action-card" onclick="window.location.href='/portal/student/lxp/actions/${item._id}'">
-                            <div class="mye-lxp-ac-cover" style="${bgStyle}">
-                                ${item.targets?.schoolYear ? `<div class="mye-lxp-ac-period">${item.targets.schoolYear.substring(5)}</div>` : ''}
+                            <div class="mye-lxp-ac-cover" style="position: relative;">
+                                ${fallbackHtml}
+                                ${imgTag}
+                                ${item.targets?.schoolYear ? `<div class="mye-lxp-ac-period" style="position: relative; z-index:3;">${item.targets.schoolYear.substring(5)}</div>` : ''}
                             </div>
                             <div class="mye-lxp-ac-body">
                                 <div class="mye-lxp-ac-category">${catName}</div>
@@ -397,16 +401,46 @@
                         </div>
                     </div>
                     <div class="mye-lxp-catalog-content">
-                        <div class="mye-lxp-category-tabs">
-                            <button class="mye-lxp-tab active">Tout</button>
-                            ${Array.from(categoriesSet).slice(0, 4).map(c => `<button class="mye-lxp-tab">${c}</button>`).join('')}
+                        <div class="mye-lxp-tabs-wrapper">
+                            <button class="mye-lxp-scroll-btn left" id="mye-lxp-scroll-left">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            </button>
+                            <div class="mye-lxp-category-tabs" id="mye-lxp-category-tabs">
+                                <button class="mye-lxp-tab active">Toutes</button>
+                                ${Array.from(categoriesSet).map(c => `<button class="mye-lxp-tab">${c}</button>`).join('')}
+                            </div>
+                            <button class="mye-lxp-scroll-btn right" id="mye-lxp-scroll-right">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
                         </div>
                         <div class="mye-lxp-grid">
                             ${renderCards(actions)}
                         </div>
                     </div>
                 </div>
+                </div>
             `;
+            
+            const tabsContainer = document.getElementById('mye-lxp-category-tabs');
+            const leftBtn = document.getElementById('mye-lxp-scroll-left');
+            const rightBtn = document.getElementById('mye-lxp-scroll-right');
+            
+            if (tabsContainer && leftBtn && rightBtn) {
+                const checkScroll = () => {
+                    leftBtn.style.display = tabsContainer.scrollLeft > 0 ? 'flex' : 'none';
+                    rightBtn.style.display = tabsContainer.scrollWidth > tabsContainer.clientWidth && Math.ceil(tabsContainer.scrollLeft) < (tabsContainer.scrollWidth - tabsContainer.clientWidth) ? 'flex' : 'none';
+                };
+                tabsContainer.addEventListener('scroll', checkScroll);
+                window.addEventListener('resize', checkScroll);
+                setTimeout(checkScroll, 100);
+                
+                leftBtn.addEventListener('click', () => {
+                    tabsContainer.scrollBy({ left: -250, behavior: 'smooth' });
+                });
+                rightBtn.addEventListener('click', () => {
+                    tabsContainer.scrollBy({ left: 250, behavior: 'smooth' });
+                });
+            }
         } catch (e) {
             console.error(e);
             content.innerHTML = `<div style="text-align:center; color:red; padding:40px;">Erreur lors du chargement du Catalogue.</div>`;

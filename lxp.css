@@ -34,8 +34,8 @@ body.dark-mode .mye-lxp-container {
 }
 html.dark-mode .mye-lxp-card,
 body.dark-mode .mye-lxp-card {
-    background: #1e293b;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #1a1a1a;
+    border: 1px solid #333333;
 }
 .mye-lxp-card-title {
     font-size: 24px;
@@ -184,8 +184,8 @@ body.dark-mode .mye-lxp-top-banner {
 }
 html.dark-mode .mye-lxp-period-select,
 body.dark-mode .mye-lxp-period-select {
-    background-color: #1e293b;
-    border-color: #334155;
+    background-color: #1a1a1a;
+    border-color: #333333;
     color: #f8fafc;
     background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.5 1.5L6 6L10.5 1.5' stroke='%23f8fafc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
@@ -655,23 +655,62 @@ input[type="checkbox"]:checked + .mye-lxp-filter-label .mye-lxp-checkbox svg {
    ----------------------------------------- */
 .mye-lxp-catalog-content {
     flex-grow: 1;
+    min-width: 0;
+}
+.mye-lxp-tabs-wrapper {
+    position: relative;
+    max-width: 100%;
+    margin: 0 22px 16px 22px;
+}
+.mye-lxp-scroll-btn {
+    position: absolute;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    border: none;
+    cursor: pointer;
+    z-index: 5;
+    display: none; /* hidden by default, shown via JS if scrolling needed */
+    align-items: center;
+    justify-content: center;
+    color: #163767;
+}
+.mye-lxp-scroll-btn:hover {
+    background: #f8fafc;
+}
+.mye-lxp-scroll-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 3;
+}
+.mye-lxp-scroll-btn.left {
+    left: -22px;
+    transform: translateY(-50%);
+}
+.mye-lxp-scroll-btn.right {
+    right: -22px;
+    transform: translateY(-50%);
 }
 .mye-lxp-category-tabs {
     display: flex;
     gap: 12px;
     overflow-x: auto;
-    padding-bottom: 16px;
-    margin-bottom: 16px;
+    padding: 4px 0;
     scrollbar-width: none;
+    scroll-behavior: smooth;
+    flex-wrap: nowrap;
 }
 .mye-lxp-category-tabs::-webkit-scrollbar { display: none; }
 .mye-lxp-tab {
-    padding: 10px 20px;
-    border-radius: 20px;
+    padding: 12px 24px;
+    border-radius: 999px;
     font-size: 13px;
-    font-weight: 700;
-    color: #86868b;
-    background: transparent;
+    font-weight: 800;
+    color: #163767;
+    background-color: #f1f5f9;
     border: none;
     cursor: pointer;
     white-space: nowrap;
@@ -679,10 +718,40 @@ input[type="checkbox"]:checked + .mye-lxp-filter-label .mye-lxp-checkbox svg {
     letter-spacing: 0.5px;
     transition: all 0.2s;
 }
-.mye-lxp-tab.active {
+.mye-lxp-tab.active,
+.mye-lxp-tab:hover {
     background-color: #163767;
     color: white;
 }
+
+/* Dark mode OLED pour les onglets et flèches (identique à news.css) */
+html.dark-mode .mye-lxp-tab,
+body.dark-mode .mye-lxp-tab {
+    background-color: #1a1a1a !important;
+    color: #aaaaaa !important;
+}
+html.dark-mode .mye-lxp-tab:hover,
+body.dark-mode .mye-lxp-tab:hover {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+html.dark-mode .mye-lxp-tab.active,
+body.dark-mode .mye-lxp-tab.active {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+html.dark-mode .mye-lxp-scroll-btn,
+body.dark-mode .mye-lxp-scroll-btn {
+    background-color: #1a1a1a !important;
+    color: #aaaaaa !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.8) !important;
+}
+html.dark-mode .mye-lxp-scroll-btn:hover,
+body.dark-mode .mye-lxp-scroll-btn:hover {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+
 .mye-lxp-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -703,14 +772,34 @@ html.dark-mode .mye-lxp-action-card:hover,
 body.dark-mode .mye-lxp-action-card:hover {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
 }
+
 .mye-lxp-ac-cover {
     height: 160px;
     border-radius: 24px 24px 0 0;
     background-color: #e5e5ea;
-    background-size: cover;
-    background-position: center;
     position: relative;
     overflow: hidden;
+}
+.mye-lxp-ac-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.mye-lxp-ac-cover-fallback {
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.3);
+    font-size: 14px;
+    font-weight: 500;
+}
+html.dark-mode .mye-lxp-ac-cover-fallback,
+body.dark-mode .mye-lxp-ac-cover-fallback {
+    color: rgba(255, 255, 255, 0.3);
 }
 html.dark-mode .mye-lxp-ac-cover,
 body.dark-mode .mye-lxp-ac-cover {
