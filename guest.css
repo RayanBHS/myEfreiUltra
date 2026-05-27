@@ -1,0 +1,553 @@
+/* =============================================
+   MYEFREI ULTRA — Module Compte Invité (CSS)
+   ============================================= */
+
+/* ──────────────────────────────────────────────
+   CONTENEUR PRINCIPAL
+   ────────────────────────────────────────────── */
+#mye-guest-container {
+  margin-top: 80px;
+  padding: 30px 30px 60px;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: 'Alliance No.2 Regular', -apple-system, system-ui, sans-serif;
+}
+
+/* ──────────────────────────────────────────────
+   HEADER SECTION
+   ────────────────────────────────────────────── */
+.mye-guest-header-section {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.mye-guest-page-title {
+  font-family: 'Alliance No.2 Bold', -apple-system, system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--mye-primary-color, #163767);
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+.mye-guest-page-subtitle {
+  font-family: 'Alliance No.2 Regular', -apple-system, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ──────────────────────────────────────────────
+   GRID LAYOUT
+   ────────────────────────────────────────────── */
+.mye-guest-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 25px;
+  align-items: start;
+}
+
+/* ──────────────────────────────────────────────
+   INFO CARD (LEFT)
+   ────────────────────────────────────────────── */
+.mye-guest-info-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  border: 2px solid var(--mye-primary-color, #163767);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.mye-guest-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+  padding-bottom: 18px;
+  border-bottom: 2px solid #f0f4f8;
+}
+
+.mye-guest-card-header svg {
+  color: var(--mye-primary-color, #163767);
+  flex-shrink: 0;
+}
+
+.mye-guest-card-header h2 {
+  font-family: 'Alliance No.2 Bold', -apple-system, system-ui, sans-serif;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--mye-primary-color, #163767);
+}
+
+/* Info Rows */
+.mye-guest-info-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.mye-guest-info-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mye-guest-info-icon svg {
+  color: var(--mye-primary-color, #163767);
+}
+
+.mye-guest-info-row p {
+  font-family: 'Alliance No.2 Regular', -apple-system, system-ui, sans-serif;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: #475569;
+  font-weight: 400;
+}
+
+.mye-guest-info-row p strong {
+  font-family: 'Alliance No.2 Bold', -apple-system, system-ui, sans-serif;
+  color: var(--mye-primary-color, #163767);
+  font-weight: 600;
+}
+
+/* Divider */
+.mye-guest-divider {
+  height: 2px;
+  background: #f0f4f8;
+  margin: 22px 0;
+  border-radius: 1px;
+}
+
+/* Access Title */
+.mye-guest-access-title {
+  font-family: 'Alliance No.2 Bold', -apple-system, system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: var(--mye-primary-color, #163767);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.mye-guest-access-title svg {
+  color: #10b981;
+}
+
+/* Features List */
+.mye-guest-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mye-guest-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.mye-guest-feature-item:hover {
+  transform: translateX(4px);
+  background: #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.mye-guest-feature-item span {
+  font-family: 'Alliance No.2 Regular', -apple-system, system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 14.5px;
+  color: #334155;
+}
+
+.mye-guest-feature-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mye-guest-feature-icon.blue {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #2563eb;
+}
+.mye-guest-feature-icon.blue svg { color: #2563eb; }
+
+.mye-guest-feature-icon.orange {
+  background: linear-gradient(135deg, #ffedd5, #fed7aa);
+  color: #ea580c;
+}
+.mye-guest-feature-icon.orange svg { color: #ea580c; }
+
+.mye-guest-feature-icon.green {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  color: #16a34a;
+}
+.mye-guest-feature-icon.green svg { color: #16a34a; }
+
+.mye-guest-feature-icon.purple {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #7c3aed;
+}
+.mye-guest-feature-icon.purple svg { color: #7c3aed; }
+
+/* ──────────────────────────────────────────────
+   CUSTOM POPUP
+   ────────────────────────────────────────────── */
+.mye-guest-custom-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.mye-guest-custom-popup-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mye-guest-custom-popup {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mye-guest-custom-popup-overlay.show .mye-guest-custom-popup {
+  transform: translateY(0) scale(1);
+}
+
+.mye-guest-popup-title {
+  font-family: 'Alliance No.2 Bold', -apple-system, sans-serif;
+  font-size: 26px;
+  color: var(--mye-primary-color, #163767);
+  margin: 0 0 15px;
+}
+
+.mye-guest-popup-desc {
+  font-family: 'Alliance No.2 Regular', -apple-system, sans-serif;
+  font-size: 16px;
+  color: #333;
+  margin: 0 0 30px;
+}
+
+.mye-guest-popup-subdesc {
+  font-family: 'Alliance No.2 Regular', -apple-system, sans-serif;
+  font-size: 13.5px;
+  color: #64748b;
+  font-style: italic;
+  margin: 0 0 30px;
+  line-height: 1.5;
+}
+
+.mye-guest-popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.mye-guest-popup-btn {
+  font-family: 'Alliance No.2 Bold', -apple-system, sans-serif;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mye-guest-popup-cancel {
+  background: transparent;
+  color: var(--mye-primary-color, #163767);
+}
+
+.mye-guest-popup-cancel:hover {
+  background: #f1f5f9;
+}
+
+.mye-guest-popup-confirm {
+  background: var(--mye-primary-color, #163767);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.mye-guest-popup-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+/* Cache la popup MUI d'origine pour qu'elle agisse "en fantôme" derrière notre custom popup */
+body:has(#mye-guest-container) .MuiModal-root {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ──────────────────────────────────────────────
+   ACTION CARD (RIGHT)
+   ────────────────────────────────────────────── */
+.mye-guest-action-card {
+  background: var(--mye-primary-color, #163767);
+  border-radius: 20px;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 100px;
+}
+
+.mye-guest-action-icon-bg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.mye-guest-action-icon-bg svg {
+  color: white;
+}
+
+.mye-guest-action-title {
+  font-family: 'Alliance No.2 Bold', -apple-system, system-ui, sans-serif;
+  color: white;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.mye-guest-action-desc {
+  font-family: 'Alliance No.2 Regular', -apple-system, system-ui, sans-serif;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+.mye-guest-create-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #ff3385;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 30px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 51, 133, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  font-family: 'Alliance No.2 Bold', -apple-system, system-ui, sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.mye-guest-create-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 51, 133, 0.5);
+  background: #e6296f;
+}
+
+.mye-guest-create-btn:active {
+  transform: scale(0.98);
+}
+
+/* ──────────────────────────────────────────────
+   DISCLAIMER CARD
+   ────────────────────────────────────────────── */
+.mye-guest-disclaimer-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-top: 25px;
+  border-left: 4px solid #f59e0b;
+}
+
+.mye-guest-disclaimer-card svg {
+  color: #f59e0b;
+}
+
+.mye-guest-disclaimer-card p {
+  font-family: 'Alliance No.2 Regular', -apple-system, system-ui, sans-serif;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #64748b;
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* ──────────────────────────────────────────────
+   RESPONSIVE
+   ────────────────────────────────────────────── */
+@media (max-width: 850px) {
+  .mye-guest-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mye-guest-action-card {
+    position: static;
+  }
+
+  #mye-guest-container {
+    padding: 20px 16px 50px;
+    margin-top: 80px;
+  }
+
+  .mye-guest-page-title {
+    font-size: 26px;
+  }
+}
+
+/* ──────────────────────────────────────────────
+   DARK MODE
+   ────────────────────────────────────────────── */
+body.dark-mode #mye-guest-container {
+  color: #e2e8f0;
+}
+
+body.dark-mode .mye-guest-page-title {
+  color: #e2e8f0;
+}
+
+body.dark-mode .mye-guest-page-subtitle {
+  color: #94a3b8;
+}
+
+body.dark-mode .mye-guest-info-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+body.dark-mode .mye-guest-card-header {
+  border-bottom-color: #334155;
+}
+
+body.dark-mode .mye-guest-card-header h2,
+body.dark-mode .mye-guest-card-header svg {
+  color: #e2e8f0;
+}
+
+body.dark-mode .mye-guest-info-row p {
+  color: #94a3b8;
+}
+
+body.dark-mode .mye-guest-info-row p strong {
+  color: #e2e8f0;
+}
+
+body.dark-mode .mye-guest-info-icon {
+  background: linear-gradient(135deg, #1e293b, #334155);
+}
+
+body.dark-mode .mye-guest-info-icon svg {
+  color: #93c5fd;
+}
+
+body.dark-mode .mye-guest-divider {
+  background: #334155;
+}
+
+body.dark-mode .mye-guest-access-title {
+  color: #e2e8f0;
+}
+
+body.dark-mode .mye-guest-feature-item {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+body.dark-mode .mye-guest-feature-item:hover {
+  background: #1e293b;
+}
+
+body.dark-mode .mye-guest-feature-item span {
+  color: #cbd5e1;
+}
+
+body.dark-mode .mye-guest-action-card {
+  background: linear-gradient(160deg, #0f172a, #020617);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .mye-guest-action-icon-bg {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .mye-guest-disclaimer-card {
+  background: #0f172a;
+  border-left-color: #f59e0b;
+}
+
+body.dark-mode .mye-guest-disclaimer-card p {
+  color: #64748b;
+}
+
+html.dark-mode body.mye-clean-screen #mye-guest-container {
+  color: #e2e8f0;
+}
+
+/* Theme pour la popup originale Efrei (MatDialog) */
+.cdk-overlay-container .mat-dialog-container {
+  border-radius: 16px;
+}
+.cdk-overlay-container .mat-raised-button.mat-primary,
+.cdk-overlay-container .mat-flat-button.mat-primary,
+.cdk-overlay-container .mat-button.mat-primary {
+  background-color: var(--mye-primary-color, #163767) !important;
+  color: white !important;
+}
+.cdk-overlay-container .mat-dialog-title {
+  color: var(--mye-primary-color, #163767) !important;
+}

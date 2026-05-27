@@ -52,16 +52,37 @@
 
   // Surveiller les changements d'URL
   let lastUrl = window.location.href;
+  let wasOnMoodle = window.location.pathname.includes('/portal/student/moodle-courses');
+
+  function checkMoodleRoute() {
+    const isOnMoodle = window.location.pathname.includes('/portal/student/moodle-courses');
+    if (isOnMoodle) {
+      wasOnMoodle = true;
+      waitAndInit();
+    } else if (wasOnMoodle) {
+      wasOnMoodle = false;
+      // Cleanup: hide moodle container when navigating away
+      const container = document.getElementById('mye-moodle-container');
+      if (container) container.style.display = 'none';
+      document.body.classList.remove('mye-clean-screen');
+    }
+  }
+
   new MutationObserver(() => {
     if (lastUrl !== window.location.href) {
       lastUrl = window.location.href;
-      if (window.location.pathname.includes('/portal/student/moodle-courses')) {
-        waitAndInit();
-      }
+      checkMoodleRoute();
     }
   }).observe(document, { subtree: true, childList: true });
 
-  if (window.location.pathname.includes('/portal/student/moodle-courses')) waitAndInit();
+  setInterval(() => {
+    if (lastUrl !== window.location.href) {
+      lastUrl = window.location.href;
+      checkMoodleRoute();
+    }
+  }, 500);
+
+  checkMoodleRoute();
 
   // ──────────────────────────────────────────────
   // CONSTRUCTION DE LA PAGE
@@ -69,6 +90,13 @@
   function initMoodlePage() {
     // Nettoyer l'affichage d'origine
     document.body.classList.add('mye-clean-screen');
+
+    // Re-show container if it was hidden by a previous navigation
+    const existing = document.getElementById('mye-moodle-container');
+    if (existing) {
+      existing.style.display = '';
+      return; // Already built, just re-show
+    }
 
     // Construire le conteneur principal s'il n'existe pas
     if (!document.getElementById('mye-moodle-container')) {

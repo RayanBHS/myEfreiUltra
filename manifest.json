@@ -36,6 +36,7 @@
         "documents.css",
         "lxp.css",
         "rooms.css",
+        "guest.css",
         "lib/leaflet/leaflet.css"
       ],
       "js": [
@@ -55,7 +56,8 @@
         "campus.js",
         "documents.js",
         "lxp.js",
-        "rooms.js"
+        "rooms.js",
+        "guest.js"
       ],
       "run_at": "document_start"
     }

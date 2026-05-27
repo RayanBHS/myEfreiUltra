@@ -27,6 +27,25 @@
   gap: 10px;
   align-self: flex-start;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Add some padding for the scrollbar if needed */
+  padding-right: 5px;
+}
+
+/* Custom scrollbar for left panel */
+.mye-grades-left::-webkit-scrollbar {
+  width: 6px;
+}
+.mye-grades-left::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mye-grades-left::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+.mye-grades-left::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* ── Sélecteur de semestre ── */

@@ -922,3 +922,121 @@ body.dark-mode .mye-lxp-ac-points-val {
 @keyframes myeSpin {
     to { transform: rotate(360deg); }
 }
+
+/* -----------------------------------------
+   CUSTOM LXP POPUP
+   ----------------------------------------- */
+.mye-lxp-custom-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+.mye-lxp-custom-popup-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+.mye-lxp-custom-popup {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.mye-lxp-custom-popup-overlay.show .mye-lxp-custom-popup {
+  transform: translateY(0) scale(1);
+}
+.mye-lxp-popup-title {
+  font-family: 'Alliance No.2 Bold', -apple-system, sans-serif;
+  font-size: 26px;
+  color: var(--mye-primary-color, #163767);
+  margin: 0 0 15px;
+}
+.mye-lxp-popup-desc {
+  font-family: 'Alliance No.2 Regular', -apple-system, sans-serif;
+  font-size: 16px;
+  color: #333;
+  margin: 0 0 15px;
+}
+.mye-lxp-popup-subdesc {
+  font-family: 'Alliance No.2 Regular', -apple-system, sans-serif;
+  font-size: 13.5px;
+  color: #64748b;
+  font-style: italic;
+  margin: 0 0 30px;
+  line-height: 1.5;
+}
+.mye-lxp-popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+.mye-lxp-popup-btn {
+  font-family: 'Alliance No.2 Bold', -apple-system, sans-serif;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.mye-lxp-popup-cancel {
+  background: transparent;
+  color: var(--mye-primary-color, #163767);
+}
+.mye-lxp-popup-cancel:hover {
+  background: #f1f5f9;
+}
+.mye-lxp-popup-confirm {
+  background: var(--mye-primary-color, #163767);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.mye-lxp-popup-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+html.dark-mode .mye-lxp-custom-popup,
+body.dark-mode .mye-lxp-custom-popup {
+  background: #1e293b;
+}
+html.dark-mode .mye-lxp-popup-desc,
+body.dark-mode .mye-lxp-popup-desc {
+  color: #e2e8f0;
+}
+html.dark-mode .mye-lxp-popup-subdesc,
+body.dark-mode .mye-lxp-popup-subdesc {
+  color: #94a3b8;
+}
+html.dark-mode .mye-lxp-popup-cancel,
+body.dark-mode .mye-lxp-popup-cancel {
+  color: #f8fafc;
+}
+html.dark-mode .mye-lxp-popup-cancel:hover,
+body.dark-mode .mye-lxp-popup-cancel:hover {
+  background: #334155;
+}
+
+/* Cache la popup MUI d'origine pour qu'elle agisse en fantôme */
+body:has(#mye-lxp-container) .MuiModal-root {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

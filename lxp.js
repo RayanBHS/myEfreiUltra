@@ -548,16 +548,35 @@
                     category: { name: 'Information' }
                 };
             }
-            const pic = item.picture ? `/api/rest/common/lxp/action/cover/${item.picture}` : '';
-            let bgStyle = pic ? `background-image: url('${pic}');` : 'background: linear-gradient(135deg, #163767, #2b5c9e);';
+            const picUrl1 = item.picture ? (item.picture.startsWith('http') ? item.picture : `/api/rest/common/lxp/action/cover/${item.picture}?q=m`) : '';
+            const picUrl2 = item.picture ? (item.picture.startsWith('http') ? item.picture : `/api/rest/common/lxp/action/cover/${item.picture}`) : '';
+            
+            let coverHtml = `<div style="width:100%; height:100%; border-radius:24px; background:linear-gradient(135deg, #163767, #2b5c9e);"></div>`;
+            if (item.picture) {
+                coverHtml = `<img src="${picUrl2}" style="width:100%; height:100%; object-fit:contain; border-radius:24px;" onerror="this.onerror=null; this.src='${picUrl1}'; this.onerror=function(){ this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%; height:100%; border-radius:24px; background:linear-gradient(135deg, #163767, #2b5c9e);\\'></div>'; };">`;
+            }
+
             content.innerHTML = `
+                <!-- Popup Custom pour l'inscription -->
+                <div class="mye-lxp-custom-popup-overlay" id="mye-lxp-register-popup">
+                  <div class="mye-lxp-custom-popup">
+                    <h3 class="mye-lxp-popup-title">Inscription à l'action</h3>
+                    <p class="mye-lxp-popup-desc">Voulez-vous vraiment vous inscrire à cette action LXP ?</p>
+                    <p class="mye-lxp-popup-subdesc">L'inscription se fera automatiquement sur le semestre en cours.</p>
+                    <div class="mye-lxp-popup-actions">
+                      <button class="mye-lxp-popup-btn mye-lxp-popup-cancel" id="mye-lxp-popup-cancel">ANNULER</button>
+                      <button class="mye-lxp-popup-btn mye-lxp-popup-confirm" id="mye-lxp-popup-confirm">S'INSCRIRE</button>
+                    </div>
+                  </div>
+                </div>
+
                 <button class="mye-lxp-back-btn" style="margin-bottom: 24px;" onclick="window.history.back()">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     RETOUR
                 </button>
                 
                 <div class="mye-lxp-card" style="padding: 40px;">
-                    <div class="mye-lxp-detail-cover" style="${bgStyle}"></div>
+                    <div class="mye-lxp-detail-cover">${coverHtml}</div>
                     
                     <div class="mye-lxp-detail-header">
                         <div>
@@ -566,8 +585,8 @@
                             </div>
                             <h1 style="font-size: 36px; font-weight: 800; margin: 0; line-height: 1.2;">${item.name}</h1>
                         </div>
-                        <button class="mye-lxp-btn mye-lxp-btn-primary">
-                            S'INSCRIRE
+                        <button class="mye-lxp-btn mye-lxp-btn-primary" id="mye-lxp-action-register-btn">
+                            S'INSCRIRE / GÉRER
                         </button>
                     </div>
                     <div class="mye-lxp-detail-info">
@@ -583,6 +602,116 @@
                     </div>
                 </div>
             `;
+
+            // Logique de la popup d'inscription
+            const registerBtn = document.getElementById('mye-lxp-action-register-btn');
+            const popupOverlay = document.getElementById('mye-lxp-register-popup');
+            const btnCancel = document.getElementById('mye-lxp-popup-cancel');
+            const btnConfirm = document.getElementById('mye-lxp-popup-confirm');
+
+            if (registerBtn) {
+                registerBtn.addEventListener('click', () => {
+                    // 1. Chercher et cliquer sur le vrai bouton de la page
+                    const origBtns = document.querySelectorAll('body > div:not(#mye-lxp-container) button, .MuiButtonBase-root');
+                    let clicked = false;
+                    for (const btn of origBtns) {
+                        const text = (btn.textContent || '').toLowerCase().trim();
+                        if (text.includes("s'inscrire") || text.includes("se désinscrire") || text.includes("désinscrire") || text.includes("gérer")) {
+                            btn.click();
+                            clicked = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!clicked) {
+                        // Parfois le bouton est juste "S'inscrire"
+                        const fallbackBtns = document.querySelectorAll('button');
+                        for (const btn of fallbackBtns) {
+                            if (btn.closest('#mye-lxp-container')) continue;
+                            const text = (btn.textContent || '').toLowerCase().trim();
+                            if (text.includes("inscrire") || text.includes("désinscrire")) {
+                                btn.click();
+                                break;
+                            }
+                        }
+                    }
+
+                    // 2. Attendre que React monte la modal et analyser son contenu pour adapter notre popup
+                    setTimeout(() => {
+                        const muiModal = document.querySelector('.MuiModal-root');
+                        const muiText = (muiModal ? muiModal.textContent : '').toLowerCase();
+                        
+                        const popupTitle = document.querySelector('.mye-lxp-popup-title');
+                        const popupDesc = document.querySelector('.mye-lxp-popup-desc');
+                        const popupSubDesc = document.querySelector('.mye-lxp-popup-subdesc');
+                        
+                        if (muiText.includes('désinscri') || muiText.includes('annuler') || muiText.includes('supprimer')) {
+                            if (popupTitle) popupTitle.textContent = "Désinscription";
+                            if (popupDesc) popupDesc.textContent = "Voulez-vous vraiment vous désinscrire ?";
+                            if (popupSubDesc) popupSubDesc.textContent = "Vos points associés à cette action seront perdus.";
+                            btnConfirm.textContent = "CONFIRMER";
+                            btnConfirm.style.backgroundColor = "#ef4444"; // Rouge pour suppression
+                        } else {
+                            if (popupTitle) popupTitle.textContent = "Inscription à l'action";
+                            if (popupDesc) popupDesc.textContent = "Voulez-vous vraiment vous inscrire à cette action LXP ?";
+                            if (popupSubDesc) popupSubDesc.textContent = "L'inscription se fera automatiquement sur le semestre en cours.";
+                            btnConfirm.textContent = "S'INSCRIRE";
+                            btnConfirm.style.backgroundColor = "var(--mye-primary-color, #163767)";
+                        }
+                        
+                        // Afficher notre popup
+                        popupOverlay.classList.add('show');
+                    }, 100);
+                });
+            }
+
+            if (btnCancel) {
+                btnCancel.addEventListener('click', () => {
+                    popupOverlay.classList.remove('show');
+                    // Fermer la vraie popup MUI
+                    const origCancelBtns = document.querySelectorAll('.MuiModal-root button');
+                    for (const btn of origCancelBtns) {
+                        if ((btn.textContent || '').toLowerCase().includes('annuler') || (btn.textContent || '').toLowerCase().includes('non')) {
+                            btn.click();
+                            break;
+                        }
+                    }
+                });
+            }
+
+            if (btnConfirm) {
+                btnConfirm.addEventListener('click', () => {
+                    btnConfirm.textContent = 'EN COURS...';
+                    btnConfirm.style.pointerEvents = 'none';
+                    
+                    // Chercher le bouton d'inscription/désinscription dans la vraie popup MUI
+                    const muiBtns = document.querySelectorAll('.MuiModal-root button');
+                    let clicked = false;
+                    
+                    for (const btn of muiBtns) {
+                        const text = (btn.textContent || '').toLowerCase();
+                        if (text.includes('inscrire') || text.includes('désinscrire') || text.includes('confirmer') || text.includes('valider') || text.includes('oui')) {
+                            btn.click();
+                            clicked = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!clicked) {
+                        console.error("Bouton de confirmation original introuvable.");
+                        btnConfirm.textContent = 'ERREUR';
+                        setTimeout(() => {
+                            btnConfirm.textContent = "RÉESSAYER";
+                            btnConfirm.style.pointerEvents = 'auto';
+                        }, 2000);
+                    } else {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    }
+                });
+            }
+
         } catch (e) {
             console.error(e);
             content.innerHTML = `<div style="text-align:center; color:red; padding:40px;">Erreur lors du chargement des détails.</div>`;

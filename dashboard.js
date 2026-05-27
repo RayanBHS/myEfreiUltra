@@ -1515,6 +1515,7 @@ function injectDashboard() {
         if (existingDetail) existingDetail.remove();
         
         document.body.classList.remove('mye-dashboard-active');
+        document.documentElement.classList.remove('mye-dashboard-active');
         return;
     }
     

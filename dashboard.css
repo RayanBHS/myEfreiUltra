@@ -24,7 +24,7 @@ body.mye-dashboard-active > *:not(#mye-custom-header-wrapper):not(#mye-custom-da
 
 html.mye-dashboard-active body,
 body.mye-dashboard-active {
-    background-color: #f0f2f5 !important;
+    background-color: #F0F0F0 !important;
     margin: 0 !important;
     padding: 0 !important;
 }
@@ -44,7 +44,7 @@ body.mye-dashboard-active.dark-mode {
     left: 0;
     width: 100%;
     height: 100%;
-    background: #f0f2f5;
+    background: #F0F0F0;
     z-index: 1000;
     display: flex;
     flex-direction: column;
