@@ -103,7 +103,15 @@
             const gradesData = gradesRes && gradesRes.ok ? await gradesRes.json() : null;
             const subsData = subsRes && subsRes.ok ? await subsRes.json() : [];
             const contactsData = contactsRes && contactsRes.ok ? await contactsRes.json() : [];
-            const grade = gradesData?.period?.grade || 0;
+            let grade = 0;
+            if (Array.isArray(subsData)) {
+                subsData.forEach(sub => {
+                    const pts = parseFloat(sub.grade);
+                    if (!isNaN(pts)) {
+                        grade += pts;
+                    }
+                });
+            }
             const totalGrade = 20; // LXP is always out of 20
             const pct = Math.min((grade / totalGrade) * 100, 100);
 
@@ -213,12 +221,12 @@
                                         stroke-dashoffset="${565.48 - (565.48 * pct) / 100}"
                                         style="stroke: ${pct >= 50 ? '#10b981' : (pct >= 25 ? '#f59e0b' : '#ef4444')};" />
                                 </svg>
-                                <div class="mye-grade-circle-value" style="display:flex; flex-direction:column; align-items:center;">
-                                    <div style="font-size: 48px; display:flex; align-items:baseline; gap:2px; line-height: 1;">
-                                        ${Math.min(grade, 20)}<span style="font-size: 20px; color:#888;">/${totalGrade}</span>
+                                <div class="mye-grade-circle-value" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+                                    <div style="font-size: 56px; font-weight: 800; line-height: 1;">
+                                        ${grade}
                                     </div>
-                                    <div style="font-size: 14px; color: var(--mye-primary-color); font-weight: 600; margin-top: 5px;">
-                                        ${grade} points
+                                    <div style="font-size: 16px; color: #888; font-weight: 500; margin-top: 4px;">
+                                        points
                                     </div>
                                 </div>
                             </div>

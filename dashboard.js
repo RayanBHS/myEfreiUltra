@@ -97,23 +97,30 @@ async function fetchDashboardData() {
             }
 
             const lxpPromises = [
-                fetch(`/api/rest/student/lxp/grades?schoolYear=${sy}&period=${periodId}`, { credentials: 'include' }).catch(() => null)
+                fetch(`/api/rest/student/lxp/subscriptions?schoolYear=${sy}&period=${periodId}`, { credentials: 'include' }).catch(() => null)
             ];
 
             if (prevPeriodId && prevSchoolYear) {
                 lxpPromises.push(
-                    fetch(`/api/rest/student/lxp/grades?schoolYear=${prevSchoolYear}&period=${prevPeriodId}`, { credentials: 'include' }).catch(() => null)
+                    fetch(`/api/rest/student/lxp/subscriptions?schoolYear=${prevSchoolYear}&period=${prevPeriodId}`, { credentials: 'include' }).catch(() => null)
                 );
             }
 
             const lxpResults = await Promise.all(lxpPromises);
-            const lxpData = lxpResults[0] && lxpResults[0].ok ? await lxpResults[0].json() : null;
-            const prevLxpData = lxpResults[1] && lxpResults[1].ok ? await lxpResults[1].json() : null;
+            const subsData1 = lxpResults[0] && lxpResults[0].ok ? await lxpResults[0].json() : [];
+            const subsData2 = lxpResults[1] && lxpResults[1].ok ? await lxpResults[1].json() : [];
 
-            let lxpGrade = lxpData?.period?.grade || 0;
-            if (prevLxpData) {
-                lxpGrade += prevLxpData?.period?.grade || 0;
-            }
+            let lxpGrade = 0;
+            const allSubs = [];
+            if (Array.isArray(subsData1)) allSubs.push(...subsData1);
+            if (Array.isArray(subsData2)) allSubs.push(...subsData2);
+
+            allSubs.forEach(sub => {
+                const pts = parseFloat(sub.grade);
+                if (!isNaN(pts)) {
+                    lxpGrade += pts;
+                }
+            });
 
             const lxpCard = document.getElementById('mye-dash-card-lxp');
             if (lxpCard) {
