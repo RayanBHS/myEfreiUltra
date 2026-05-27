@@ -359,11 +359,27 @@
         wrapper.className = 'mye-pdf-page-wrapper';
         wrapper.dataset.baseWidth = vp.baseW;
         wrapper.dataset.baseHeight = vp.baseH;
+        wrapper.style.backgroundColor = '#ffffff';
 
         const canvas = document.createElement('canvas');
         canvas.id = `mye-pdf-canvas-${i + 1}`;
         wrapper.appendChild(canvas);
+
         pagesContainer.appendChild(wrapper);
+      }
+
+      // Inversion des couleurs du PDF en mode sombre
+      const isDarkMode = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      if (isDarkMode && !document.getElementById('mye-pdf-dark-invert')) {
+        const styleTag = document.createElement('style');
+        styleTag.id = 'mye-pdf-dark-invert';
+        styleTag.textContent = `
+          .mye-pdf-pages-container {
+            filter: invert(1) hue-rotate(180deg) !important;
+          }
+        `;
+        document.head.appendChild(styleTag);
+        console.log('[MyEfrei PDF] Mode sombre détecté → inversion des couleurs du PDF activée');
       }
 
       fitToWidth();
