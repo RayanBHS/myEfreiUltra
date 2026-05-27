@@ -83,6 +83,53 @@ async function fetchDashboardData() {
             })
             .catch(console.error);
 
+        // 3.5. Fetch LXP (grouped by pair if even semester)
+        try {
+            const periodNum = parseInt(periodId.replace('S', ''), 10);
+            let prevPeriodId = null;
+            let prevSchoolYear = null;
+            if (!isNaN(periodNum) && periodNum % 2 === 0) {
+                const prev = periodsData.find(p => p.period === `S${periodNum - 1}`);
+                if (prev) {
+                    prevPeriodId = prev.period;
+                    prevSchoolYear = prev.schoolYear;
+                }
+            }
+
+            const lxpPromises = [
+                fetch(`/api/rest/student/lxp/grades?schoolYear=${sy}&period=${periodId}`, { credentials: 'include' }).catch(() => null)
+            ];
+
+            if (prevPeriodId && prevSchoolYear) {
+                lxpPromises.push(
+                    fetch(`/api/rest/student/lxp/grades?schoolYear=${prevSchoolYear}&period=${prevPeriodId}`, { credentials: 'include' }).catch(() => null)
+                );
+            }
+
+            const lxpResults = await Promise.all(lxpPromises);
+            const lxpData = lxpResults[0] && lxpResults[0].ok ? await lxpResults[0].json() : null;
+            const prevLxpData = lxpResults[1] && lxpResults[1].ok ? await lxpResults[1].json() : null;
+
+            let lxpGrade = lxpData?.period?.grade || 0;
+            if (prevLxpData) {
+                lxpGrade += prevLxpData?.period?.grade || 0;
+            }
+
+            const lxpCard = document.getElementById('mye-dash-card-lxp');
+            if (lxpCard) {
+                const valEl = lxpCard.querySelector('.mye-stat-value');
+                const barEl = lxpCard.querySelector('.mye-stat-progress-bar');
+                if (valEl) valEl.textContent = lxpGrade;
+                if (barEl) {
+                    const pct = Math.min((lxpGrade / 20) * 100, 100);
+                    barEl.style.width = `${pct}%`;
+                    barEl.style.backgroundColor = getDashGradeColor(lxpGrade);
+                }
+            }
+        } catch (err) {
+            console.error("Erreur chargement LXP dashboard", err);
+        }
+
         // 4. Fetch Planning (Today + next 7 days)
         const startDate = new Date();
         const endDate = new Date();
