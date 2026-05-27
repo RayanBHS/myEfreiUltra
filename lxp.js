@@ -213,8 +213,13 @@
                                         stroke-dashoffset="${565.48 - (565.48 * pct) / 100}"
                                         style="stroke: ${pct >= 50 ? '#10b981' : (pct >= 25 ? '#f59e0b' : '#ef4444')};" />
                                 </svg>
-                                <div class="mye-grade-circle-value" style="font-size: 48px; display:flex; align-items:baseline; gap:2px;">
-                                    ${grade}<span style="font-size: 20px; color:#888;">/${totalGrade}</span>
+                                <div class="mye-grade-circle-value" style="display:flex; flex-direction:column; align-items:center;">
+                                    <div style="font-size: 48px; display:flex; align-items:baseline; gap:2px; line-height: 1;">
+                                        ${Math.min(grade, 20)}<span style="font-size: 20px; color:#888;">/${totalGrade}</span>
+                                    </div>
+                                    <div style="font-size: 14px; color: var(--mye-primary-color); font-weight: 600; margin-top: 5px;">
+                                        ${grade} points
+                                    </div>
                                 </div>
                             </div>
                         </div>

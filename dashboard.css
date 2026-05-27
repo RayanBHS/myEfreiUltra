@@ -445,7 +445,9 @@ body.dark-mode .mye-planning-list::-webkit-scrollbar-thumb {
 .mye-carousel-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background-color: #000;
+    image-rendering: -webkit-optimize-contrast;
     display: block;
 }
 

@@ -335,13 +335,9 @@ function renderSlides(slides) {
         let imgUrl = '';
         
         if (picId) {
-            if (picId.includes('.')) {
-                imgUrl = `/api/rest/common/slides/images/${picId}`;
-            } else {
-                imgUrl = `/api/rest/common/slides/images/${picId}-lg.jpg`;
-            }
+            imgUrl = `/api/rest/common/slides/images/${picId}-original.jpg`; // Attempt original first
         } else if (slide._id) {
-            imgUrl = `/api/rest/common/slides/images/${slide._id}-lg.jpg`;
+            imgUrl = `/api/rest/common/slides/images/${slide._id}-original.jpg`;
         } else if (slide.imageUrl || slide.image_url || slide.pictureUrl) {
             imgUrl = slide.imageUrl || slide.image_url || slide.pictureUrl;
         } else {
@@ -359,9 +355,11 @@ function renderSlides(slides) {
                         var picId = '${slideCode}';
                         if (picId) {
                             var candidates = [
-                                '/api/rest/common/slides/images/' + picId + '-lg.jpg',
+                                '/api/rest/common/slides/images/' + picId + '-xl.jpg',
+                                '/api/rest/common/slides/images/' + picId,
                                 '/api/rest/common/slides/images/' + picId + '.jpg',
-                                '/api/rest/common/slides/images/' + picId
+                                '/api/rest/common/slides/images/' + picId + '-lg.jpg',
+                                '/api/rest/common/slides/images/' + picId + '-md.jpg'
                             ];
                             var nextUrl = '';
                             for (var i = 0; i < candidates.length; i++) {
