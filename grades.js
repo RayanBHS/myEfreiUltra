@@ -61,7 +61,7 @@
 
   /** Formater une note au format français (virgule, 2 décimales) */
   function formatGrade(value) {
-    if (value === 'ABS') return 'ABS';
+    if (typeof value === 'string' && value.trim().toUpperCase() === 'ABS') return 'ABS';
     if (value == null || value === '' || isNaN(value)) return '—';
     return parseFloat(value).toFixed(2).replace('.', ',');
   }
@@ -96,10 +96,10 @@
       console.log('📊 Fetching periods from API...');
       const res = await fetch('/api/rest/student/periods?withHistory=true', { credentials: 'include' });
       if (!res.ok) throw new Error('Periods API failed');
-      
+
       const periodsData = await res.json();
       const found = [];
-      
+
       if (Array.isArray(periodsData)) {
         for (const p of periodsData) {
           if (p.period && p.schoolYear) {
@@ -111,7 +111,7 @@
           }
         }
       }
-      
+
       if (found.length === 0) {
         return await fallbackDiscoverSemesters();
       }
@@ -203,10 +203,10 @@
 
     if (raw && raw.grades && Array.isArray(raw.grades.ues)) {
       uesArray = raw.grades.ues;
-    } 
+    }
     else if (Array.isArray(raw)) {
       uesArray = raw;
-    } 
+    }
     else if (raw && typeof raw === 'object') {
       for (const key of ['ues', 'data', 'results']) {
         if (raw[key] && Array.isArray(raw[key])) uesArray = raw[key];
@@ -221,10 +221,18 @@
     return parseUEArray(uesArray);
   }
 
+  /** Parse une valeur de note: retourne 'ABS', un nombre, ou null */
+  function parseGradeValue(val) {
+    if (val == null) return null;
+    if (typeof val === 'string' && val.trim().toUpperCase() === 'ABS') return 'ABS';
+    const num = parseFloat(val);
+    return isNaN(num) ? null : num;
+  }
+
   function parseUEArray(arr) {
     let ues = arr.map(ue => {
       const ueName = ue.name || ue.code || 'UE inconnue';
-      const ueAverage = ue.grade != null ? parseFloat(ue.grade) : (ue.average != null ? parseFloat(ue.average) : null);
+      const ueAverage = ue.grade != null ? parseGradeValue(ue.grade) : (ue.average != null ? parseGradeValue(ue.average) : null);
       const ueCoef = ue.coef != null ? parseFloat(ue.coef) : (ue.ectsAttempted != null ? parseFloat(ue.ectsAttempted) : 1);
 
       const subjectsRaw = ue.modules || ue.courses || ue.subjects || [];
@@ -233,13 +241,13 @@
         const subName = sub.name || sub.code || 'Matière inconnue';
         const subCode = sub.code || '';
         const subCoef = sub.coef != null ? parseFloat(sub.coef) : (sub.coefficient != null ? parseFloat(sub.coefficient) : null);
-        const subAvg = sub.grade != null ? parseFloat(sub.grade) : (sub.average != null ? parseFloat(sub.average) : null);
+        const subAvg = sub.grade != null ? parseGradeValue(sub.grade) : (sub.average != null ? parseGradeValue(sub.average) : null);
 
         const evalsRaw = sub.grades || sub.evaluations || sub.marks || [];
         const evaluations = evalsRaw.map(ev => {
           let rawVal = ev.grade != null ? ev.grade : (ev.value != null ? ev.value : null);
           let parsedVal = null;
-          if (rawVal === 'ABS' || rawVal === 'abs' || ev.absent) {
+          if ((typeof rawVal === 'string' && rawVal.trim().toUpperCase() === 'ABS') || ev.absent) {
             parsedVal = 'ABS';
           } else if (rawVal != null) {
             parsedVal = parseFloat(rawVal);
@@ -274,7 +282,7 @@
     let totalCoef = 0;
 
     ues.forEach(ue => {
-      if (ue.subjects.length >= 2 && ue.average != null) {
+      if (ue.subjects.length >= 2 && ue.average != null && ue.average !== 'ABS' && !isNaN(ue.average)) {
         totalWeightedSum += ue.average * ue.originalCoef;
         totalCoef += ue.originalCoef;
       }
@@ -289,14 +297,21 @@
   // CALCULS ESTIMATIONS & SIMULATEUR
   // ──────────────────────────────────────────────
 
-  function getProcessedEvaluations(subject) {
+  function getProcessedEvaluations(subject, ueIdx, subIdx) {
     let evals = subject.evaluations.map(ev => ({ ...ev }));
-    
+
     // Transfer ABS coefficient to DE if present
     const deIdx = evals.findIndex(ev => ev.type && ev.type.toUpperCase().includes('DE'));
     if (deIdx !== -1) {
       evals.forEach((ev, idx) => {
-        if (ev.value === 'ABS' && ev.coefficient > 0 && idx !== deIdx) {
+        let effVal = ev.value;
+        if (ueIdx != null && subIdx != null) {
+          const simKey = `${ueIdx}-${subIdx}-${idx}`;
+          const simVal = state.simulated[simKey];
+          if (simVal !== undefined) effVal = simVal;
+        }
+
+        if (effVal === 'ABS' && ev.coefficient > 0 && idx !== deIdx) {
           evals[deIdx].coefficient += ev.coefficient;
           ev.coefficient = 0;
         }
@@ -325,8 +340,8 @@
     const sub = state.grades.ues[ueIdx].subjects[subIdx];
 
     // Créer la liste des évaluations avec redistribution des coefficients et évaluation virtuelle
-    let evals = getProcessedEvaluations(sub);
-    
+    let evals = getProcessedEvaluations(sub, ueIdx, subIdx);
+
     let sumCoef = evals.reduce((sum, ev) => sum + (ev.coefficient || 0), 0);
     const isWeighted = sumCoef > 0;
     let realWeightedSum = 0;
@@ -346,7 +361,7 @@
 
       // Note simulée
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
-      
+
       // Si une vraie note est apparue à la place d'une note simulée, on l'écrase
       if (ev.value != null && state.simulated[simKey] !== undefined) {
         delete state.simulated[simKey];
@@ -366,9 +381,9 @@
       }
     });
 
-    const realAvg = sub.average != null ? sub.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
+    const realAvg = (sub.average != null && sub.average !== 'ABS') ? sub.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
     let simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
-    
+
     if (simAvg == null && realAvg != null) {
       simAvg = realAvg;
     }
@@ -387,7 +402,7 @@
     if (!state.grades || !state.grades.ues[ueIdx]) return { realAverage: null, simulatedAverage: null, hasSimulation: false };
 
     const ue = state.grades.ues[ueIdx];
-    
+
     let realWeightedSum = 0;
     let realCoefSum = 0;
     let simWeightedSum = 0;
@@ -410,7 +425,7 @@
       if (subHasSim) hasSimulation = true;
     });
 
-    const realAvg = ue.average != null ? ue.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
+    const realAvg = (ue.average != null && ue.average !== 'ABS') ? ue.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
     let simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
     if (simAvg == null && realAvg != null) {
       simAvg = realAvg;
@@ -453,7 +468,7 @@
       }
     });
 
-    const realAvg = state.grades.average != null ? state.grades.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
+    const realAvg = (state.grades.average != null && state.grades.average !== 'ABS') ? state.grades.average : (realCoefSum > 0 ? realWeightedSum / realCoefSum : null);
     let simAvg = simCoefSum > 0 ? simWeightedSum / simCoefSum : null;
     if (simAvg == null && realAvg != null) {
       simAvg = realAvg;
@@ -491,7 +506,7 @@
         background-color: #F0F0F0 !important;
       }
     `;
-    
+
     const oldStyle = document.getElementById('mye-grades-hide-style');
     if (oldStyle) oldStyle.remove();
     document.head.appendChild(hideStyle);
@@ -663,7 +678,7 @@
 
     } catch (err) {
       console.error('📊 Erreur lors du chargement des notes:', err);
-      
+
       let rawDataStr = "Non disponible";
       try {
         if (cachedData) rawDataStr = JSON.stringify(cachedData, null, 2);
@@ -671,7 +686,7 @@
           const activeSem = state.semesters.find(s => s.period === state.currentPeriod && s.schoolYear === state.currentSchoolYear);
           if (activeSem && activeSem.data) rawDataStr = JSON.stringify(activeSem.data, null, 2);
         }
-      } catch(e) {}
+      } catch (e) { }
 
       rightPanel.innerHTML = `
         <div class="mye-grades-error">
@@ -745,7 +760,7 @@
         let evalsCount = sub.evaluations.length;
         let sumCoef = sub.evaluations.reduce((sum, ev) => sum + (ev.coefficient || 0), 0);
         if (sumCoef > 0 && sumCoef < 0.99) evalsCount++;
-        
+
         if (evalsCount > maxEvals) {
           maxEvals = evalsCount;
         }
@@ -806,7 +821,7 @@
       `;
     }
 
-    let evals = getProcessedEvaluations(subject);
+    let evals = getProcessedEvaluations(subject, ueIdx, subIdx);
 
     const detailsHTML = evals.map((ev, evIdx) => {
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
@@ -877,12 +892,12 @@
     else if (fileInfo.pathname) path = fileInfo.pathname;
     else if (fileInfo.path) path = fileInfo.path;
     else if (fileInfo.url) return fileInfo.url;
-    
+
     if (path) {
       if (path.startsWith('http') || path.startsWith('/api/')) return path;
       return `/api/rest/student/exam/file?pathname=${encodeURIComponent(path)}`;
     }
-    
+
     return '#';
   }
 
@@ -906,17 +921,8 @@
     const ue = state.grades.ues[ueIdx];
     const sub = ue.subjects[subIdx];
 
-    let evals = [...sub.evaluations];
-    let sumCoef = evals.reduce((sum, ev) => sum + (ev.coefficient || 0), 0);
-    if (sumCoef > 0 && sumCoef < 0.99) {
-      evals.push({
-        type: 'Évaluation(s) future(s)',
-        coefficient: 1.0 - sumCoef,
-        value: null,
-        isVirtual: true
-      });
-    }
-    const isWeighted = sumCoef > 0;
+    let evals = getProcessedEvaluations(sub, ueIdx, subIdx);
+    const isWeighted = evals.reduce((sum, ev) => sum + (ev.coefficient || 0), 0) > 0;
 
     const missingEvals = evals.filter((ev, evIdx) => {
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
@@ -971,8 +977,10 @@
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
       const simVal = state.simulated[simKey];
 
-      if (simVal !== undefined) {
-        if (simVal !== null) sumKWeighted += simVal * coef;
+      if (ev.value === 'ABS') {
+        // ABS = absence, ne pas compter dans le calcul (coef déjà transféré au DE)
+      } else if (simVal !== undefined) {
+        if (simVal !== null && simVal !== 'ABS') sumKWeighted += simVal * coef;
       } else if (ev.value != null) {
         sumKWeighted += ev.value * coef;
       } else {
@@ -984,7 +992,7 @@
 
     if (sumMCoef > 0) {
       const G_direct = (T_direct * sumECoef - sumKWeighted) / sumMCoef;
-      
+
       if (!isCompensationPossible) {
         reqBox.className = 'mye-sim-req-box mye-sim-req-comp';
         html = `
@@ -1004,7 +1012,7 @@
         };
 
         let explanationText = `<p style="margin: 0; font-size: 13.5px; color: #166534; line-height: 1.5;">Pour assurer la moyenne de <strong>10/20 à l'UE</strong>, vous devez obtenir au moins ${formatReqGrade(G_direct)} aux évaluations restantes dans cette matière.</p>`;
-        
+
         if (T_ue < 6) {
           explanationText = `<p style="margin: 0; font-size: 13.5px; color: #166534; line-height: 1.5;">Pour valider cette matière (minimum <strong>6/20</strong> requis), vous devez obtenir au moins ${formatReqGrade(G_direct)} aux évaluations restantes.<br><span style="font-size: 12px; opacity: 0.85;">(Votre moyenne d'UE est déjà sécurisée au-dessus de 10)</span></p>`;
         }
@@ -1095,16 +1103,7 @@
     const ue = state.grades.ues[ueIdx];
     const sub = ue.subjects[subIdx];
 
-    let evals = [...sub.evaluations];
-    let sumCoef = evals.reduce((sum, ev) => sum + (ev.coefficient || 0), 0);
-    if (sumCoef > 0 && sumCoef < 0.99) {
-      evals.push({
-        type: 'Évaluation(s) future(s)',
-        coefficient: 1.0 - sumCoef,
-        value: null,
-        isVirtual: true
-      });
-    }
+    let evals = getProcessedEvaluations(sub, ueIdx, subIdx);
 
     const isHorsUE = (ue.name || '').toLowerCase().includes('hors');
     let evalRowsHTML = evals.map((ev, evIdx) => {
@@ -1112,12 +1111,28 @@
       const simVal = state.simulated[simKey];
       const isSimulated = simVal !== undefined;
       const currentVal = isSimulated ? simVal : ev.value;
+      const isABS = ev.value === 'ABS';
       const isDefinitive = ev.value != null;
       const disabledAttr = isDefinitive ? 'disabled' : '';
       const inputClass = isSimulated ? 'simulated' : (ev.value == null ? 'placeholder-sim' : '');
 
       const maxAttr = isHorsUE ? '' : 'max="20"';
       const maxText = isHorsUE ? '' : '<span class="mye-sim-eval-max">/20</span>';
+
+      const isSimulatedABS = currentVal === 'ABS';
+
+      // Si la note est ABS (réelle ou simulée), afficher un badge texte au lieu d'un input number
+      const inputHTML = (isABS || isSimulatedABS)
+        ? `<span class="mye-sim-eval-input" style="display:inline-flex; align-items:center; justify-content:center; background-color:#fef2f2; border-color:#fca5a5; color:#dc2626; font-weight:700; width:70px; padding:8px 12px; border-radius:8px; border:2px solid #fca5a5; box-sizing:border-box;">ABS</span>`
+        : `<input type="number" step="0.25" min="0" ${maxAttr}
+                   class="mye-sim-eval-input ${inputClass}"
+                   data-ue-idx="${ueIdx}" data-sub-idx="${subIdx}" data-eval-idx="${evIdx}" data-is-hors-ue="${isHorsUE}"
+                   value="${currentVal !== null && currentVal !== undefined && currentVal !== 'ABS' ? currentVal : ''}"
+                   placeholder="${ev.value == null ? 'Simuler' : ''}"
+                   ${disabledAttr}>`;
+
+      const absBtnHTML = !isDefinitive && !ev.isVirtual ?
+        `<button class="mye-sim-abs-btn" data-ue-idx="${ueIdx}" data-sub-idx="${subIdx}" data-eval-idx="${evIdx}" title="Simuler une absence" style="padding:6px 10px; font-size:12px; font-weight:700; border-radius:6px; cursor:pointer; margin-left:6px; border:2px solid ${isSimulatedABS ? '#fca5a5' : '#e2e8f0'}; background-color:${isSimulatedABS ? '#fef2f2' : 'white'}; color:${isSimulatedABS ? '#dc2626' : '#64748b'}; transition:all 0.2s;">ABS</button>` : '';
 
       return `
         <div class="mye-sim-eval-row">
@@ -1126,13 +1141,9 @@
             <span class="mye-sim-eval-coef">Coef ${formatCoef(ev.coefficient)}</span>
           </div>
           <div class="mye-sim-eval-input-container">
-            <input type="number" step="0.25" min="0" ${maxAttr}
-                   class="mye-sim-eval-input ${inputClass}"
-                   data-ue-idx="${ueIdx}" data-sub-idx="${subIdx}" data-eval-idx="${evIdx}" data-is-hors-ue="${isHorsUE}"
-                   value="${currentVal !== null && currentVal !== undefined ? currentVal : ''}"
-                   placeholder="${ev.value == null ? 'Simuler' : ''}"
-                   ${disabledAttr}>
-            ${maxText}
+            ${inputHTML}
+            ${(isABS || isSimulatedABS) ? '' : maxText}
+            ${absBtnHTML}
           </div>
         </div>
       `;
@@ -1218,7 +1229,7 @@
           let val = parseFloat(valStr.replace(',', '.'));
           if (isNaN(val)) val = 0;
           if (val < 0) val = 0;
-          
+
           const isHorsUE = input.getAttribute('data-is-hors-ue') === 'true';
           if (!isHorsUE && val > 20) val = 20;
 
@@ -1231,6 +1242,24 @@
         updateModalStatuses(ueIdx, subIdx);
         updateModalRequiredGrades(ueIdx, subIdx);
         updateMainPageGrades();
+      });
+    });
+
+    const absBtns = overlay.querySelectorAll('.mye-sim-abs-btn');
+    absBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const evIdx = btn.getAttribute('data-eval-idx');
+        const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
+
+        if (state.simulated[simKey] === 'ABS') {
+          delete state.simulated[simKey];
+        } else {
+          state.simulated[simKey] = 'ABS';
+        }
+
+        saveSimulatedGrades();
+        updateMainPageGrades();
+        openSimulator(ueIdx, subIdx); // Re-render the simulator to reflect layout and coefficient changes
       });
     });
 
@@ -1257,7 +1286,7 @@
   }
 
   // Écouteur global pour intercepter les clics sur les matières et ouvrir le simulateur
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     if (e.target.closest('.mye-exam-file-link') || e.target.closest('.mye-pdf-overlay') || e.target.closest('.mye-simulator-overlay')) return;
 
     const card = e.target.closest('.mye-subject-card');
@@ -1276,7 +1305,7 @@
   // GESTION DU LECTEUR DE PDF
   // ──────────────────────────────────────────────
 
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     const link = e.target.closest('.mye-exam-file-link');
     if (link) {
       e.preventDefault();
@@ -1343,13 +1372,13 @@
 
     } catch (err) {
       console.error('📊 Erreur fatale:', err);
-      
+
       let rawDataStr = "Non disponible";
       try {
         if (state.semesters && state.semesters.length > 0) {
           rawDataStr = JSON.stringify(state.semesters[state.semesters.length - 1].data, null, 2);
         }
-      } catch(e) {}
+      } catch (e) { }
 
       document.getElementById('mye-grades-right').innerHTML = `
         <div class="mye-grades-error">
@@ -1394,7 +1423,7 @@
   setInterval(() => {
     if (lastGradesUrl !== window.location.href) {
       lastGradesUrl = window.location.href;
-      
+
       if (window.location.pathname.includes('/portal/student/grades')) {
         if (!document.getElementById('mye-grades-container')) {
           waitAndInit();
