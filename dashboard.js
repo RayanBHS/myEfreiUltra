@@ -17,8 +17,17 @@ async function fetchDashboardData() {
         const periodRes = await fetch(API_PERIODS, { credentials: 'include' });
         const periodsData = await periodRes.json();
         
-        // Find current period (or default to the first one)
-        let currentPeriod = periodsData.find(p => p.isCurrent) || periodsData[0];
+        // Find the highest visible semester
+        let highestPeriod = periodsData[0];
+        let highestNum = -1;
+        periodsData.forEach(p => {
+            const num = parseInt((p.period || '').replace(/\D/g, ''), 10);
+            if (!isNaN(num) && num > highestNum) {
+                highestNum = num;
+                highestPeriod = p;
+            }
+        });
+        let currentPeriod = highestPeriod;
         
         if (!currentPeriod) return;
         
@@ -85,11 +94,14 @@ async function fetchDashboardData() {
 
         // 3.5. Fetch LXP (grouped by pair if even semester)
         try {
-            const periodNum = parseInt(periodId.replace('S', ''), 10);
+            const periodNum = parseInt((periodId || '').replace(/\D/g, ''), 10);
             let prevPeriodId = null;
             let prevSchoolYear = null;
             if (!isNaN(periodNum) && periodNum % 2 === 0) {
-                const prev = periodsData.find(p => p.period === `S${periodNum - 1}`);
+                const prev = periodsData.find(p => {
+                    const n = parseInt((p.period || '').replace(/\D/g, ''), 10);
+                    return n === periodNum - 1;
+                });
                 if (prev) {
                     prevPeriodId = prev.period;
                     prevSchoolYear = prev.schoolYear;
