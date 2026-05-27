@@ -315,8 +315,8 @@
                     const title = item.name || 'Action';
                     const axe = item.category?.axe || 'XP';
                     const catName = item.category?.name || 'Catégorie';
-                    const picUrl1 = item.picture ? `/api/rest/student/lxp/images/${item.picture}` : '';
-                    const picUrl2 = item.picture ? `/api/rest/student/lxp/catalog/images/${item.picture}` : '';
+                    const picUrl1 = item.picture ? `/api/rest/common/lxp/action/cover/${item.picture}?q=m` : '';
+                    const picUrl2 = item.picture ? `/api/rest/common/lxp/action/cover/${item.picture}` : '';
                     const fallbackHtml = `<div class="mye-lxp-ac-cover-fallback">Pas d'image</div>`;
                     const imgTag = item.picture ? `<img src="${picUrl1}" class="mye-lxp-ac-cover-img" style="position: absolute; top:0; left:0; z-index:2;" onerror="this.onerror=null; this.src='${picUrl2}'; this.onerror=function(){this.style.display='none';};">` : '';
 
@@ -360,18 +360,18 @@
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                                 Filtres
                             </div>
-                            <button class="mye-lxp-filter-reset">Réinitialiser</button>
+                            <button class="mye-lxp-filter-reset" id="mye-lxp-filter-reset">Réinitialiser</button>
                         </div>
                         <div class="mye-lxp-search-box">
                             <svg class="mye-lxp-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            <input type="text" class="mye-lxp-search-input" placeholder="Recherche action / événement">
+                            <input type="text" class="mye-lxp-search-input" id="mye-lxp-search-input" placeholder="Recherche action / événement">
                         </div>
                         <div class="mye-lxp-filter-group">
                             <div class="mye-lxp-filter-group-title">Axes</div>
                             ${Array.from(axesSet).map(axe => `
                                 <label class="mye-lxp-filter-item">
                                     <div class="mye-lxp-filter-label">
-                                        <input type="checkbox" style="display:none;" value="${axe}">
+                                        <input type="checkbox" style="display:none;" value="${axe}" class="mye-lxp-filter-axe">
                                         <div class="mye-lxp-checkbox"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                         ${axe}
                                     </div>
@@ -384,7 +384,7 @@
                             <div class="mye-lxp-filter-group-title">Types</div>
                             <label class="mye-lxp-filter-item">
                                 <div class="mye-lxp-filter-label">
-                                    <input type="checkbox" style="display:none;">
+                                    <input type="checkbox" style="display:none;" value="action" class="mye-lxp-filter-type">
                                     <div class="mye-lxp-checkbox"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     Actions
                                 </div>
@@ -392,7 +392,7 @@
                             </label>
                             <label class="mye-lxp-filter-item">
                                 <div class="mye-lxp-filter-label">
-                                    <input type="checkbox" style="display:none;">
+                                    <input type="checkbox" style="display:none;" value="event" class="mye-lxp-filter-type">
                                     <div class="mye-lxp-checkbox"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     Evénements
                                 </div>
@@ -406,8 +406,8 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                             </button>
                             <div class="mye-lxp-category-tabs" id="mye-lxp-category-tabs">
-                                <button class="mye-lxp-tab active">Toutes</button>
-                                ${Array.from(categoriesSet).map(c => `<button class="mye-lxp-tab">${c}</button>`).join('')}
+                                <button class="mye-lxp-tab active" data-category="ALL">Toutes</button>
+                                ${Array.from(categoriesSet).map(c => `<button class="mye-lxp-tab" data-category="${c}">${c}</button>`).join('')}
                             </div>
                             <button class="mye-lxp-scroll-btn right" id="mye-lxp-scroll-right">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -441,6 +441,74 @@
                     tabsContainer.scrollBy({ left: 250, behavior: 'smooth' });
                 });
             }
+
+            // FILTER LOGIC
+            const filters = {
+                search: '',
+                axes: new Set(),
+                types: new Set(),
+                category: 'ALL'
+            };
+
+            const updateGrid = () => {
+                const filtered = actions.filter(a => {
+                    if (filters.search) {
+                        const s = filters.search.toLowerCase();
+                        if (!a.name?.toLowerCase().includes(s) && !a.summary?.toLowerCase().includes(s)) return false;
+                    }
+                    if (filters.axes.size > 0 && (!a.category?.axe || !filters.axes.has(a.category.axe))) return false;
+                    if (filters.types.size > 0) {
+                        const isEvt = !!a.isEvent;
+                        if (isEvt && !filters.types.has('event')) return false;
+                        if (!isEvt && !filters.types.has('action')) return false;
+                    }
+                    if (filters.category !== 'ALL' && a.category?.name !== filters.category) return false;
+                    return true;
+                });
+                const grid = document.querySelector('.mye-lxp-grid');
+                if (grid) grid.innerHTML = renderCards(filtered);
+            };
+
+            const searchInput = document.getElementById('mye-lxp-search-input');
+            if (searchInput) searchInput.addEventListener('input', e => { filters.search = e.target.value; updateGrid(); });
+
+            const axeChecks = document.querySelectorAll('.mye-lxp-filter-axe');
+            axeChecks.forEach(cb => cb.addEventListener('change', e => {
+                if (e.target.checked) filters.axes.add(e.target.value);
+                else filters.axes.delete(e.target.value);
+                updateGrid();
+            }));
+
+            const typeChecks = document.querySelectorAll('.mye-lxp-filter-type');
+            typeChecks.forEach(cb => cb.addEventListener('change', e => {
+                if (e.target.checked) filters.types.add(e.target.value);
+                else filters.types.delete(e.target.value);
+                updateGrid();
+            }));
+
+            const tabBtns = document.querySelectorAll('.mye-lxp-tab');
+            tabBtns.forEach(btn => btn.addEventListener('click', e => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filters.category = btn.dataset.category;
+                updateGrid();
+            }));
+
+            const resetBtn = document.getElementById('mye-lxp-filter-reset');
+            if (resetBtn) resetBtn.addEventListener('click', () => {
+                filters.search = '';
+                if (searchInput) searchInput.value = '';
+                filters.axes.clear();
+                axeChecks.forEach(cb => cb.checked = false);
+                filters.types.clear();
+                typeChecks.forEach(cb => cb.checked = false);
+                filters.category = 'ALL';
+                tabBtns.forEach(b => b.classList.remove('active'));
+                const firstTab = document.querySelector('.mye-lxp-tab');
+                if (firstTab) firstTab.classList.add('active');
+                updateGrid();
+            });
+
         } catch (e) {
             console.error(e);
             content.innerHTML = `<div style="text-align:center; color:red; padding:40px;">Erreur lors du chargement du Catalogue.</div>`;
@@ -451,19 +519,28 @@
     // ==========================================
     async function renderActionDetail(content, id) {
         try {
-            // Usually `/api/rest/student/lxp/actions/${id}`
-            const res = await fetch(`/api/rest/student/lxp/actions/${id}`).catch(() => null);
-            let item = {};
+            let item = null;
+            let res = await fetch(`/api/rest/student/lxp/actions/${id}`, { credentials: 'include' }).catch(() => null);
+            
             if (res && res.ok) {
                 item = await res.json();
             } else {
+                res = await fetch('/api/rest/student/lxp/catalog/actions', { credentials: 'include' }).catch(() => null);
+                if (res && res.ok) {
+                    const data = await res.json();
+                    const actions = Array.isArray(data) ? data : (data.content || data.data || []);
+                    item = actions.find(a => a._id === id);
+                }
+            }
+
+            if (!item) {
                 item = {
                     name: 'Détails de l\'action',
-                    summary: 'Une erreur est survenue ou cette fonctionnalité est en mode hors-ligne.',
+                    summary: 'Une erreur est survenue ou l\'action est introuvable.',
                     category: { name: 'Information' }
                 };
             }
-            const pic = item.picture ? `/api/rest/common/news/images/thumbnail/${item.picture}` : '';
+            const pic = item.picture ? `/api/rest/common/lxp/action/cover/${item.picture}` : '';
             let bgStyle = pic ? `background-image: url('${pic}');` : 'background: linear-gradient(135deg, #163767, #2b5c9e);';
             content.innerHTML = `
                 <button class="mye-lxp-back-btn" style="margin-bottom: 24px;" onclick="window.history.back()">

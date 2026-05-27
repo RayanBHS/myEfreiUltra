@@ -61,6 +61,7 @@
 
   /** Formater une note au format français (virgule, 2 décimales) */
   function formatGrade(value) {
+    if (value === 'ABS') return 'ABS';
     if (value == null || value === '' || isNaN(value)) return '—';
     return parseFloat(value).toFixed(2).replace('.', ',');
   }
@@ -236,10 +237,18 @@
 
         const evalsRaw = sub.grades || sub.evaluations || sub.marks || [];
         const evaluations = evalsRaw.map(ev => {
+          let rawVal = ev.grade != null ? ev.grade : (ev.value != null ? ev.value : null);
+          let parsedVal = null;
+          if (rawVal === 'ABS' || rawVal === 'abs' || ev.absent) {
+            parsedVal = 'ABS';
+          } else if (rawVal != null) {
+            parsedVal = parseFloat(rawVal);
+            if (isNaN(parsedVal)) parsedVal = null;
+          }
           return {
             type: ev.courseActivity || ev.type || ev.name || '?',
             coefficient: ev.coef != null ? parseFloat(ev.coef) : (ev.coefficient != null ? parseFloat(ev.coefficient) : null),
-            value: ev.grade != null ? parseFloat(ev.grade) : (ev.value != null ? parseFloat(ev.value) : null),
+            value: parsedVal,
             examFile: ev.examFile || null
           };
         });
@@ -280,16 +289,20 @@
   // CALCULS ESTIMATIONS & SIMULATEUR
   // ──────────────────────────────────────────────
 
-  /**
-   * Retourne la moyenne réelle, la moyenne simulée et l'état de simulation d'une matière
-   */
-  function getSubjectAverages(ueIdx, subIdx) {
-    if (!state.grades || !state.grades.ues[ueIdx]) return { realAverage: null, simulatedAverage: null, hasSimulation: false };
+  function getProcessedEvaluations(subject) {
+    let evals = subject.evaluations.map(ev => ({ ...ev }));
+    
+    // Transfer ABS coefficient to DE if present
+    const deIdx = evals.findIndex(ev => ev.type && ev.type.toUpperCase().includes('DE'));
+    if (deIdx !== -1) {
+      evals.forEach((ev, idx) => {
+        if (ev.value === 'ABS' && ev.coefficient > 0 && idx !== deIdx) {
+          evals[deIdx].coefficient += ev.coefficient;
+          ev.coefficient = 0;
+        }
+      });
+    }
 
-    const sub = state.grades.ues[ueIdx].subjects[subIdx];
-
-    // Créer la liste des évaluations incluant une évaluation virtuelle si coef total < 100%
-    let evals = [...sub.evaluations];
     let sumCoef = evals.reduce((sum, ev) => sum + (ev.coefficient || 0), 0);
     if (sumCoef > 0 && sumCoef < 0.99) {
       evals.push({
@@ -300,6 +313,21 @@
       });
     }
 
+    return evals;
+  }
+
+  /**
+   * Retourne la moyenne réelle, la moyenne simulée et l'état de simulation d'une matière
+   */
+  function getSubjectAverages(ueIdx, subIdx) {
+    if (!state.grades || !state.grades.ues[ueIdx]) return { realAverage: null, simulatedAverage: null, hasSimulation: false };
+
+    const sub = state.grades.ues[ueIdx].subjects[subIdx];
+
+    // Créer la liste des évaluations avec redistribution des coefficients et évaluation virtuelle
+    let evals = getProcessedEvaluations(sub);
+    
+    let sumCoef = evals.reduce((sum, ev) => sum + (ev.coefficient || 0), 0);
     const isWeighted = sumCoef > 0;
     let realWeightedSum = 0;
     let realCoefSum = 0;
@@ -311,7 +339,7 @@
       const coef = isWeighted ? (ev.coefficient || 0) : 1.0;
 
       // Note réelle
-      if (ev.value != null) {
+      if (ev.value != null && ev.value !== 'ABS') {
         realWeightedSum += ev.value * coef;
         realCoefSum += coef;
       }
@@ -327,12 +355,12 @@
 
       const simVal = state.simulated[simKey];
       if (simVal !== undefined) {
-        if (simVal !== null) {
+        if (simVal !== null && simVal !== 'ABS') {
           simWeightedSum += simVal * coef;
           simCoefSum += coef;
           hasSimulation = true;
         }
-      } else if (ev.value != null) {
+      } else if (ev.value != null && ev.value !== 'ABS') {
         simWeightedSum += ev.value * coef;
         simCoefSum += coef;
       }
@@ -778,16 +806,7 @@
       `;
     }
 
-    let evals = [...subject.evaluations];
-    let sumCoef = evals.reduce((sum, ev) => sum + (ev.coefficient || 0), 0);
-    if (sumCoef > 0 && sumCoef < 0.99) {
-      evals.push({
-        type: 'Évaluation(s) future(s)',
-        coefficient: 1.0 - sumCoef,
-        value: null,
-        isVirtual: true
-      });
-    }
+    let evals = getProcessedEvaluations(subject);
 
     const detailsHTML = evals.map((ev, evIdx) => {
       const simKey = `${ueIdx}-${subIdx}-${evIdx}`;
