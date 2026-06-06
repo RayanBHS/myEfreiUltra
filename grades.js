@@ -1427,17 +1427,14 @@
       if (window.location.pathname.includes('/portal/student/grades')) {
         if (!document.getElementById('mye-grades-container')) {
           waitAndInit();
-        } else {
-          const hideStyle = document.getElementById('mye-hide-all-style');
-          if (!hideStyle) waitAndInit();
-          else document.getElementById('mye-grades-container').style.display = 'block';
         }
       } else {
-        document.body.classList.remove('mye-clean-screen');
         const container = document.getElementById('mye-grades-container');
-        if (container) container.style.display = 'none';
+        if (container) container.remove();
+        const hideStyle = document.getElementById('mye-grades-hide-style');
+        if (hideStyle) hideStyle.remove();
       }
     }
-  }, 500);
+  }, 300);
 
 })();

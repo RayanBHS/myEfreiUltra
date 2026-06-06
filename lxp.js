@@ -739,19 +739,11 @@
             if (changed || !document.getElementById('mye-lxp-container')) {
                 buildLxpContainer();
                 loadLxpView(route);
-            } else {
-                document.getElementById('mye-lxp-container').style.display = 'block';
             }
         } else {
             // Not on LXP page
             const container = document.getElementById('mye-lxp-container');
-            if (container) container.style.display = 'none';
-            // Only remove clean-screen if we're not on another page that uses it
-            if (!window.location.pathname.startsWith('/portal/student/lxp') &&
-                !window.location.pathname.startsWith('/portal/common/news') &&
-                !window.location.pathname.startsWith('/portal/student/dashboard')) {
-                document.body.classList.remove('mye-clean-screen');
-            }
+            if (container) container.remove();
             currentRoute = null;
         }
     }

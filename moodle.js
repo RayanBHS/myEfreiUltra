@@ -61,10 +61,8 @@
       waitAndInit();
     } else if (wasOnMoodle) {
       wasOnMoodle = false;
-      // Cleanup: hide moodle container when navigating away
       const container = document.getElementById('mye-moodle-container');
-      if (container) container.style.display = 'none';
-      document.body.classList.remove('mye-clean-screen');
+      if (container) container.remove();
     }
   }
 
@@ -80,7 +78,7 @@
       lastUrl = window.location.href;
       checkMoodleRoute();
     }
-  }, 500);
+  }, 300);
 
   checkMoodleRoute();
 

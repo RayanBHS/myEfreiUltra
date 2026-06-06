@@ -420,16 +420,14 @@
       if (window.location.pathname.includes('/portal/student/absences')) {
         if (!document.getElementById('mye-absences-container')) {
           waitAndInit();
-        } else {
-          document.body.classList.add('mye-clean-screen');
-          document.getElementById('mye-absences-container').style.display = 'flex';
         }
       } else {
-        document.body.classList.remove('mye-clean-screen');
         const container = document.getElementById('mye-absences-container');
-        if (container) container.style.display = 'none';
+        if (container) container.remove();
+        const hideStyle = document.getElementById('mye-absences-hide-style');
+        if (hideStyle) hideStyle.remove();
       }
     }
-  }, 500);
+  }, 300);
 
 })();

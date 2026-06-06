@@ -428,16 +428,14 @@
       if (isGuestPage()) {
         if (!document.getElementById('mye-guest-container')) {
           waitAndInit();
-        } else {
-          document.body.classList.add('mye-clean-screen');
-          document.getElementById('mye-guest-container').style.display = '';
         }
       } else {
         const container = document.getElementById('mye-guest-container');
-        if (container) container.style.display = 'none';
-        document.body.classList.remove('mye-clean-screen');
+        if (container) container.remove();
+        const hideStyle = document.getElementById('mye-guest-hide-style');
+        if (hideStyle) hideStyle.remove();
       }
     }
-  }, 500);
+  }, 300);
 
 })();

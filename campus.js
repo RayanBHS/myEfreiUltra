@@ -301,11 +301,10 @@
         initCampusPage();
       } else {
         const container = document.getElementById('mye-campus-container');
-        if (container) container.style.display = 'none';
-        document.body.classList.remove('mye-clean-screen');
+        if (container) container.remove();
       }
     }
-  }, 500);
+  }, 300);
 
   // Initial load
   if (isCampusPage()) {

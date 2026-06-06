@@ -148,20 +148,20 @@
   position: absolute;
   top: calc(100% + 15px);
   left: 50%;
-  background-color: white;
+  background: linear-gradient(135deg, #ffffff 0%, color-mix(in srgb, var(--mye-primary-color) 4%, #ffffff) 100%);
   color: initial;
   cursor: default;
   border: 2px solid var(--mye-primary-color);
   border-radius: 20px;
   padding: 15px 0;
   min-width: 280px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--mye-primary-color) 15%, rgba(0, 0, 0, 0.15));
   display: flex;
   flex-direction: column;
   opacity: 0;
   visibility: hidden;
   transform: translate(-50%, -10px);
-  transition: all 0.2s ease-out;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 2147483647 !important;
 }
 
@@ -186,17 +186,20 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 12px 25px;
+  padding: 12px 25px 12px 21px;
   color: #666;
   text-decoration: none;
   font-size: 15px;
   font-weight: 500;
-  transition: background-color 0.2s, color 0.2s;
+  border-left: 4px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mye-dropdown-link:hover {
-  background-color: #f0f4f8;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, #ffffff);
   color: var(--mye-primary-color);
+  border-left-color: var(--mye-primary-color);
+  padding-left: 28px;
 }
 
 .mye-link-icon {
@@ -352,10 +355,10 @@ body.mye-clean-screen {
 }
 
 .MuiAutocomplete-popper .MuiPaper-root {
-  background-color: white !important;
+  background: linear-gradient(135deg, #ffffff 0%, color-mix(in srgb, var(--mye-primary-color) 4%, #ffffff) 100%) !important;
   border: 2px solid var(--mye-primary-color) !important;
   border-radius: 20px !important;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--mye-primary-color) 15%, rgba(0, 0, 0, 0.15)) !important;
   overflow: hidden !important;
   font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
   padding: 10px 0 !important;
@@ -371,24 +374,27 @@ body.mye-clean-screen {
 }
 
 .MuiAutocomplete-option {
-  padding: 12px 25px !important;
+  padding: 12px 25px 12px 21px !important;
   color: #666 !important;
   font-size: 15px !important;
   font-weight: 500 !important;
-  transition: background-color 0.2s, color 0.2s !important;
+  border-left: 4px solid transparent !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .MuiAutocomplete-option[aria-selected="true"], .MuiAutocomplete-option:hover {
-  background-color: #f0f4f8 !important;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, #ffffff) !important;
   color: var(--mye-primary-color) !important;
+  border-left-color: var(--mye-primary-color) !important;
+  padding-left: 26px !important;
 }
 
 /* STYLISATION DU POPUP DE NOTIFICATIONS ORIGINAL */
 #simple-popper-efrei .MuiPaper-root {
-  background-color: white !important;
+  background: linear-gradient(135deg, #ffffff 0%, color-mix(in srgb, var(--mye-primary-color) 4%, #ffffff) 100%) !important;
   border: 2px solid var(--mye-primary-color) !important;
   border-radius: 20px !important;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--mye-primary-color) 15%, rgba(0, 0, 0, 0.15)) !important;
   overflow: hidden !important;
   font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
 
@@ -409,12 +415,12 @@ body.mye-clean-screen {
 
 #simple-popper-efrei .MuiTypography-root:first-child {
   /* En-tête "Notifications" */
-  background-color: white !important;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, #ffffff) !important;
   color: var(--mye-primary-color) !important;
   font-size: 16px !important;
   font-weight: 700 !important;
   padding: 15px 25px !important;
-  border-bottom: 1px solid #eee !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--mye-primary-color) 12%, #eee) !important;
 }
 
 #simple-popper-efrei > div > div > div:nth-child(2) {
@@ -434,10 +440,10 @@ body.mye-clean-screen {
 }
 
 [role="dropDownMenu"].MuiPopperUnstyled-root .MuiPaper-root {
-  background-color: white !important;
+  background: linear-gradient(135deg, #ffffff 0%, color-mix(in srgb, var(--mye-primary-color) 4%, #ffffff) 100%) !important;
   border: 2px solid var(--mye-primary-color) !important;
   border-radius: 20px !important;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--mye-primary-color) 15%, rgba(0, 0, 0, 0.15)) !important;
   overflow: hidden !important;
   font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif !important;
   padding: 15px 0 !important;
@@ -466,16 +472,19 @@ body.mye-clean-screen {
   display: flex !important;
   align-items: center !important;
   gap: 15px !important;
-  padding: 12px 25px !important;
+  padding: 12px 25px 12px 21px !important;
   color: #666 !important;
   font-size: 15px !important;
   font-weight: 500 !important;
-  transition: background-color 0.2s, color 0.2s !important;
+  border-left: 4px solid transparent !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 [role="dropDownMenu"] .MuiMenuItem-root:hover {
-  background-color: #f0f4f8 !important;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, #ffffff) !important;
   color: var(--mye-primary-color) !important;
+  border-left-color: var(--mye-primary-color) !important;
+  padding-left: 26px !important;
 }
 
 [role="dropDownMenu"] .MuiMenuItem-root .MuiSvgIcon-root {
@@ -559,7 +568,7 @@ body.mye-clean-screen {
 }
 
 .mye-drawer-close:hover {
-  background-color: #f0f4f8 !important;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 10%, #ffffff) !important;
 }
 
 .mye-drawer-close svg {
@@ -1098,9 +1107,10 @@ body.dark-mode .mye-profile-last {
 
 body.dark-mode .mye-dropdown-menu,
 body.dark-mode .MuiPaper-root {
-  background-color: #000000 !important;
-  border-color: #333333 !important;
+  background: linear-gradient(135deg, #121212 0%, color-mix(in srgb, var(--mye-primary-color) 8%, #121212) 100%) !important;
+  border-color: color-mix(in srgb, var(--mye-primary-color) 35%, #333333) !important;
   color: #ffffff !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
 }
 
 body.dark-mode .mye-dropdown-link,
@@ -1114,8 +1124,10 @@ body.dark-mode .mye-dropdown-link:hover,
 body.dark-mode .MuiMenuItem-root:hover,
 body.dark-mode .MuiAutocomplete-option[aria-selected="true"], 
 body.dark-mode .MuiAutocomplete-option:hover {
-  background-color: #1a1a1a !important;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 15%, #121212) !important;
   color: #ffffff !important;
+  border-left-color: var(--mye-primary-color) !important;
+  padding-left: 26px !important;
 }
 
 body.dark-mode .searchBar.mye-search-active {
@@ -1158,14 +1170,14 @@ body.dark-mode .mye-drawer-subitem:hover {
 }
 
 body.dark-mode #simple-popper-efrei .MuiTypography-root:first-child {
-  background-color: #000000 !important;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 12%, #121212) !important;
   color: #ffffff !important;
-  border-bottom-color: #333333 !important;
+  border-bottom-color: color-mix(in srgb, var(--mye-primary-color) 30%, #333333) !important;
 }
 
 body.dark-mode #simple-popper-efrei .MuiPaper-root {
-  background-color: #000000 !important;
-  border-color: #333333 !important;
+  background: linear-gradient(135deg, #121212 0%, color-mix(in srgb, var(--mye-primary-color) 8%, #121212) 100%) !important;
+  border-color: color-mix(in srgb, var(--mye-primary-color) 35%, #333333) !important;
 }
 
 /* Fix loading screen and article container background in dark mode before body gets the class */

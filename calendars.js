@@ -1740,16 +1740,12 @@
       if (window.location.pathname.includes('/portal/common/calendars')) {
         if (!document.getElementById('mye-calendars-container')) {
           waitAndInit();
-        } else {
-          document.body.classList.add('mye-clean-screen');
-          document.getElementById('mye-calendars-container').style.display = 'flex';
         }
       } else {
-        document.body.classList.remove('mye-clean-screen');
         const container = document.getElementById('mye-calendars-container');
-        if (container) container.style.display = 'none';
+        if (container) container.remove();
       }
     }
-  }, 500);
+  }, 300);
 
 })();

@@ -1727,17 +1727,13 @@
       if (window.location.pathname.includes('/portal/student/planning')) {
         if (!document.getElementById('mye-planning-container')) {
           waitAndInit();
-        } else {
-          document.body.classList.add('mye-clean-screen');
-          document.getElementById('mye-planning-container').style.display = 'flex';
         }
       } else {
-        document.body.classList.remove('mye-clean-screen');
         const container = document.getElementById('mye-planning-container');
-        if (container) container.style.display = 'none';
+        if (container) container.remove();
       }
     }
-  }, 500);
+  }, 300);
 
   setInterval(() => {
     const now = Date.now();

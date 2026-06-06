@@ -354,19 +354,12 @@
       if (isNewsListPage()) {
         if (!document.getElementById('mye-news-container')) {
           waitAndInit();
-        } else {
-          document.body.classList.add('mye-clean-screen');
-          document.getElementById('mye-news-container').style.display = 'block';
         }
       } else {
         const container = document.getElementById('mye-news-container');
-        if (container) container.style.display = 'none';
-        
-        if (!window.location.pathname.match(/\/portal\/common\/news\/([a-f0-9]+)/i)) {
-          document.body.classList.remove('mye-clean-screen');
-        }
+        if (container) container.remove();
       }
     }
-  }, 500);
+  }, 300);
 
 })();

@@ -243,23 +243,20 @@
         if (!document.getElementById('mye-article-container')) {
           initArticle();
         } else {
-          document.getElementById('mye-article-container').style.display = 'flex';
           const articleId = getArticleId();
           if (articleId !== currentArticleId) {
             currentArticleId = articleId;
-            loadArticle(articleId);
+            const container = document.getElementById('mye-article-container');
+            if (container) container.remove();
+            initArticle();
           }
         }
       } else {
         const container = document.getElementById('mye-article-container');
-        if (container) container.style.display = 'none';
-        
-        if (window.location.pathname !== '/portal/common/news' && window.location.pathname !== '/portal/common/news/') {
-          document.body.classList.remove('mye-clean-screen');
-        }
+        if (container) container.remove();
       }
     }
-  }, 500);
+  }, 300);
 
   // Initial check
   if (isArticlePage()) {

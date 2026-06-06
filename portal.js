@@ -1025,13 +1025,54 @@ if (document.readyState === 'loading') {
 
 // ──────────────────────────────────────────────
 // GESTION DU ROUTAGE ANGULAR (SPA)
+// Logique centralisée pour éviter les flashs
+// de la vraie page EFREI lors de la navigation
 // ──────────────────────────────────────────────
+
+// Pages gérées par des modules custom qui utilisent mye-clean-screen
+const MYE_CUSTOM_PAGES = [
+    '/portal/student/grades',
+    '/portal/student/absences',
+    '/portal/student/guest',
+    '/portal/student/planning',
+    '/portal/student/lxp',
+    '/portal/student/documents',
+    '/portal/student/moodle-courses',
+    '/portal/student/campus',
+    '/portal/student/available-rooms',
+    '/portal/common/news',
+    '/portal/common/calendars',
+    '/portal/common/resources',
+];
+
+function isCustomPage(path) {
+    return MYE_CUSTOM_PAGES.some(p => path.includes(p));
+}
+
 let lastUrl = window.location.href;
 setInterval(() => {
-    if (lastUrl !== window.location.href) {
-        lastUrl = window.location.href;
+    const currentUrl = window.location.href;
+    if (lastUrl !== currentUrl) {
+        lastUrl = currentUrl;
         // Si on navigue, on s'assure que le header est bien là s'il doit l'être
         tryBuild();
     }
-}, 500);
+
+    // Gestion centralisée de mye-clean-screen :
+    // Si on est sur une page custom, on s'assure que la classe est présente
+    // Si on n'est pas sur une page custom (ex: dashboard/home), on la retire
+    const path = window.location.pathname;
+    if (isCustomPage(path)) {
+        if (!document.body.classList.contains('mye-clean-screen')) {
+            document.body.classList.add('mye-clean-screen');
+        }
+    } else {
+        // Sur les pages non-custom (dashboard, landing), retirer clean-screen
+        // sauf si le body n'est pas encore chargé ou si on est sur un slide
+        if (document.body && document.body.classList.contains('mye-clean-screen')
+            && !path.includes('/portal/student/slides/')) {
+            document.body.classList.remove('mye-clean-screen');
+        }
+    }
+}, 300);
 

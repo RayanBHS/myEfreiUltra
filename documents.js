@@ -350,12 +350,11 @@
       } else {
         if (document.body) {
           document.body.classList.remove('mye-documents-active');
-          document.body.classList.remove('mye-clean-screen');
         }
         const container = document.getElementById('mye-documents-container');
-        if (container) container.style.display = 'none';
+        if (container) container.remove();
       }
     }
-  }, 500);
+  }, 300);
 
 })();
