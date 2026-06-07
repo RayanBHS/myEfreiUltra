@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Error Page - MyEfrei ULTRA</title>
+  <link rel="stylesheet" href="portal.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+    }
+    .test-controls {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      z-index: 2147483647;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      font-family: sans-serif;
+    }
+    .test-controls button {
+      padding: 8px 12px;
+      margin-right: 5px;
+      cursor: pointer;
+    }
+    .dark-mode .test-controls {
+      background: #222;
+      color: white;
+      box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    // Mock chrome.runtime.getURL to load local files
+    if (typeof chrome === 'undefined') {
+      window.chrome = {
+        runtime: {
+          getURL: function(path) {
+            return path;
+          }
+        }
+      };
+    }
+  </script>
+
+  <script src="portal.js"></script>
+  <script>
+    // Simulate error page URL and run build
+    // For local testing, we manually call the builders since location.pathname won't match portal/app/error
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add clean screen to simulate error page behavior
+      document.body.classList.add('mye-clean-screen');
+      
+      // Inject header
+      injectCustomHeader();
+      
+      // Inject error overlay manually
+      buildErrorOverlay();
+    });
+  </script>
+
+  <!-- Dark mode toggle for testing -->
+  <div class="test-controls">
+    <h3>Contrôles de test</h3>
+    <button onclick="document.body.classList.toggle('dark-mode'); document.documentElement.classList.toggle('dark-mode');">Toggle Dark Mode</button>
+  </div>
+
+</body>
+</html>

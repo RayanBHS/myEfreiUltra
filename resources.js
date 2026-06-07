@@ -16,8 +16,45 @@
     categories: [],
     categoryResources: {}, // Cache of categoryId -> parsed groups array
     search: '',
-    currentPath: window.location.pathname
+    currentPath: window.location.pathname,
+    favorites: []
   };
+
+  function loadFavorites() {
+    try {
+      const favs = localStorage.getItem('mye-favorite-categories');
+      state.favorites = favs ? JSON.parse(favs) : [];
+    } catch (e) {
+      state.favorites = [];
+    }
+  }
+
+  function toggleFavorite(catId) {
+    const idx = state.favorites.indexOf(catId);
+    if (idx === -1) {
+      state.favorites.push(catId);
+    } else {
+      state.favorites.splice(idx, 1);
+    }
+    try {
+      localStorage.setItem('mye-favorite-categories', JSON.stringify(state.favorites));
+    } catch (e) {
+      console.error(e);
+    }
+    renderSidebar();
+    renderContent();
+  }
+
+  function setupFavoriteHeaderBtn(container, categoryId) {
+    const btn = container.querySelector('.mye-category-header-favorite-btn');
+    if (btn) {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFavorite(categoryId);
+      });
+    }
+  }
 
   // Map icon names from the database to clean Material icons
   const ICON_MAP = {
@@ -66,7 +103,7 @@
   }
 
   function getActiveCategoryId() {
-    const match = window.location.pathname.match(/\/portal\/common\/resources\/categories\/([a-fA-F0-9]+)/);
+    const match = window.location.pathname.match(/\/portal\/common\/resources\/(?:categories\/)?([a-fA-F0-9]+)/);
     return match ? match[1] : null;
   }
 
@@ -106,6 +143,7 @@
       lastUrl = window.location.href;
 
       if (isResourcesPage()) {
+        closeModal();
         if (!document.getElementById('mye-resources-container')) {
           waitAndInit();
         } else {
@@ -132,6 +170,7 @@
   function init() {
     if (document.getElementById('mye-resources-container')) return;
 
+    loadFavorites();
     console.log('📚 Initialisation de la page Ressources…');
     document.body.classList.add('mye-clean-screen');
 
@@ -203,8 +242,13 @@
         return true;
       });
 
+      localStorage.setItem('mye-categories-cache', JSON.stringify(state.categories));
+
       renderSidebar();
       renderContent();
+      
+      // Trigger background preloading of all category resources
+      preloadAllCategoryResources();
     } catch (e) {
       console.error('📚 Erreur chargement catégories:', e);
       const contentArea = document.getElementById('mye-resources-content-area');
@@ -217,6 +261,32 @@
           </div>
         `;
       }
+    }
+  }
+
+  async function preloadAllCategoryResources() {
+    console.log('📚 MyEfrei ULTRA — Préchargement des ressources en arrière-plan…');
+    const promises = state.categories.map(async (cat) => {
+      const catId = cat._id;
+      if (state.categoryResources[catId]) return;
+      
+      try {
+        const response = await fetch(`/api/rest/common/resources?category=${catId}&group=true`, { credentials: 'include' });
+        if (response.ok) {
+          const data = await response.json();
+          state.categoryResources[catId] = parseCategoryResources(data);
+        }
+      } catch (err) {
+        console.warn(`📚 Impossible de précharger la catégorie ${cat.title}:`, err);
+      }
+    });
+    
+    await Promise.all(promises);
+    console.log('📚 MyEfrei ULTRA — Toutes les ressources ont été préchargées et mises en cache.');
+    
+    // If the user is currently searching globally, re-render to include new results
+    if (state.search && !getActiveCategoryId()) {
+      renderContent();
     }
   }
 
@@ -279,20 +349,30 @@
     });
     sidebar.appendChild(allItem);
 
-    // List of active categories
-    state.categories.forEach(cat => {
+    // List of active categories, sorted with favorites first
+    const sortedCategories = [...state.categories].sort((a, b) => {
+      const aFav = state.favorites.includes(a._id);
+      const bFav = state.favorites.includes(b._id);
+      if (aFav && !bFav) return -1;
+      if (!aFav && bFav) return 1;
+      return 0;
+    });
+
+    sortedCategories.forEach(cat => {
       const item = document.createElement('button');
       const isActive = getActiveCategoryId() === cat._id;
+      const isFav = state.favorites.includes(cat._id);
       item.className = `mye-resources-nav-item ${isActive ? 'active' : ''}`;
       item.setAttribute('data-id', cat._id);
 
       item.innerHTML = `
         <span class="mye-resources-nav-item-icon material-icons">${getMaterialIcon(cat.icon)}</span>
-        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${cat.title}</span>
+        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: left;">${cat.title}</span>
+        ${isFav ? `<span class="material-icons mye-sidebar-fav-star" style="font-size: 14px; color: #facc15; margin-left: 4px;">star</span>` : ''}
       `;
 
       item.addEventListener('click', () => {
-        const targetUrl = `/portal/common/resources/categories/${cat._id}`;
+        const targetUrl = `/portal/common/resources/${cat._id}`;
         window.history.pushState({}, '', targetUrl);
         state.currentPath = targetUrl;
         updateActiveNavItem();
@@ -315,29 +395,353 @@
   }
 
   // Main content area routing and rendering
-  function renderContent() {
+  async function renderContent() {
     const contentArea = document.getElementById('mye-resources-content-area');
     if (!contentArea) return;
 
     updateActiveNavItem();
 
-    const activeCatId = getActiveCategoryId();
-    if (activeCatId) {
-      const category = state.categories.find(c => c._id === activeCatId);
-      if (category) {
-        renderCategoryDetail(category, contentArea);
-      } else {
+    const activeId = getActiveCategoryId();
+    if (activeId) {
+      // Show loading spinner
+      contentArea.innerHTML = `
+        <div class="mye-resources-loading-container">
+          <div class="mye-grades-spinner"></div>
+          <div class="mye-grades-loading-text">Chargement de la ressource...</div>
+        </div>
+      `;
+
+      try {
+        // Fetch details of this ID (could be a category or a resource)
+        const isCategory = state.categories.some(c => c._id === activeId);
+        let response;
+        if (isCategory) {
+          response = await fetch(`/api/rest/common/resources/categories/${activeId}`, { credentials: 'include' });
+          if (!response.ok) {
+            response = await fetch(`/api/rest/common/resources/${activeId}`, { credentials: 'include' });
+          }
+        } else {
+          response = await fetch(`/api/rest/common/resources/${activeId}`, { credentials: 'include' });
+          if (!response.ok) {
+            response = await fetch(`/api/rest/common/resources/categories/${activeId}`, { credentials: 'include' });
+          }
+        }
+
+        if (!response.ok) throw new Error('Not found');
+        const data = await response.json();
+
+        // If the ID is a Category (has subCategories list or is in state.categories or fetched from categories API)
+        const fetchedCategoryUrl = response.url && response.url.includes('/resources/categories/');
+        const isCategoryResponse = fetchedCategoryUrl || (data && !data.category) || data.subCategories || state.categories.some(c => c._id === activeId);
+
+        if (isCategoryResponse) {
+          let category = state.categories.find(c => c._id === activeId);
+          if (!category) {
+            category = {
+              _id: data._id,
+              title: data.title,
+              description: data.description,
+              icon: data.icon || 'folder'
+            };
+            state.categories.push(category);
+            renderSidebar();
+          }
+          await renderCategoryDetail(category, contentArea);
+        } else {
+          // It's an individual content/video resource!
+          // Try to load the parent category in the background for context
+          const parentCatId = data.category && data.category._id;
+          if (parentCatId) {
+            let parentCategory = state.categories.find(c => c._id === parentCatId);
+            if (!parentCategory) {
+              try {
+                const catRes = await fetch(`/api/rest/common/resources/categories/${parentCatId}`, { credentials: 'include' });
+                if (catRes.ok) {
+                  const catData = await catRes.json();
+                  parentCategory = {
+                    _id: catData._id,
+                    title: catData.title,
+                    description: catData.description,
+                    icon: catData.icon || 'folder'
+                  };
+                  state.categories.push(parentCategory);
+                  renderSidebar();
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }
+
+            if (parentCategory) {
+              await renderCategoryDetail(parentCategory, contentArea);
+            } else {
+              renderCategoriesOverview(contentArea);
+            }
+          } else {
+            renderCategoriesOverview(contentArea);
+          }
+
+          // Open the resource details inside the modal overlay (pre-fetched data object)
+          openContentModal(data, data.title);
+        }
+      } catch (err) {
+        console.error(err);
         contentArea.innerHTML = `
           <div class="mye-resources-empty">
             <div class="mye-resources-empty-icon">🔍</div>
-            <div class="mye-resources-empty-title">Catégorie introuvable</div>
-            <div class="mye-resources-empty-desc">La catégorie demandée n'existe pas ou a été supprimée.</div>
+            <div class="mye-resources-empty-title">Ressource introuvable</div>
+            <div class="mye-resources-empty-desc">La catégorie ou le document demandé n'existe pas ou a été supprimé.</div>
           </div>
         `;
       }
     } else {
-      renderCategoriesOverview(contentArea);
+      if (state.search) {
+        renderSearchResults(contentArea);
+      } else {
+        renderCategoriesOverview(contentArea);
+      }
     }
+  }
+
+  function clearSearch() {
+    state.search = '';
+    const searchInput = document.querySelector('.mye-resources-search-input');
+    if (searchInput) searchInput.value = '';
+    renderContent();
+  }
+
+  function renderSearchResults(container) {
+    const query = state.search;
+    const groupedResults = {}; // key: "CategoryTitle § GroupName" -> { categoryName, categoryIcon, groupName, items: [] }
+
+    // Gather all matching resources across all cached categories
+    state.categories.forEach(cat => {
+      const groups = state.categoryResources[cat._id] || [];
+      groups.forEach(group => {
+        group.items.forEach(item => {
+          const title = (item.title || item.name || '').toLowerCase();
+          const desc = (item.description || item.desc || '').toLowerCase();
+          if (title.includes(query) || desc.includes(query)) {
+            const key = `${cat.title} § ${group.name}`;
+            if (!groupedResults[key]) {
+              groupedResults[key] = {
+                categoryName: cat.title,
+                categoryIcon: cat.icon,
+                groupName: group.name,
+                items: []
+              };
+            }
+            groupedResults[key].items.push(item);
+          }
+        });
+      });
+    });
+
+    const sortedGroupKeys = Object.keys(groupedResults).sort();
+
+    let totalResultsCount = 0;
+    sortedGroupKeys.forEach(key => {
+      totalResultsCount += groupedResults[key].items.length;
+    });
+
+    const headerHTML = `
+      <div class="mye-resources-header-card">
+        <div class="mye-resources-header-badge">
+          <span class="material-icons" style="font-size: 16px;">search</span>
+          <span>Recherche globale</span>
+        </div>
+        <h1 class="mye-resources-header-title">Résultats de recherche</h1>
+        <p class="mye-resources-header-desc">${totalResultsCount} document${totalResultsCount !== 1 ? 's' : ''} trouvé${totalResultsCount !== 1 ? 's' : ''} pour "${query}".</p>
+        <button class="mye-resources-back-btn" id="mye-resources-clear-search-btn">
+          <span class="material-icons">clear</span>
+          <span>Effacer la recherche</span>
+        </button>
+      </div>
+    `;
+
+    // Check if we are still loading in the background
+    const totalCategoriesCount = state.categories.length;
+    const loadedCategoriesCount = Object.keys(state.categoryResources).length;
+    const isStillPreloading = loadedCategoriesCount < totalCategoriesCount;
+
+    if (totalResultsCount === 0) {
+      container.innerHTML = `
+        ${headerHTML}
+        <div class="mye-resources-empty">
+          <div class="mye-resources-empty-icon">${isStillPreloading ? '⏳' : '🔍'}</div>
+          <div class="mye-resources-empty-title">${isStillPreloading ? 'Recherche en cours...' : 'Aucun résultat'}</div>
+          <div class="mye-resources-empty-desc">
+            ${isStillPreloading 
+              ? 'Certaines catégories sont encore en cours de chargement en arrière-plan...' 
+              : `Aucun document ne correspond à votre recherche "${query}".`}
+          </div>
+        </div>
+      `;
+      document.getElementById('mye-resources-clear-search-btn').addEventListener('click', clearSearch);
+      return;
+    }
+
+    const groupsHTML = sortedGroupKeys.map(key => {
+      const group = groupedResults[key];
+      const itemsHTML = group.items.map(res => {
+        const title = res.title || res.name || 'Document';
+        const desc = res.description || res.desc || '';
+        
+        let url = '#';
+        let typeClass = 'mye-res-file';
+        let typeIcon = 'insert_drive_file';
+        let buttonText = 'Télécharger';
+        let isPdf = false;
+        let isContent = false;
+        let badgeText = 'Fichier';
+
+        if (res.url || res.link) {
+          url = res.url || res.link;
+          typeClass = 'mye-res-link';
+          typeIcon = 'open_in_new';
+          buttonText = 'Accéder au lien';
+          badgeText = 'Lien';
+        } else if (res.file) {
+          url = `/api/rest/common/resources/${res._id}/file`;
+          
+          const isPdfType = res.file && (String(res.file.type || '').toLowerCase() === 'pdf' || String(res.file.name || '').toLowerCase().endsWith('.pdf'));
+          const isPdfTitle = String(title).toLowerCase().includes('.pdf');
+          
+          if (isPdfType || isPdfTitle) {
+            typeClass = 'mye-res-pdf';
+            typeIcon = 'picture_as_pdf';
+            buttonText = 'Consulter le PDF';
+            isPdf = true;
+            badgeText = 'PDF';
+          } else {
+            typeClass = 'mye-res-file';
+            typeIcon = 'insert_drive_file';
+            buttonText = 'Télécharger';
+            badgeText = 'Fichier';
+          }
+        } else if (res._id) {
+          isContent = true;
+          const isVideoSub = group.groupName && (group.groupName.toLowerCase().includes('vidéo') || group.groupName.toLowerCase().includes('video') || group.groupName.toLowerCase().includes('capsule'));
+          const isVideoTitle = title.toLowerCase().includes('bref') || title.toLowerCase().includes('vidéo') || title.toLowerCase().includes('video');
+          
+          if (isVideoSub || isVideoTitle) {
+            typeClass = 'mye-res-video';
+            typeIcon = 'play_circle';
+            buttonText = 'Voir la vidéo';
+            badgeText = 'Vidéo';
+          } else {
+            typeClass = 'mye-res-content';
+            typeIcon = 'article';
+            buttonText = 'Consulter';
+            badgeText = 'Contenu';
+          }
+        }
+
+        const cleanUrl = url.startsWith('http') || url.startsWith('/') ? url : '/' + url;
+        const hasAction = isContent || url !== '#';
+
+        const actionBtnHTML = hasAction ? `
+          <button class="mye-resource-row-action-btn mye-action-trigger" 
+                  data-url="${cleanUrl}" 
+                  data-title="${title}" 
+                  data-pdf="${isPdf}"
+                  data-content="${isContent}"
+                  data-id="${res._id}">
+            <span>${buttonText}</span>
+            <span class="material-icons" style="font-size: 16px;">arrow_outward</span>
+          </button>
+        ` : `
+          <span class="mye-resource-row-info-badge">Info</span>
+        `;
+
+        return `
+          <div class="mye-resource-row">
+            <div class="mye-resource-row-left">
+              <div class="mye-resource-row-icon-wrapper ${typeClass}">
+                <span class="material-icons">${typeIcon}</span>
+              </div>
+              <div class="mye-resource-row-info">
+                <h3 class="mye-resource-row-title" title="${title}">${title}</h3>
+                ${desc ? `<p class="mye-resource-row-desc">${desc}</p>` : ''}
+              </div>
+            </div>
+            <div class="mye-resource-row-right">
+              <span class="mye-resource-row-badge">${badgeText}</span>
+              ${actionBtnHTML}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="mye-resource-group">
+          <div class="mye-resource-group-header mye-group-toggle-trigger">
+            <h2 class="mye-resource-group-title" style="display: flex; align-items: center; gap: 8px;">
+              <span class="material-icons" style="font-size: 18px; margin-right: 4px;">${getMaterialIcon(group.categoryIcon)}</span>
+              <span>${group.categoryName} &rsaquo; ${group.groupName}</span>
+            </h2>
+            <button class="mye-resource-group-toggle-btn" aria-label="Fermer la sous-catégorie">
+              <span class="material-icons">keyboard_arrow_up</span>
+            </button>
+          </div>
+          <div class="mye-resource-items-grid">${itemsHTML}</div>
+        </div>
+      `;
+    }).join('');
+
+    let loadingIndicatorHTML = '';
+    if (isStillPreloading) {
+      loadingIndicatorHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; margin-top: 15px; color: var(--mye-primary-color); font-weight: 500; font-size: 13px;">
+          <div class="mye-grades-spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
+          <span>Recherche en cours dans les autres catégories...</span>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      ${headerHTML}
+      ${loadingIndicatorHTML}
+      <div class="mye-resources-detail-container" style="margin-top: 15px;">
+        ${groupsHTML}
+      </div>
+    `;
+
+    // Attach click listeners to collapse/expand sub-categories (groups)
+    container.querySelectorAll('.mye-group-toggle-trigger').forEach(header => {
+      header.addEventListener('click', (e) => {
+        const groupEl = header.closest('.mye-resource-group');
+        if (groupEl) {
+          groupEl.classList.toggle('collapsed');
+        }
+      });
+    });
+
+    // Attach click listeners to download/open buttons
+    container.querySelectorAll('.mye-action-trigger').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const isContent = btn.getAttribute('data-content') === 'true';
+        const url = btn.getAttribute('data-url');
+        const title = btn.getAttribute('data-title') || 'Document';
+
+        if (isContent) {
+          const resId = btn.getAttribute('data-id');
+          openContentModal(resId, title);
+        } else {
+          const isPdf = btn.getAttribute('data-pdf') === 'true';
+          if (isPdf && window.myePdfViewer) {
+            window.myePdfViewer.open(url, title);
+          } else {
+            window.open(url, '_blank');
+          }
+        }
+      });
+    });
+
+    document.getElementById('mye-resources-clear-search-btn').addEventListener('click', clearSearch);
   }
 
   // 1. Overview Mode: Grid of Categories
@@ -347,6 +751,15 @@
       const titleMatch = cat.title && cat.title.toLowerCase().includes(state.search);
       const descMatch = cat.description && cat.description.toLowerCase().includes(state.search);
       return titleMatch || descMatch;
+    });
+
+    // Sort categories with favorites first
+    filtered.sort((a, b) => {
+      const aFav = state.favorites.includes(a._id);
+      const bFav = state.favorites.includes(b._id);
+      if (aFav && !bFav) return -1;
+      if (!aFav && bFav) return 1;
+      return 0;
     });
 
     const headerHTML = `
@@ -374,8 +787,12 @@
 
     const cardsHTML = filtered.map(cat => {
       const desc = cat.description || "Aucune description fournie.";
+      const isFav = state.favorites.includes(cat._id);
       return `
         <div class="mye-resources-category-card" data-id="${cat._id}">
+          <button class="mye-category-favorite-btn ${isFav ? 'is-fav' : ''}" data-id="${cat._id}" aria-label="Ajouter aux favoris">
+            <span class="material-icons">${isFav ? 'star' : 'star_border'}</span>
+          </button>
           <div class="mye-resources-category-card-top">
             <div class="mye-resources-category-icon-bg">
               <span class="material-icons">${getMaterialIcon(cat.icon)}</span>
@@ -396,14 +813,26 @@
       <div class="mye-resources-grid">${cardsHTML}</div>
     `;
 
-    // Attach click listeners to cards
+    // Attach click listeners to cards (ignoring clicks on the favorite buttons)
     container.querySelectorAll('.mye-resources-category-card').forEach(card => {
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.mye-category-favorite-btn')) return;
+
         const id = card.getAttribute('data-id');
-        const targetUrl = `/portal/common/resources/categories/${id}`;
+        const targetUrl = `/portal/common/resources/${id}`;
         window.history.pushState({}, '', targetUrl);
         state.currentPath = targetUrl;
         renderContent();
+      });
+    });
+
+    // Attach click listeners to favorite buttons
+    container.querySelectorAll('.mye-category-favorite-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        toggleFavorite(id);
       });
     });
   }
@@ -419,13 +848,20 @@
       </button>
     `;
 
+    const isFav = state.favorites.includes(category._id);
     const headerHTML = `
       <div class="mye-resources-header-card">
-        <div class="mye-resources-header-badge">
-          <span class="material-icons" style="font-size: 16px;">${getMaterialIcon(category.icon)}</span>
-          <span>Catégorie</span>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; width: 100%;">
+          <div class="mye-resources-header-badge">
+            <span class="material-icons" style="font-size: 16px;">${getMaterialIcon(category.icon)}</span>
+            <span>Catégorie</span>
+          </div>
+          <button class="mye-category-header-favorite-btn ${isFav ? 'is-fav' : ''}" data-id="${category._id}" aria-label="Ajouter aux favoris">
+            <span class="material-icons">${isFav ? 'star' : 'star_border'}</span>
+            <span>${isFav ? 'Favori' : 'Ajouter aux favoris'}</span>
+          </button>
         </div>
-        <h1 class="mye-resources-header-title">${category.title}</h1>
+        <h1 class="mye-resources-header-title" style="margin-top: 10px;">${category.title}</h1>
         <p class="mye-resources-header-desc">${category.description || "Ressources liées au programme ou service."}</p>
         ${backButtonHTML}
       </div>
@@ -443,6 +879,7 @@
 
       // Bind back button immediately during loading
       document.getElementById('mye-resources-back-btn').addEventListener('click', goBack);
+      setupFavoriteHeaderBtn(container, catId);
 
       try {
         const response = await fetch(`/api/rest/common/resources?category=${catId}&group=true`, { credentials: 'include' });
@@ -487,6 +924,7 @@
         </div>
       `;
       document.getElementById('mye-resources-back-btn').addEventListener('click', goBack);
+      setupFavoriteHeaderBtn(container, catId);
       return;
     }
 
@@ -498,39 +936,68 @@
         let url = '#';
         let typeClass = 'mye-res-file';
         let typeIcon = 'insert_drive_file';
-        let buttonClass = 'btn-file';
         let buttonText = 'Télécharger';
         let isPdf = false;
+        let isContent = false;
+        let badgeText = 'Fichier';
 
-        // Use file metadata if present
-        if (res.file) {
-          url = `/api/rest/common/resources/files/download?path=${encodeURIComponent(res.file.path)}`;
-          const fileType = String(res.file.type || '').toLowerCase();
-          const fileName = String(res.file.name || '').toLowerCase();
-          
-          if (fileType === 'pdf' || fileName.endsWith('.pdf')) {
-            typeClass = 'mye-res-pdf';
-            typeIcon = 'picture_as_pdf';
-            buttonClass = 'btn-pdf';
-            buttonText = 'Consulter le PDF';
-            isPdf = true;
-          }
-        } else if (res.url || res.link) {
+        if (res.url || res.link) {
           url = res.url || res.link;
           typeClass = 'mye-res-link';
           typeIcon = 'open_in_new';
-          buttonClass = 'btn-link';
           buttonText = 'Accéder au lien';
+          badgeText = 'Lien';
+        } else if (res.file) {
+          // File download path using resource ID
+          url = `/api/rest/common/resources/${res._id}/file`;
+          
+          const isPdfType = res.file && (String(res.file.type || '').toLowerCase() === 'pdf' || String(res.file.name || '').toLowerCase().endsWith('.pdf'));
+          const isPdfTitle = String(title).toLowerCase().includes('.pdf');
+          
+          if (isPdfType || isPdfTitle) {
+            typeClass = 'mye-res-pdf';
+            typeIcon = 'picture_as_pdf';
+            buttonText = 'Consulter le PDF';
+            isPdf = true;
+            badgeText = 'PDF';
+          } else {
+            typeClass = 'mye-res-file';
+            typeIcon = 'insert_drive_file';
+            buttonText = 'Télécharger';
+            badgeText = 'Fichier';
+          }
+        } else if (res._id) {
+          // No file, no url/link -> Content / Video resource
+          isContent = true;
+          const isVideoSub = group.name && (group.name.toLowerCase().includes('vidéo') || group.name.toLowerCase().includes('video') || group.name.toLowerCase().includes('capsule'));
+          const isVideoTitle = title.toLowerCase().includes('bref') || title.toLowerCase().includes('vidéo') || title.toLowerCase().includes('video');
+          
+          if (isVideoSub || isVideoTitle) {
+            typeClass = 'mye-res-video';
+            typeIcon = 'play_circle';
+            buttonText = 'Voir la vidéo';
+            badgeText = 'Vidéo';
+          } else {
+            typeClass = 'mye-res-content';
+            typeIcon = 'article';
+            buttonText = 'Consulter';
+            badgeText = 'Contenu';
+          }
         }
 
         const cleanUrl = url.startsWith('http') || url.startsWith('/') ? url : '/' + url;
-        const hasAction = url !== '#';
+        const hasAction = isContent || url !== '#';
 
         const actionBtnHTML = hasAction ? `
-          <a href="${cleanUrl}" target="_blank" class="mye-resource-row-action-btn">
+          <button class="mye-resource-row-action-btn mye-action-trigger" 
+                  data-url="${cleanUrl}" 
+                  data-title="${title}" 
+                  data-pdf="${isPdf}"
+                  data-content="${isContent}"
+                  data-id="${res._id}">
             <span>${buttonText}</span>
             <span class="material-icons" style="font-size: 16px;">arrow_outward</span>
-          </a>
+          </button>
         ` : `
           <span class="mye-resource-row-info-badge">Info</span>
         `;
@@ -547,7 +1014,7 @@
               </div>
             </div>
             <div class="mye-resource-row-right">
-              <span class="mye-resource-row-badge">${isPdf ? 'PDF' : (url.startsWith('http') ? 'Lien' : 'Fichier')}</span>
+              <span class="mye-resource-row-badge">${badgeText}</span>
               ${actionBtnHTML}
             </div>
           </div>
@@ -556,7 +1023,12 @@
 
       return `
         <div class="mye-resource-group">
-          <h2 class="mye-resource-group-title">${group.name}</h2>
+          <div class="mye-resource-group-header mye-group-toggle-trigger">
+            <h2 class="mye-resource-group-title">${group.name}</h2>
+            <button class="mye-resource-group-toggle-btn" aria-label="Fermer la sous-catégorie">
+              <span class="material-icons">keyboard_arrow_up</span>
+            </button>
+          </div>
           <div class="mye-resource-items-grid">${itemsHTML}</div>
         </div>
       `;
@@ -569,7 +1041,175 @@
       </div>
     `;
 
+    // Attach click listeners to collapse/expand sub-categories (groups)
+    container.querySelectorAll('.mye-group-toggle-trigger').forEach(header => {
+      header.addEventListener('click', (e) => {
+        const groupEl = header.closest('.mye-resource-group');
+        if (groupEl) {
+          groupEl.classList.toggle('collapsed');
+        }
+      });
+    });
+
+    // Attach click listeners to download/open buttons to bypass Angular router interception
+    container.querySelectorAll('.mye-action-trigger').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const isContent = btn.getAttribute('data-content') === 'true';
+        const url = btn.getAttribute('data-url');
+        const title = btn.getAttribute('data-title') || 'Document';
+
+        if (isContent) {
+          const resId = btn.getAttribute('data-id');
+          openContentModal(resId, title);
+        } else {
+          const isPdf = btn.getAttribute('data-pdf') === 'true';
+          if (isPdf && window.myePdfViewer) {
+            window.myePdfViewer.open(url, title);
+          } else {
+            window.open(url, '_blank');
+          }
+        }
+      });
+    });
+
     document.getElementById('mye-resources-back-btn').addEventListener('click', goBack);
+    setupFavoriteHeaderBtn(container, catId);
+  }
+
+  function getOrCreateModal() {
+    let overlay = document.getElementById('mye-resource-modal-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'mye-resource-modal-overlay';
+      overlay.className = 'mye-resource-modal-overlay';
+      overlay.innerHTML = `
+        <div class="mye-resource-modal">
+          <div class="mye-resource-modal-header">
+            <h3 class="mye-resource-modal-title" id="mye-resource-modal-title">Détails</h3>
+            <button class="mye-resource-modal-close-btn" id="mye-resource-modal-close">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+          <div class="mye-resource-modal-body" id="mye-resource-modal-body">
+            <!-- Content injected here -->
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      // Attach close listeners
+      const closeBtn = overlay.querySelector('#mye-resource-modal-close');
+      closeBtn.addEventListener('click', closeModal);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+      });
+    }
+    return overlay;
+  }
+
+  function closeModal() {
+    const overlay = document.getElementById('mye-resource-modal-overlay');
+    if (overlay) {
+      overlay.classList.remove('show');
+      // Clear iframe / videos to stop playback when closing
+      setTimeout(() => {
+        const body = document.getElementById('mye-resource-modal-body');
+        if (body) body.innerHTML = '';
+      }, 300);
+    }
+  }
+
+  async function openContentModal(resOrId, title) {
+    const overlay = getOrCreateModal();
+    const titleEl = document.getElementById('mye-resource-modal-title');
+    const bodyEl = document.getElementById('mye-resource-modal-body');
+
+    overlay.classList.add('show');
+
+    if (typeof resOrId === 'object' && resOrId !== null) {
+      const data = resOrId;
+      titleEl.textContent = title || data.title || 'Détails';
+      let contentHtml = data.content || '<p style="color:#64748b; text-align:center;">Aucun contenu supplémentaire disponible.</p>';
+      bodyEl.innerHTML = `
+        <div class="mye-resource-content-wrapper">
+          ${contentHtml}
+        </div>
+      `;
+      setupModalLinks(bodyEl);
+      return;
+    }
+
+    const resId = resOrId;
+    titleEl.textContent = title || 'Chargement...';
+    bodyEl.innerHTML = `
+      <div style="display:flex; justify-content:center; align-items:center; min-height:200px; flex-direction:column; gap:16px;">
+        <div class="mye-grades-spinner"></div>
+        <div style="color:var(--mye-primary-color); font-weight:600;">Chargement du contenu...</div>
+      </div>
+    `;
+
+    try {
+      const response = await fetch(`/api/rest/common/resources/${resId}`, { credentials: 'include' });
+      if (!response.ok) throw new Error('API Error');
+      const data = await response.json();
+      titleEl.textContent = title || data.title || 'Détails';
+
+      let contentHtml = data.content || '<p style="color:#64748b; text-align:center;">Aucun contenu supplémentaire disponible.</p>';
+      
+      bodyEl.innerHTML = `
+        <div class="mye-resource-content-wrapper">
+          ${contentHtml}
+        </div>
+      `;
+
+      setupModalLinks(bodyEl);
+    } catch (err) {
+      console.error(err);
+      bodyEl.innerHTML = `
+        <div style="text-align:center; padding:40px 20px;">
+          <span class="material-icons" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;">error_outline</span>
+          <h4 style="margin: 0 0 8px 0; color: #ef4444; font-size: 16px;">Erreur de chargement</h4>
+          <p style="color: #64748b; margin: 0; font-size: 14px;">Impossible de récupérer les détails de cette ressource.</p>
+        </div>
+      `;
+    }
+  }
+
+  function setupModalLinks(bodyEl) {
+    // Intercept local links inside modal content to route dynamically within the extension
+    bodyEl.querySelectorAll('a').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && (href.includes('/portal/common/resources') || href.startsWith('/portal/common/resources') || href.startsWith('/portal/student/home') || href.includes('/portal/student/home'))) {
+        link.removeAttribute('target'); // Force opening in the same window/frame
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          closeModal();
+          
+          const match = href.match(/\/portal\/common\/resources\/(?:categories\/)?([a-fA-F0-9]{24})/);
+          if (match) {
+            const newCatId = match[1];
+            const targetUrl = `/portal/common/resources/${newCatId}`;
+            window.history.pushState({}, '', targetUrl);
+            state.currentPath = targetUrl;
+            renderContent();
+          } else {
+            // Extract relative link if it's the resources home
+            if (href.includes('/portal/common/resources')) {
+              window.history.pushState({}, '', '/portal/common/resources');
+              state.currentPath = '/portal/common/resources';
+              renderContent();
+            } else {
+              // Fallback direct navigation
+              window.location.href = href;
+            }
+          }
+        });
+      }
+    });
   }
 
   function goBack() {
@@ -580,6 +1220,7 @@
 
   // Handle browser popstate events (when clicking back/forward button in browser)
   window.addEventListener('popstate', () => {
+    closeModal();
     if (isResourcesPage()) {
       state.currentPath = window.location.pathname;
       renderContent();
