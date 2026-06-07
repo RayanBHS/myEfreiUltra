@@ -242,8 +242,6 @@
         return true;
       });
 
-      localStorage.setItem('mye-categories-cache', JSON.stringify(state.categories));
-
       renderSidebar();
       renderContent();
       

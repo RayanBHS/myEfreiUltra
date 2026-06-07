@@ -1,0 +1,881 @@
+/* ==========================================================================
+   MYEFREI ULTRA — Module Contacts (contacts.css)
+   ========================================================================== */
+
+#mye-contacts-container {
+  display: flex;
+  gap: 25px;
+  padding: 90px 25px 25px 25px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
+  background-color: #F0F0F0;
+  transition: background-color 0.3s ease;
+}
+
+/* ──────────────────────────────────────────────
+   PANNEAU GAUCHE (Sticky Sidebar)
+   ────────────────────────────────────────────── */
+.mye-contacts-left {
+  position: sticky;
+  top: 90px;
+  width: 320px;
+  min-width: 320px;
+  height: calc(100vh - 115px);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-self: flex-start;
+  box-sizing: border-box;
+}
+
+/* Barre de recherche */
+.mye-contacts-search-box {
+  background-color: white;
+  border-radius: 20px;
+  padding: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.mye-contacts-search-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--mye-primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.mye-contacts-search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.mye-contacts-search-input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 2px solid #e2e8f0;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.mye-contacts-search-input:focus {
+  border-color: var(--mye-primary-color);
+  background-color: white;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mye-primary-color) 20%, transparent);
+}
+
+.mye-contacts-search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* Sidebar Navigation Menu */
+.mye-contacts-nav-menu {
+  background-color: white;
+  border-radius: 20px;
+  padding: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.mye-contacts-nav-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--mye-primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 5px;
+  padding-left: 5px;
+}
+
+.mye-contacts-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.mye-contacts-nav-item:hover {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, white);
+  color: var(--mye-primary-color);
+}
+
+.mye-contacts-nav-item.active {
+  background-color: var(--mye-primary-color);
+  color: white;
+}
+
+.mye-contacts-nav-item-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Custom scrollbar for sidebar menu */
+.mye-contacts-nav-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mye-contacts-nav-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mye-contacts-nav-menu::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.mye-contacts-nav-menu::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ──────────────────────────────────────────────
+   PANNEAU DROIT (Main Content Area)
+   ────────────────────────────────────────────── */
+.mye-contacts-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* En-tête de la zone de contenu (Gradient Premium) */
+.mye-contacts-header-card {
+  background: linear-gradient(135deg, var(--mye-primary-color) 0%, color-mix(in srgb, var(--mye-primary-color) 70%, #000) 100%);
+  border-radius: 20px;
+  padding: 25px 30px;
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--mye-primary-color) 15%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mye-contacts-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 4px 12px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.mye-contacts-header-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: white !important;
+  margin: 0;
+}
+
+.mye-contacts-header-desc {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8) !important;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 650px;
+}
+
+/* Groups and grids */
+.mye-contacts-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mye-contacts-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+  margin-top: 10px;
+  transition: border-color 0.25s ease;
+}
+
+.mye-contacts-group-header.mye-group-toggle-trigger {
+  cursor: pointer;
+  user-select: none;
+}
+
+.mye-contacts-group-toggle-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.mye-contacts-group-toggle-btn:hover {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 10%, transparent);
+  color: var(--mye-primary-color);
+}
+
+.mye-contacts-group-toggle-btn .material-icons {
+  font-size: 24px;
+  transition: transform 0.2s ease;
+}
+
+/* When collapsed, rotate chevron and hide grid */
+.mye-contacts-group.collapsed .mye-contacts-group-toggle-btn .material-icons {
+  transform: rotate(-180deg);
+}
+
+.mye-contacts-group.collapsed .mye-contacts-grid {
+  display: none;
+}
+
+.mye-contacts-group-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.mye-contacts-resource-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, white);
+  border: 1px solid color-mix(in srgb, var(--mye-primary-color) 15%, transparent);
+  color: var(--mye-primary-color);
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mye-contacts-resource-badge:hover {
+  background-color: var(--mye-primary-color);
+  color: white;
+}
+
+.mye-contacts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Contact Cards - Styled to look like resources rows but optimized for contacts */
+.mye-contact-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px !important;
+  min-height: 80px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  gap: 15px;
+}
+
+.mye-contact-card:hover {
+  border-color: var(--mye-primary-color) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+.mye-contact-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.mye-contact-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--mye-primary-color) 0%, color-mix(in srgb, var(--mye-primary-color) 70%, #ffffff) 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--mye-primary-color) 20%, transparent);
+}
+
+.mye-contact-avatar.service-avatar {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, white) !important;
+  color: var(--mye-primary-color) !important;
+  box-shadow: none !important;
+  border: 1.5px solid color-mix(in srgb, var(--mye-primary-color) 12%, transparent) !important;
+  background-image: none !important;
+}
+
+.mye-contact-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.mye-contact-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+}
+
+.mye-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.mye-contact-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.mye-contact-job {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.mye-contact-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Action Buttons (Email, Phone, Teams) */
+.mye-contact-action-btn,
+.mye-contact-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mye-contact-action-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+}
+
+.mye-contact-action-btn .material-icons,
+.mye-contact-link-btn .material-icons {
+  font-size: 18px;
+}
+
+.mye-contact-action-btn:hover,
+.mye-contact-link-btn:hover {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, white) !important;
+  border-color: var(--mye-primary-color) !important;
+  color: var(--mye-primary-color) !important;
+}
+
+/* Specific styling for Teams button */
+.mye-contact-action-btn.teams-btn {
+  color: #5b5fc7 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.mye-contact-action-btn.teams-btn:hover {
+  background-color: #5b5fc7 !important;
+  border-color: #5b5fc7 !important;
+  color: #ffffff !important;
+}
+
+/* Loading & Empty states */
+.mye-contacts-loading-container,
+.mye-contacts-empty {
+  background-color: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 300px;
+}
+
+.mye-contacts-empty-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.mye-contacts-empty-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+}
+
+.mye-contacts-empty-desc {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* ──────────────────────────────────────────────
+   OLED BLACK DARK MODE
+   ────────────────────────────────────────────── */
+body.dark-mode #mye-contacts-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-contacts-search-box,
+body.dark-mode .mye-contacts-nav-menu,
+body.dark-mode .mye-contact-card,
+body.dark-mode .mye-contacts-empty,
+body.dark-mode .mye-contacts-loading-container {
+  background-color: #121212 !important;
+  border-color: #1e1e1e !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .mye-contacts-search-input {
+  background-color: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-contacts-search-input:focus {
+  border-color: var(--mye-primary-color) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mye-primary-color) 30%, transparent) !important;
+}
+
+body.dark-mode .mye-contacts-search-title,
+body.dark-mode .mye-contacts-nav-title {
+  color: color-mix(in srgb, var(--mye-primary-color) 80%, white) !important;
+}
+
+body.dark-mode .mye-contacts-nav-item {
+  color: #cccccc !important;
+}
+
+body.dark-mode .mye-contacts-nav-item:hover {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 15%, #1e1e1e) !important;
+  color: color-mix(in srgb, var(--mye-primary-color) 80%, white) !important;
+}
+
+body.dark-mode .mye-contacts-nav-item.active {
+  background-color: var(--mye-primary-color) !important;
+  color: white !important;
+}
+
+body.dark-mode .mye-contacts-group-header {
+  border-bottom-color: #1e1e1e !important;
+}
+
+body.dark-mode .mye-contacts-group-title,
+body.dark-mode .mye-contact-name {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-contact-job {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .mye-contact-avatar.service-avatar {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 15%, #1e1e1e) !important;
+  border-color: color-mix(in srgb, var(--mye-primary-color) 20%, transparent) !important;
+  color: color-mix(in srgb, var(--mye-primary-color) 80%, white) !important;
+}
+
+body.dark-mode .mye-contacts-resource-badge {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 15%, #1e1e1e) !important;
+  border-color: color-mix(in srgb, var(--mye-primary-color) 25%, transparent) !important;
+  color: color-mix(in srgb, var(--mye-primary-color) 80%, white) !important;
+}
+
+body.dark-mode .mye-contacts-resource-badge:hover {
+  background-color: var(--mye-primary-color) !important;
+  color: #ffffff !important;
+  border-color: var(--mye-primary-color) !important;
+}
+
+body.dark-mode .mye-contact-action-btn,
+body.dark-mode .mye-contact-link-btn {
+  background-color: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+  color: #cccccc !important;
+}
+
+body.dark-mode .mye-contact-action-btn:hover,
+body.dark-mode .mye-contact-link-btn:hover {
+  border-color: var(--mye-primary-color) !important;
+  color: color-mix(in srgb, var(--mye-primary-color) 80%, white) !important;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 15%, #1a1a1a) !important;
+}
+
+body.dark-mode .mye-contact-action-btn.teams-btn {
+  color: #8f93ec !important;
+  border-color: #2a2a2a !important;
+}
+
+body.dark-mode .mye-contact-action-btn.teams-btn:hover {
+  background-color: #5b5fc7 !important;
+  border-color: #5b5fc7 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(91, 95, 199, 0.4) !important;
+}
+
+body.dark-mode .mye-contacts-empty-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-contacts-group-toggle-btn {
+  color: #94a3b8;
+}
+
+body.dark-mode .mye-contacts-group-toggle-btn:hover {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 15%, #1e1e1e) !important;
+  color: color-mix(in srgb, var(--mye-primary-color) 80%, white) !important;
+}
+
+/* ──────────────────────────────────────────────
+   MODAL DE CONTACT DÉTAILLÉ (POPUP)
+   ────────────────────────────────────────────── */
+.mye-contact-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.mye-contact-modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mye-contact-modal {
+  background-color: #ffffff;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  transform: scale(0.95);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.mye-contact-modal-overlay.show .mye-contact-modal {
+  transform: scale(1);
+}
+
+.mye-contact-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background-color: var(--mye-primary-color) !important;
+  position: relative;
+}
+
+.mye-contact-modal-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: white;
+  color: var(--mye-primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.mye-contact-modal-avatar.service-avatar {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: none !important;
+}
+
+.mye-contact-modal-avatar .material-icons {
+  font-size: 22px;
+}
+
+.mye-contact-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mye-contact-modal-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff !important;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.mye-contact-modal-job {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8) !important;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.mye-contact-modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8) !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.mye-contact-modal-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.mye-contact-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #ffffff;
+}
+
+/* Modal Option Row */
+.mye-contact-option-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.mye-contact-option-row:hover {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, white) !important;
+  border-color: var(--mye-primary-color);
+}
+
+.mye-contact-option-icon-wrapper {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: color-mix(in srgb, var(--mye-primary-color) 8%, white);
+  color: var(--mye-primary-color);
+}
+
+.mye-contact-option-icon-wrapper.teams-icon {
+  background-color: rgba(91, 95, 199, 0.12);
+  color: #5b5fc7;
+}
+
+.mye-contact-option-icon-wrapper .material-icons {
+  font-size: 18px;
+}
+
+.mye-contact-option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.mye-contact-option-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.mye-contact-option-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mye-contact-option-arrow {
+  color: #94a3b8;
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.mye-contact-option-row:hover .mye-contact-option-arrow {
+  color: var(--mye-primary-color);
+  transform: translateX(3px);
+}
+
+/* ──────────────────────────────────────────────
+   OLED BLACK DARK MODE FOR MODAL
+   ────────────────────────────────────────────── */
+body.dark-mode .mye-contact-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode .mye-contact-modal {
+  background-color: #121212 !important;
+  border-color: #1e1e1e;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+body.dark-mode .mye-contact-modal-avatar {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  box-shadow: none;
+}
+
+body.dark-mode .mye-contact-modal-avatar.service-avatar {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+body.dark-mode .mye-contact-modal-body {
+  background-color: #121212 !important;
+}
+
+body.dark-mode .mye-contact-option-row {
+  background-color: #1a1a1a !important;
+  border-color: #2a2a2a;
+}
+
+body.dark-mode .mye-contact-option-row:hover {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 15%, #1a1a1a) !important;
+  border-color: var(--mye-primary-color);
+}
+
+body.dark-mode .mye-contact-option-icon-wrapper {
+  background-color: color-mix(in srgb, var(--mye-primary-color) 15%, #1e1e1e);
+  color: color-mix(in srgb, var(--mye-primary-color) 80%, white);
+}
+
+body.dark-mode .mye-contact-option-icon-wrapper.teams-icon {
+  background-color: rgba(91, 95, 199, 0.15);
+  color: #8f93ec;
+}
+
+body.dark-mode .mye-contact-option-label {
+  color: #94a3b8;
+}
+
+body.dark-mode .mye-contact-option-value {
+  color: #ffffff;
+}
+
+body.dark-mode .mye-contact-option-arrow {
+  color: #64748b;
+}
+
+body.dark-mode .mye-contact-option-row:hover .mye-contact-option-arrow {
+  color: color-mix(in srgb, var(--mye-primary-color) 80%, white);
+}

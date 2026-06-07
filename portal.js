@@ -61,9 +61,6 @@ function getHeaderHTML() {
         <!-- RECHERCHE : Juste l'icône loupe -->
         <div class="mye-icon-btn" id="mye-custom-search-btn"></div>
         <div class="mye-icon-btn" id="mye-custom-notif-btn"></div>
-        <div class="mye-icon-btn mye-has-dropdown" id="mye-custom-fav-btn" data-target="mye-dropdown-fav" title="Favoris">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="vertical-align: middle;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </div>
         <div class="mye-profile-pill mye-has-dropdown" id="mye-profile-btn" data-target="mye-dropdown-profile">
           <div class="mye-profile-info">
             <span class="mye-profile-first" id="mye-first-name">Prénom</span>
@@ -192,13 +189,6 @@ function getHeaderHTML() {
       </div>
       <div class="mye-dropdown-link" style="cursor:pointer; color: #ff3b30;" id="mye-desk-logout">
         <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></span>Se déconnecter
-      </div>
-    </div>
-
-    <!-- Dropdown Favoris -->
-    <div class="mye-dropdown-menu" id="mye-dropdown-fav">
-      <div class="mye-dropdown-info-text" style="padding: 12px 16px; font-size: 13px; color: #64748b; text-align: center; max-width: 250px;">
-        Chargement de vos favoris...
       </div>
     </div>
  
@@ -367,15 +357,10 @@ function initCustomHeaderEvents() {
         }
     });
 
-    const favBtn = document.getElementById('mye-custom-fav-btn');
-    if (favBtn) {
-        favBtn.addEventListener('click', updateFavoritesDropdown);
-    }
-
     // Fermer les dropdowns quand on clique ailleurs
     document.addEventListener('click', (e) => {
         // Fermer les popups de menu
-        document.querySelectorAll('.mye-nav-item, .mye-profile-pill, .mye-icon-btn').forEach(nav => nav.classList.remove('active'));
+        document.querySelectorAll('.mye-nav-item, .mye-profile-pill').forEach(nav => nav.classList.remove('active'));
         document.querySelectorAll('.mye-dropdown-menu').forEach(menu => menu.classList.remove('show'));
 
         // Fermer la barre de recherche d'origine CSS-teleportée si on clique ailleurs
@@ -869,7 +854,6 @@ function injectCustomHeader() {
     });
 
     initCustomHeaderEvents();
-    updateFavoritesDropdown();
 
     // Masquer le header original
     const style = document.createElement('style');
@@ -1095,6 +1079,7 @@ const MYE_CUSTOM_PAGES = [
     '/portal/common/news',
     '/portal/common/calendars',
     '/portal/common/resources',
+    '/portal/student/contacts',
     '/portal/app/error',
 ];
 
@@ -1128,85 +1113,4 @@ setInterval(() => {
         }
     }
 }, 300);
-
-async function updateFavoritesDropdown() {
-    const dropdown = document.getElementById('mye-dropdown-fav');
-    if (!dropdown) return;
-
-    let favIds = [];
-    try {
-        const favs = localStorage.getItem('mye-favorite-categories');
-        favIds = favs ? JSON.parse(favs) : [];
-    } catch (e) {}
-
-    if (favIds.length === 0) {
-        dropdown.innerHTML = `
-            <div class="mye-dropdown-info-text" style="padding: 12px 16px; font-size: 13px; color: #64748b; text-align: center; max-width: 250px;">
-                Aucun favori enregistré. Marquez une catégorie comme favorite depuis le centre de ressources pour l'afficher ici.
-            </div>
-        `;
-        return;
-    }
-
-    let categories = [];
-    try {
-        const cache = localStorage.getItem('mye-categories-cache');
-        categories = cache ? JSON.parse(cache) : [];
-    } catch (e) {}
-
-    // If cache is empty, try to fetch from API
-    if (categories.length === 0) {
-        try {
-            const res = await fetch('/api/rest/common/resources/categories?with-resources=true', { credentials: 'include' });
-            if (res.ok) {
-                const data = await res.json();
-                categories = Array.isArray(data) ? data : [];
-                localStorage.setItem('mye-categories-cache', JSON.stringify(categories));
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    // Filter categories that are in favorites
-    const favCategories = categories.filter(cat => favIds.includes(cat._id));
-
-    if (favCategories.length === 0) {
-        dropdown.innerHTML = `
-            <div class="mye-dropdown-info-text" style="padding: 12px 16px; font-size: 13px; color: #64748b; text-align: center; max-width: 250px;">
-                Aucun favori enregistré. Marquez une catégorie comme favorite depuis le centre de ressources pour l'afficher ici.
-            </div>
-        `;
-        return;
-    }
-
-    // Map icon names from the database to clean Material icons
-    const ICON_MAP = {
-        'school': 'school', 'science': 'science', 'quiz': 'quiz', 'license': 'badge',
-        'myefrei': 'grid_view', 'contact_support_outlined': 'contact_support',
-        'health_and_safety_outlined': 'health_and_safety', 'forum': 'forum', 'help': 'help',
-        'description': 'description', 'folder': 'folder', 'link': 'link', 'home': 'home',
-        'where_to_vote_outlined': 'where_to_vote', 'devices': 'devices', 'interests': 'interests',
-        'account_balance_outlined': 'account_balance', 'business': 'business', 'egg': 'egg',
-        'science_outlined': 'science', 'language': 'language', 'lxp': 'emoji_events',
-        'efrei-for-good': 'volunteer_activism'
-    };
-
-    function getMaterialIcon(name) {
-        if (!name) return 'folder';
-        const norm = name.trim().toLowerCase();
-        if (ICON_MAP[norm]) return ICON_MAP[norm];
-        if (/[^a-z0-9_]/.test(norm)) return 'folder';
-        return norm;
-    }
-
-    dropdown.innerHTML = favCategories.map(cat => {
-        return `
-            <a href="https://www.myefrei.fr/portal/common/resources/${cat._id}" class="mye-dropdown-link">
-                <span class="mye-link-icon material-icons" style="font-size: 18px; margin-right: 8px;">${getMaterialIcon(cat.icon)}</span>
-                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: left;">${cat.title}</span>
-            </a>
-        `;
-    }).join('');
-}
 
