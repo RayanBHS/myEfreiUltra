@@ -926,6 +926,17 @@ body.dark-mode .mye-resources-back-btn:hover {
   width: 100%;
 }
 
+/* Constrain images in modal content to fit beautifully */
+.mye-resource-modal-body img {
+  max-width: 100%;
+  height: auto !important;
+  border-radius: 12px;
+  display: block;
+  margin: 16px auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(128, 128, 128, 0.12);
+}
+
 /* Make iframe responsive in modal */
 .mye-resource-modal-body iframe {
   border-radius: 12px;

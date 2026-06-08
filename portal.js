@@ -118,13 +118,13 @@ function getHeaderHTML() {
       <a href="https://www.myefrei.fr/portal/common/calendars" class="mye-dropdown-link">
          <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg></span>Calendriers
       </a>
-      <a href="https://www.myefrei.fr/portal/common/resources/65ae98ef1211ad59481ac7a5" class="mye-dropdown-link">
+      <a href="https://www.myefrei.fr/portal/common/resources?category=65ae98ef1211ad59481ac7a5" class="mye-dropdown-link">
          <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-1.3l-.85-.6C7.8 13.16 7 11.18 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.18-.8 4.16-2.15 5.1z"/></svg></span>Innovation LAB
       </a>
       <a href="https://auth.glyps.fr/realms/prod/protocol/openid-connect/auth?client_id=efrei-student&redirect_uri=https://efrei.glyps.fr/portal&state=106e9b6c-dc07-4030-95b7-35407100b6ea&response_mode=fragment&response_type=code&scope=openid&nonce=2a6f7784-2d43-4a74-93e0-7aca5b0fa0a4&code_challenge=eNdIiuxxLZsvXFh-wB662ADhsKBulmLehLjDRliHFCc&code_challenge_method=S256" class="mye-dropdown-link" target="_blank">
          <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span>Plateforme des Associations (Glyps)
       </a>
-      <a href="https://www.myefrei.fr/portal/common/resources/67e12844821661185dde6c01" class="mye-dropdown-link">
+      <a href="https://www.myefrei.fr/portal/common/resources?category=67e12844821661185dde6c01" class="mye-dropdown-link">
          <span class="mye-link-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg></span>Bons Plans
       </a>
     </div>
@@ -259,9 +259,9 @@ function getHeaderHTML() {
           </div>
           <div class="mye-drawer-submenu">
             <a href="https://www.myefrei.fr/portal/common/calendars" class="mye-drawer-subitem">Calendriers</a>
-            <a href="https://www.myefrei.fr/portal/common/resources/65ae98ef1211ad59481ac7a5" class="mye-drawer-subitem">Innovation LAB</a>
+            <a href="https://www.myefrei.fr/portal/common/resources?category=65ae98ef1211ad59481ac7a5" class="mye-drawer-subitem">Innovation LAB</a>
             <a href="https://efrei.glyps.fr/portal" class="mye-drawer-subitem" target="_blank">Plateforme des Associations (Glyps)</a>
-            <a href="https://www.myefrei.fr/portal/common/resources/67e12844821661185dde6c01" class="mye-drawer-subitem">Bons Plans</a>
+            <a href="https://www.myefrei.fr/portal/common/resources?category=67e12844821661185dde6c01" class="mye-drawer-subitem">Bons Plans</a>
           </div>
         </div>
         
@@ -655,6 +655,55 @@ function initCustomHeaderEvents() {
             setTimeout(() => clickOriginalByText("Se déconnecter"), 100);
         });
     }
+
+    // Intercept navigation for custom pages to avoid full-page reloads and server 500 errors
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        
+        const target = link.getAttribute('target');
+        if (target === '_blank') return;
+        
+        const href = link.getAttribute('href');
+        if (!href) return;
+        
+        try {
+            // Convert to absolute URL to parse easily
+            const urlObj = new URL(href, window.location.origin);
+            if (urlObj.origin !== window.location.origin) return; // Ignore external links
+            
+            let path = urlObj.pathname;
+            let search = urlObj.search;
+            
+            // Normalize resources subpaths to query parameter format to avoid Angular router conflicts
+            if (path.startsWith('/portal/common/resources/')) {
+                const subpathMatch = path.match(/\/portal\/common\/resources\/(?:categories\/)?([a-fA-F0-9]+)/);
+                if (subpathMatch) {
+                    const catId = subpathMatch[1];
+                    path = '/portal/common/resources';
+                    const params = new URLSearchParams(search);
+                    params.set('category', catId);
+                    search = '?' + params.toString();
+                }
+            }
+            
+            // Check if this path matches one of our custom pages
+            const isCustom = MYE_CUSTOM_PAGES.some(p => path.includes(p));
+            if (isCustom) {
+                e.preventDefault();
+                closeDrawer(); // Close mobile drawer if open
+                
+                // Only push if the path actually changed to avoid adding redundant history entries
+                if (window.location.pathname !== path || window.location.search !== search) {
+                    window.history.pushState({}, '', path + search + urlObj.hash);
+                    // Dispatch popstate event to alert all SPA route listeners (in resources.js, contacts.js, etc.)
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+            }
+        } catch (err) {
+            console.error('[MyEfrei ULTRA] Click interception error:', err);
+        }
+    });
 }
 
 function updateCustomAvatar(src) {

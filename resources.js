@@ -103,6 +103,10 @@
   }
 
   function getActiveCategoryId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const catId = urlParams.get('category') || urlParams.get('id');
+    if (catId) return catId;
+
     const match = window.location.pathname.match(/\/portal\/common\/resources\/(?:categories\/)?([a-fA-F0-9]+)/);
     return match ? match[1] : null;
   }
@@ -370,7 +374,7 @@
       `;
 
       item.addEventListener('click', () => {
-        const targetUrl = `/portal/common/resources/${cat._id}`;
+        const targetUrl = `/portal/common/resources?category=${cat._id}`;
         window.history.pushState({}, '', targetUrl);
         state.currentPath = targetUrl;
         updateActiveNavItem();
@@ -817,7 +821,7 @@
         if (e.target.closest('.mye-category-favorite-btn')) return;
 
         const id = card.getAttribute('data-id');
-        const targetUrl = `/portal/common/resources/${id}`;
+        const targetUrl = `/portal/common/resources?category=${id}`;
         window.history.pushState({}, '', targetUrl);
         state.currentPath = targetUrl;
         renderContent();
@@ -1187,10 +1191,21 @@
           e.stopPropagation();
           closeModal();
           
-          const match = href.match(/\/portal\/common\/resources\/(?:categories\/)?([a-fA-F0-9]{24})/);
-          if (match) {
-            const newCatId = match[1];
-            const targetUrl = `/portal/common/resources/${newCatId}`;
+          let newCatId = null;
+          try {
+            const urlObj = new URL(href, window.location.origin);
+            newCatId = urlObj.searchParams.get('category') || urlObj.searchParams.get('id');
+            if (!newCatId) {
+              const match = urlObj.pathname.match(/\/portal\/common\/resources\/(?:categories\/)?([a-fA-F0-9]{24})/);
+              if (match) newCatId = match[1];
+            }
+          } catch (err) {
+            const match = href.match(/\/portal\/common\/resources\/(?:categories\/)?([a-fA-F0-9]{24})/);
+            if (match) newCatId = match[1];
+          }
+
+          if (newCatId) {
+            const targetUrl = `/portal/common/resources?category=${newCatId}`;
             window.history.pushState({}, '', targetUrl);
             state.currentPath = targetUrl;
             renderContent();
