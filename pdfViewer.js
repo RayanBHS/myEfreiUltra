@@ -9,6 +9,7 @@
   let downloadObjectUrl = '';
   let currentZoom = 1.0;
   let isBookletMode = false;
+  let fitMode = 'width';
 
   // Configuration globale de PDF.js
   if (window.pdfjsLib) {
@@ -32,17 +33,17 @@
           <!-- Infos document -->
           <div class="mye-pdf-info">
             <div class="mye-pdf-icon-wrapper">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H10v-2h8v2zm0-4H10V8h8v2zm0-4H10V4h8v2zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/>
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3.5h-3V9h3v1.5h-3v1H19V13h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zm5.5 2h1v-3h-1v3zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/>
               </svg>
             </div>
             <h3 class="mye-pdf-title" id="mye-pdf-viewer-title">Copie d'examen</h3>
           </div>
 
           <!-- Contrôles de navigation et zoom -->
-          <div class="mye-pdf-controls">
+          <div class="mye-pdf-controls-wrapper">
             <!-- Navigation -->
-            <div class="mye-pdf-control-group">
+            <div class="mye-pdf-controls">
               <button class="mye-pdf-btn" id="mye-pdf-prev-btn" title="Page précédente">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                   <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
@@ -56,10 +57,8 @@
               </button>
             </div>
             
-            <div class="mye-pdf-divider"></div>
-
             <!-- Zoom -->
-            <div class="mye-pdf-control-group">
+            <div class="mye-pdf-controls">
               <button class="mye-pdf-btn" id="mye-pdf-zoom-out-btn" title="Zoom arrière">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                   <path d="M19 13H5v-2h14v2z"/>
@@ -71,20 +70,13 @@
                   <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
                 </svg>
               </button>
-              <button class="mye-pdf-btn" id="mye-pdf-fit-btn" title="Ajuster à la largeur">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                  <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
-                </svg>
-              </button>
             </div>
-            
-            <div class="mye-pdf-divider"></div>
 
-            <!-- Mode Livret (Découpe A3) -->
-            <div class="mye-pdf-control-group">
-              <button class="mye-pdf-btn" id="mye-pdf-booklet-btn" title="Mode Livret (Découpe double page)">
+            <!-- Ajusteur de page (Largeur / Hauteur) -->
+            <div class="mye-pdf-controls">
+              <button class="mye-pdf-btn" id="mye-pdf-fit-toggle-btn" title="Ajuster de haut en bas (Hauteur)">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                  <path d="M21 4H3c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM12 19H3V6h9v13zm9 0h-9V6h9v13z"/>
+                  <path d="M4 4h16v2H4V4zm0 14h16v2H4v-2zm8-11l4 4h-3v2h3l-4 4-4-4h3v-2h-3l4-4z"/>
                 </svg>
               </button>
             </div>
@@ -152,18 +144,12 @@
       applyZoom();
     });
 
-    // Ajuster largeur
-    document.getElementById('mye-pdf-fit-btn').addEventListener('click', () => {
-      fitToWidth();
-    });
-
-    // Mode Livret
-    const bookletBtn = document.getElementById('mye-pdf-booklet-btn');
-    if (bookletBtn) {
-      bookletBtn.addEventListener('click', () => {
-        isBookletMode = !isBookletMode;
-        updateBookletButtonState();
-        renderPages();
+    // Commutateur d'ajustement (Largeur / Hauteur)
+    const fitToggleBtn = document.getElementById('mye-pdf-fit-toggle-btn');
+    if (fitToggleBtn) {
+      fitToggleBtn.addEventListener('click', () => {
+        fitMode = fitMode === 'width' ? 'height' : 'width';
+        applyFitMode();
       });
     }
 
@@ -204,7 +190,11 @@
     // Ajustement automatique lors du redimensionnement
     window.addEventListener('resize', () => {
       if (!pdfDoc || !overlay.classList.contains('mye-pdf-show')) return;
-      fitToWidth();
+      if (fitMode === 'width') {
+        fitToWidth();
+      } else {
+        fitToHeight();
+      }
     });
 
     return overlay;
@@ -288,16 +278,50 @@
   }
 
   /**
-   * Met à jour l'état visuel du bouton Mode Livret dans la barre d'outils.
+   * Ajuste la hauteur des pages à la hauteur interne du visualiseur.
    */
-  function updateBookletButtonState() {
-    const bookletBtn = document.getElementById('mye-pdf-booklet-btn');
-    if (bookletBtn) {
-      if (isBookletMode) {
-        bookletBtn.classList.add('active');
-      } else {
-        bookletBtn.classList.remove('active');
-      }
+  function fitToHeight() {
+    if (!pdfDoc) return;
+    const firstWrapper = document.querySelector('.mye-pdf-page-wrapper');
+    if (!firstWrapper) return;
+    const baseHeight = parseFloat(firstWrapper.dataset.baseHeight);
+    if (!baseHeight) return;
+
+    const containerHeight = document.getElementById('mye-pdf-body').clientHeight;
+    const padding = 64; // vertical padding
+    
+    currentZoom = (containerHeight - padding) / baseHeight;
+    if (currentZoom < 0.5) currentZoom = 0.5;
+    if (currentZoom > 3.0) currentZoom = 3.0;
+
+    applyZoom();
+  }
+
+  /**
+   * Applique le mode d'ajustement actuel (largeur ou hauteur).
+   */
+  function applyFitMode() {
+    const fitToggleBtn = document.getElementById('mye-pdf-fit-toggle-btn');
+    if (!fitToggleBtn) return;
+
+    if (fitMode === 'width') {
+      fitToWidth();
+      fitToggleBtn.classList.remove('active');
+      fitToggleBtn.title = "Ajuster de haut en bas (Hauteur)";
+      fitToggleBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M4 4h16v2H4V4zm0 14h16v2H4v-2zm8-11l4 4h-3v2h3l-4 4-4-4h3v-2h-3l4-4z"/>
+        </svg>
+      `;
+    } else {
+      fitToHeight();
+      fitToggleBtn.classList.add('active');
+      fitToggleBtn.title = "Ajuster de gauche à droite (Largeur)";
+      fitToggleBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M4 4h2v16H4V4zm14 0h2v16h-2V4zM7 12l4-4v3h2v-3l4 4-4 4v-3h-2v3l-4-4z"/>
+        </svg>
+      `;
     }
   }
 
@@ -386,21 +410,9 @@
         pagesContainer.appendChild(wrapper);
       }
 
-      // Inversion des couleurs du PDF en mode sombre
-      const isDarkMode = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
-      if (isDarkMode && !document.getElementById('mye-pdf-dark-invert')) {
-        const styleTag = document.createElement('style');
-        styleTag.id = 'mye-pdf-dark-invert';
-        styleTag.textContent = `
-          .mye-pdf-pages-container {
-            filter: invert(1) hue-rotate(180deg) !important;
-          }
-        `;
-        document.head.appendChild(styleTag);
-        console.log('[MyEfrei PDF] Mode sombre détecté → inversion des couleurs du PDF activée');
-      }
 
-      fitToWidth();
+
+      applyFitMode();
 
       // Masquage du loader, affichage du conteneur
       loader.style.display = 'none';
@@ -475,7 +487,7 @@
   /**
    * Télécharge et charge le document PDF.
    */
-  async function loadDocument(url) {
+  async function loadDocument(url, downloadNameOptions) {
     const loader = document.getElementById('mye-pdf-loader');
     const errorEl = document.getElementById('mye-pdf-error');
     const pagesContainer = document.getElementById('mye-pdf-pages-container');
@@ -497,7 +509,22 @@
 
       // 2. Objet de téléchargement local
       downloadObjectUrl = URL.createObjectURL(blob);
-      document.getElementById('mye-pdf-download-link').href = downloadObjectUrl;
+      const downloadLink = document.getElementById('mye-pdf-download-link');
+      downloadLink.href = downloadObjectUrl;
+
+      // Définir le nom du fichier de téléchargement
+      if (downloadNameOptions && downloadNameOptions.subjectName) {
+        const { subjectName, evalType, semester } = downloadNameOptions;
+        const parts = [];
+        if (subjectName) parts.push(subjectName);
+        if (evalType) parts.push(evalType);
+        if (semester) parts.push(semester);
+        const filename = parts.join(' - ') + '.pdf';
+        downloadLink.download = filename.replace(/[<>:"/\\|?*]+/g, '_');
+      } else {
+        const docTitle = document.getElementById('mye-pdf-viewer-title').textContent || "Document";
+        downloadLink.download = docTitle.replace(/[<>:"/\\|?*]+/g, '_') + '.pdf';
+      }
 
       // 3. Initialisation PDF.js
       const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
@@ -506,7 +533,6 @@
       // Activer le mode livret par défaut uniquement pour les copies d'examen
       const isExam = url.includes('/exam/file') || (document.getElementById('mye-pdf-viewer-title').textContent || '').toLowerCase().includes("copie");
       isBookletMode = isExam;
-      updateBookletButtonState();
 
       // Effectuer le rendu des pages
       await renderPages();
@@ -521,7 +547,7 @@
 
   // Expose le lecteur globalement
   window.myePdfViewer = {
-    open: function (url, title) {
+    open: function (url, title, downloadNameOptions) {
       initOverlay();
       const overlay = document.getElementById('mye-pdf-overlay');
       document.getElementById('mye-pdf-viewer-title').textContent = title || "Copie d'examen";
@@ -532,7 +558,8 @@
       overlay.classList.add('mye-pdf-show');
       
       currentZoom = 1.0;
-      loadDocument(url);
+      fitMode = 'width';
+      loadDocument(url, downloadNameOptions);
     },
     close: function () {
       closeViewer();

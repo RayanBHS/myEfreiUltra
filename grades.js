@@ -1313,7 +1313,17 @@
       const url = link.getAttribute('href') || link.href;
       if (url && url !== '#') {
         if (window.myePdfViewer) {
-          window.myePdfViewer.open(url, "Copie d'examen");
+          const card = link.closest('.mye-subject-card');
+          const subjectName = card ? card.querySelector('.mye-subject-name').textContent.trim() : "";
+          const row = link.closest('.mye-detail-row');
+          const evalType = row ? row.querySelector('.mye-detail-type').textContent.trim() : "";
+          const semester = state.currentPeriod || "";
+
+          window.myePdfViewer.open(url, "Copie d'examen", {
+            subjectName: subjectName,
+            evalType: evalType,
+            semester: semester
+          });
         } else {
           window.open(url, '_blank');
         }

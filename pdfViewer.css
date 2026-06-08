@@ -51,7 +51,7 @@
 .mye-pdf-toolbar {
   height: 64px;
   min-height: 64px;
-  background: rgba(30, 41, 59, 0.6);
+  background: color-mix(in srgb, var(--mye-primary-color, #163767) 85%, transparent);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 0 24px;
   display: flex;
@@ -67,21 +67,16 @@
   align-items: center;
   gap: 12px;
   color: #fff;
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
   min-width: 0;
 }
 
 .mye-pdf-icon-wrapper {
-  background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
-  border-radius: 8px;
-  width: 36px;
-  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .mye-pdf-title {
@@ -92,6 +87,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: 0.3px;
+}
+
+.mye-pdf-controls-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* Contrôles (centre) */
@@ -122,7 +123,7 @@
   font-size: 13px;
   font-weight: 500;
   padding: 0 10px;
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
   min-width: 80px;
   text-align: center;
 }
@@ -132,7 +133,7 @@
   font-size: 13px;
   font-weight: 500;
   padding: 0 8px;
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
   min-width: 50px;
   text-align: center;
 }
@@ -197,16 +198,16 @@
 
 /* Bouton Télécharger */
 .mye-pdf-btn-download {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(255, 42, 109, 0.15);
+  color: #ff5e97;
+  border: 1px solid rgba(255, 42, 109, 0.25);
 }
 
 .mye-pdf-btn-download:hover {
-  background: #3b82f6;
+  background: #FF2A6D;
   color: #fff;
-  border-color: #3b82f6;
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+  border-color: #FF2A6D;
+  box-shadow: 0 0 12px rgba(255, 42, 109, 0.4);
 }
 
 /* --- ZONE DU DOCUMENT --- */
@@ -263,7 +264,7 @@
   z-index: 10;
   background: #0f172a;
   color: #fff;
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
   gap: 16px;
   transition: opacity 0.3s ease;
 }
@@ -334,8 +335,9 @@
   .mye-pdf-info {
     display: none; /* Cache les infos document sur mobile pour faire de la place */
   }
-  .mye-pdf-controls {
+  .mye-pdf-controls-wrapper {
     margin-right: auto;
+    gap: 8px;
   }
 }
 
@@ -389,12 +391,14 @@
 }
 
 :is(html.dark-mode, body.dark-mode) .mye-pdf-btn-download {
-  background-color: #007aff !important;
-  color: #ffffff !important;
+  background-color: rgba(255, 42, 109, 0.25) !important;
+  color: #ff5e97 !important;
+  border-color: rgba(255, 42, 109, 0.5) !important;
 }
 
 :is(html.dark-mode, body.dark-mode) .mye-pdf-btn-download:hover {
-  background-color: #005bb5 !important;
+  background-color: #FF2A6D !important;
+  color: #ffffff !important;
 }
 
 :is(html.dark-mode, body.dark-mode) .mye-pdf-btn-close {
@@ -432,13 +436,13 @@
 
 /* Bouton Mode Livret Actif */
 .mye-pdf-btn.active {
-  background: rgba(59, 130, 246, 0.2) !important;
-  color: #3b82f6 !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
+  background: rgba(255, 42, 109, 0.2) !important;
+  color: #FF2A6D !important;
+  border-color: rgba(255, 42, 109, 0.4) !important;
 }
 
 :is(html.dark-mode, body.dark-mode) .mye-pdf-btn.active {
-  background-color: rgba(59, 130, 246, 0.25) !important;
-  color: #60a5fa !important;
-  border-color: rgba(59, 130, 246, 0.5) !important;
+  background-color: rgba(255, 42, 109, 0.25) !important;
+  color: #ff5e97 !important;
+  border-color: rgba(255, 42, 109, 0.5) !important;
 }
