@@ -213,7 +213,7 @@
 .mye-pdf-body {
   flex-grow: 1;
   background: #0f172a;
-  overflow-y: auto;
+  overflow: auto;
   position: relative;
   scroll-behavior: smooth;
 }
@@ -428,4 +428,17 @@
 :is(html.dark-mode, body.dark-mode) .mye-pdf-error-title,
 :is(html.dark-mode, body.dark-mode) .mye-pdf-error-desc {
   color: #ffffff !important;
+}
+
+/* Bouton Mode Livret Actif */
+.mye-pdf-btn.active {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #3b82f6 !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+:is(html.dark-mode, body.dark-mode) .mye-pdf-btn.active {
+  background-color: rgba(59, 130, 246, 0.25) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
 }

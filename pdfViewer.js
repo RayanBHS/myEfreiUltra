@@ -8,6 +8,7 @@
   let pdfDoc = null;
   let downloadObjectUrl = '';
   let currentZoom = 1.0;
+  let isBookletMode = false;
 
   // Configuration globale de PDF.js
   if (window.pdfjsLib) {
@@ -73,6 +74,17 @@
               <button class="mye-pdf-btn" id="mye-pdf-fit-btn" title="Ajuster à la largeur">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                   <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="mye-pdf-divider"></div>
+
+            <!-- Mode Livret (Découpe A3) -->
+            <div class="mye-pdf-control-group">
+              <button class="mye-pdf-btn" id="mye-pdf-booklet-btn" title="Mode Livret (Découpe double page)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M21 4H3c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM12 19H3V6h9v13zm9 0h-9V6h9v13z"/>
                 </svg>
               </button>
             </div>
@@ -144,6 +156,16 @@
     document.getElementById('mye-pdf-fit-btn').addEventListener('click', () => {
       fitToWidth();
     });
+
+    // Mode Livret
+    const bookletBtn = document.getElementById('mye-pdf-booklet-btn');
+    if (bookletBtn) {
+      bookletBtn.addEventListener('click', () => {
+        isBookletMode = !isBookletMode;
+        updateBookletButtonState();
+        renderPages();
+      });
+    }
 
     // Navigation de pages
     document.getElementById('mye-pdf-prev-btn').addEventListener('click', () => {
@@ -266,10 +288,24 @@
   }
 
   /**
-   * Télécharge et charge le document PDF.
-   * Si les pages sont en paysage (A3), les découpe en 2 demi-pages A4.
+   * Met à jour l'état visuel du bouton Mode Livret dans la barre d'outils.
    */
-  async function loadDocument(url) {
+  function updateBookletButtonState() {
+    const bookletBtn = document.getElementById('mye-pdf-booklet-btn');
+    if (bookletBtn) {
+      if (isBookletMode) {
+        bookletBtn.classList.add('active');
+      } else {
+        bookletBtn.classList.remove('active');
+      }
+    }
+  }
+
+  /**
+   * Construit et effectue le rendu de chaque page du PDF en fonction du mode de lecture.
+   */
+  async function renderPages() {
+    if (!pdfDoc) return;
     const loader = document.getElementById('mye-pdf-loader');
     const errorEl = document.getElementById('mye-pdf-error');
     const pagesContainer = document.getElementById('mye-pdf-pages-container');
@@ -278,25 +314,6 @@
       loader.style.display = 'flex';
       errorEl.style.display = 'none';
       pagesContainer.style.display = 'none';
-
-      // 1. Récupération des données binaires
-      const response = await fetch(url, { credentials: 'include' });
-      if (!response.ok) throw new Error("Impossible de télécharger le fichier PDF.");
-
-      const blob = await response.blob();
-      const arrayBuffer = await blob.arrayBuffer();
-
-      const currentOverlay = document.getElementById('mye-pdf-overlay');
-      if (!currentOverlay || !currentOverlay.classList.contains('mye-pdf-show')) return;
-
-      // 2. Objet de téléchargement local
-      downloadObjectUrl = URL.createObjectURL(blob);
-      document.getElementById('mye-pdf-download-link').href = downloadObjectUrl;
-
-      // 3. Initialisation PDF.js
-      const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
-      pdfDoc = await loadingTask.promise;
-
       pagesContainer.innerHTML = '';
 
       // 4. Construire la liste initiale des pages virtuelles (A3 -> A4 si besoin)
@@ -306,50 +323,51 @@
         const page = await pdfDoc.getPage(i);
         const vp = page.getViewport({ scale: 1.0 });
 
-        if (vp.width > vp.height * 1.1) {
+        if (isBookletMode && vp.width > vp.height * 1.1) {
           // Page paysage (A3) → 2 demi-pages A4
           console.log(`[MyEfrei PDF] Page ${i}: paysage (${Math.round(vp.width)}×${Math.round(vp.height)}) → découpe en 2 A4`);
           initialVirtualPages.push({ page, pdfPageNum: i, half: 'left',  baseW: vp.width / 2, baseH: vp.height });
           initialVirtualPages.push({ page, pdfPageNum: i, half: 'right', baseW: vp.width / 2, baseH: vp.height });
         } else {
-          // Page portrait (A4) → affichage normal
-          console.log(`[MyEfrei PDF] Page ${i}: portrait (${Math.round(vp.width)}×${Math.round(vp.height)}) → pas de découpe`);
+          // Page portrait ou paysage sans découpe → affichage normal
+          console.log(`[MyEfrei PDF] Page ${i}: normale (${Math.round(vp.width)}×${Math.round(vp.height)}) → pas de découpe`);
           initialVirtualPages.push({ page, pdfPageNum: i, half: 'full', baseW: vp.width, baseH: vp.height });
         }
       }
 
-      // 5. Réordonner les pages virtuelles (Scan livret Efrei)
-      //    Les copies scannées donnent une suite de paires de pages (faces d'un A3).
-      //    Ordre du scanner : faces recto (paires 0, 2, 4...) puis faces verso à l'envers (..., paires 5, 3, 1).
+      // 5. Réordonner les pages virtuelles (Scan livret Efrei) si bookletMode est activé
       const virtualPages = [];
-      const numChunks = Math.floor(initialVirtualPages.length / 2);
-      
-      const chunkSequence = [];
-      for (let c = 0; c < numChunks; c += 2) {
-        chunkSequence.push(c);
-      }
-      const lastOdd = numChunks % 2 === 0 ? numChunks - 1 : numChunks - 2;
-      for (let c = lastOdd; c >= 1; c -= 2) {
-        chunkSequence.push(c);
-      }
+      if (isBookletMode) {
+        const numChunks = Math.floor(initialVirtualPages.length / 2);
+        const chunkSequence = [];
+        for (let c = 0; c < numChunks; c += 2) {
+          chunkSequence.push(c);
+        }
+        const lastOdd = numChunks % 2 === 0 ? numChunks - 1 : numChunks - 2;
+        for (let c = lastOdd; c >= 1; c -= 2) {
+          chunkSequence.push(c);
+        }
 
-      console.log(`[MyEfrei PDF] Ordre logique des paires (chunks) :`, chunkSequence);
+        console.log(`[MyEfrei PDF] Ordre logique des paires (chunks) :`, chunkSequence);
 
-      for (const c of chunkSequence) {
-        virtualPages.push(initialVirtualPages[c * 2]);
-        virtualPages.push(initialVirtualPages[c * 2 + 1]);
-      }
+        for (const c of chunkSequence) {
+          virtualPages.push(initialVirtualPages[c * 2]);
+          virtualPages.push(initialVirtualPages[c * 2 + 1]);
+        }
 
-      // S'il reste une page impaire à la fin (rare), on l'ajoute
-      if (initialVirtualPages.length % 2 !== 0) {
-        virtualPages.push(initialVirtualPages[initialVirtualPages.length - 1]);
+        // S'il reste une page impaire à la fin (rare), on l'ajoute
+        if (initialVirtualPages.length % 2 !== 0) {
+          virtualPages.push(initialVirtualPages[initialVirtualPages.length - 1]);
+        }
+      } else {
+        virtualPages.push(...initialVirtualPages);
       }
 
       const totalVirtual = virtualPages.length;
       document.getElementById('mye-pdf-total-pages').textContent = totalVirtual;
       document.getElementById('mye-pdf-current-page').textContent = '1';
 
-      console.log(`[MyEfrei PDF] ${pdfDoc.numPages} pages PDF → ${totalVirtual} pages virtuelles (A4)`);
+      console.log(`[MyEfrei PDF] ${pdfDoc.numPages} pages PDF → ${totalVirtual} pages virtuelles`);
 
       // 5. Créer les wrappers et canvas pour chaque page virtuelle
       for (let i = 0; i < totalVirtual; i++) {
@@ -389,7 +407,6 @@
       pagesContainer.style.display = 'flex';
 
       // 6. Rendu séquentiel progressif
-      //    Pour les pages A3 → on rend une seule fois en HD puis on copie chaque moitié.
       let lastRenderedPage = -1;
       let tempCanvas = null;
 
@@ -403,7 +420,7 @@
           const displayCtx = displayCanvas.getContext('2d');
 
           if (vp.half === 'full') {
-            // Page portrait → rendu direct HD
+            // Page complète → rendu direct HD
             const renderVP = vp.page.getViewport({ scale: 2.0 });
             displayCanvas.width = renderVP.width;
             displayCanvas.height = renderVP.height;
@@ -446,6 +463,53 @@
 
       // Libérer le canvas temporaire
       tempCanvas = null;
+
+    } catch (err) {
+      console.error("Erreur rendu pages PDF :", err);
+      loader.style.display = 'none';
+      errorEl.style.display = 'flex';
+      document.getElementById('mye-pdf-error-desc').textContent = err.message || "Erreur de rendu.";
+    }
+  }
+
+  /**
+   * Télécharge et charge le document PDF.
+   */
+  async function loadDocument(url) {
+    const loader = document.getElementById('mye-pdf-loader');
+    const errorEl = document.getElementById('mye-pdf-error');
+    const pagesContainer = document.getElementById('mye-pdf-pages-container');
+
+    try {
+      loader.style.display = 'flex';
+      errorEl.style.display = 'none';
+      pagesContainer.style.display = 'none';
+
+      // 1. Récupération des données binaires
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) throw new Error("Impossible de télécharger le fichier PDF.");
+
+      const blob = await response.blob();
+      const arrayBuffer = await blob.arrayBuffer();
+
+      const currentOverlay = document.getElementById('mye-pdf-overlay');
+      if (!currentOverlay || !currentOverlay.classList.contains('mye-pdf-show')) return;
+
+      // 2. Objet de téléchargement local
+      downloadObjectUrl = URL.createObjectURL(blob);
+      document.getElementById('mye-pdf-download-link').href = downloadObjectUrl;
+
+      // 3. Initialisation PDF.js
+      const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+      pdfDoc = await loadingTask.promise;
+
+      // Activer le mode livret par défaut uniquement pour les copies d'examen
+      const isExam = url.includes('/exam/file') || (document.getElementById('mye-pdf-viewer-title').textContent || '').toLowerCase().includes("copie");
+      isBookletMode = isExam;
+      updateBookletButtonState();
+
+      // Effectuer le rendu des pages
+      await renderPages();
 
     } catch (err) {
       console.error("Erreur générale lecteur PDF :", err);
