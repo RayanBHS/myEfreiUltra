@@ -1056,6 +1056,7 @@ function buildErrorOverlay() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const errorCode = urlParams.get('code') || '';
+    const isNeoError = window.location.pathname.includes('neo-error') || urlParams.has('neo');
 
     const chouetteUrl = chrome.runtime.getURL('img/chouetteTechnicien.png');
     const logoMyEfreiWhiteUrl = chrome.runtime.getURL('img/logoMyEfrei.png');
@@ -1064,7 +1065,28 @@ function buildErrorOverlay() {
     errorContainer.id = 'mye-error-page';
     errorContainer.className = 'mye-page-container';
 
-    errorContainer.innerHTML = `
+    if (isNeoError) {
+        errorContainer.innerHTML = `
+      <div class="mye-error-card">
+        <div class="mye-error-left">
+          <h1 class="mye-error-title">Cette page est indisponible</h1>
+          <p class="mye-error-text">Ce service n'est pas disponible sur myEfrei en raison de difficultés techniques avec notre SI Scolarité Neo.</p>
+          <a href="/portal/student/home" class="mye-error-btn">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="margin-right: 8px; vertical-align: middle;"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            Retourner à l'accueil
+          </a>
+        </div>
+        <div class="mye-error-right">
+          <img src="${chouetteUrl}" alt="Owl technician" class="mye-error-owl" />
+        </div>
+      </div>
+      <div class="mye-error-footer">
+        <img src="${logoMyEfreiWhiteUrl}" alt="myEfrei" class="mye-error-footer-logo" />
+        <span class="mye-error-footer-ultra">ULTRA</span>
+      </div>
+    `;
+    } else {
+        errorContainer.innerHTML = `
       <div class="mye-error-card">
         <div class="mye-error-left">
           <h1 class="mye-error-title">ERREUR ${errorCode ? errorCode + ' ' : ''}:</h1>
@@ -1080,6 +1102,7 @@ function buildErrorOverlay() {
         <span class="mye-error-footer-ultra">ULTRA</span>
       </div>
     `;
+    }
 
     document.body.appendChild(errorContainer);
 }
@@ -1093,7 +1116,7 @@ function tryBuild() {
         changeFavicon();
         if (path.includes('/portal/')) {
             injectCustomHeader();
-            if (path.includes('/portal/app/error')) {
+            if (path.includes('/portal/app/error') || path.includes('/portal/app/neo-error')) {
                 buildErrorOverlay();
             }
         } else {
@@ -1130,6 +1153,7 @@ const MYE_CUSTOM_PAGES = [
     '/portal/common/resources',
     '/portal/student/contacts',
     '/portal/app/error',
+    '/portal/app/neo-error',
 ];
 
 function isCustomPage(path) {

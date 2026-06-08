@@ -1365,3 +1365,57 @@ html.dark-mode .mye-error-owl {
   filter: invert(1) drop-shadow(0 10px 20px rgba(255,255,255,0.05));
 }
 
+/* Custom Error Page Button (Neo-Error) */
+.mye-error-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--mye-primary-color, #163767);
+  color: #ffffff !important;
+  font-size: 20px;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(22, 55, 103, 0.25);
+  cursor: pointer;
+}
+
+.mye-error-btn:hover {
+  background-color: #0c6fa7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(12, 111, 167, 0.4);
+}
+
+.mye-error-btn:active {
+  transform: translateY(0);
+}
+
+.mye-error-btn svg {
+  transition: transform 0.2s;
+}
+
+.mye-error-btn:hover svg {
+  transform: scale(1.1);
+}
+
+html.dark-mode .mye-error-btn {
+  background-color: #58a6ff;
+  color: #000000 !important;
+  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+}
+
+html.dark-mode .mye-error-btn:hover {
+  background-color: #79c0ff;
+  box-shadow: 0 6px 16px rgba(88, 166, 255, 0.35);
+}
+
+@media (max-width: 900px) {
+  .mye-error-btn {
+    font-size: 18px;
+    padding: 12px 24px;
+  }
+}
+
+
