@@ -5,6 +5,10 @@
 (function () {
   'use strict';
 
+  if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+    return;
+  }
+
   let currentPage = 0;
   let isLoading = false;
   let hasMore = true;

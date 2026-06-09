@@ -5,6 +5,10 @@
  */
 
 (function () {
+  if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+    return;
+  }
+
   let pdfDoc = null;
   let downloadObjectUrl = '';
   let currentZoom = 1.0;

@@ -1,4 +1,164 @@
-console.log("🚀 Extension MyEfrei v8 — Portail");
+(function () {
+    'use strict';
+
+    // Synchronously check if the extension is enabled via localStorage
+    const isEnabledSync = localStorage.getItem('mye_user_enabled') !== 'false';
+    window.mye_user_enabled_flag = isEnabledSync;
+
+    // Synchronisation asynchrone depuis chrome.storage.local vers localStorage
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get([
+            'mye_user_theme', 
+            'mye_user_darkmode', 
+            'mye_user_enabled',
+            'mye-planning-settings',
+            'mye-calendars-settings'
+        ], (data) => {
+            const isEnabled = data.mye_user_enabled !== false && data.mye_user_enabled !== 'false';
+            const wasEnabled = localStorage.getItem('mye_user_enabled') !== 'false';
+            
+            localStorage.setItem('mye_user_enabled', isEnabled ? 'true' : 'false');
+            window.mye_user_enabled_flag = isEnabled;
+            
+            if (isEnabled !== wasEnabled) {
+                console.log('[MyEfrei ULTRA] Extension state changed from storage get, reloading page.');
+                window.location.reload();
+                return;
+            }
+
+            if (data['mye-planning-settings'] !== undefined && data['mye-planning-settings'] !== null) {
+                localStorage.setItem('mye-planning-settings', data['mye-planning-settings']);
+            } else {
+                localStorage.removeItem('mye-planning-settings');
+            }
+            window.dispatchEvent(new CustomEvent('mye-planning-settings-updated'));
+
+            if (data['mye-calendars-settings'] !== undefined && data['mye-calendars-settings'] !== null) {
+                localStorage.setItem('mye-calendars-settings', data['mye-calendars-settings']);
+            } else {
+                localStorage.removeItem('mye-calendars-settings');
+            }
+            window.dispatchEvent(new CustomEvent('mye-calendars-settings-updated'));
+
+            if (!isEnabled) {
+                return;
+            }
+
+            // Initialize theme
+            if (data.mye_user_theme) {
+                localStorage.setItem('mye-dash-theme', data.mye_user_theme);
+                if (typeof applyGlobalTheme === 'function') {
+                    applyGlobalTheme(data.mye_user_theme);
+                }
+                const dashboardEl = document.getElementById('mye-custom-dashboard');
+                if (dashboardEl) {
+                    dashboardEl.setAttribute('data-mye-theme', data.mye_user_theme);
+                }
+                const themeMenu = document.getElementById('mye-dash-theme-menu');
+                if (themeMenu) {
+                    themeMenu.querySelectorAll('.mye-color-option').forEach(o => o.classList.remove('active'));
+                    const activeOption = themeMenu.querySelector(`.mye-color-option[data-color="${data.mye_user_theme}"]`);
+                    if (activeOption) activeOption.classList.add('active');
+                }
+            }
+            if (data.mye_user_darkmode !== undefined) {
+                const isDark = String(data.mye_user_darkmode) === 'true';
+                localStorage.setItem('mye-theme', isDark ? 'dark' : 'light');
+                document.documentElement.classList.toggle('dark-mode', isDark);
+                if (document.body) {
+                    document.body.classList.toggle('dark-mode', isDark);
+                } else {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        document.body.classList.toggle('dark-mode', isDark);
+                    });
+                }
+                const themeSwitch = document.getElementById('mye-theme-switch');
+                if (themeSwitch) {
+                    themeSwitch.classList.toggle('active', isDark);
+                }
+            }
+        });
+    }
+
+    // Écoute des changements de stockage en temps réel
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+        chrome.storage.onChanged.addListener((changes, areaName) => {
+            if (areaName === 'local') {
+                if (changes.mye_user_enabled) {
+                    const isEnabled = changes.mye_user_enabled.newValue !== false && changes.mye_user_enabled.newValue !== 'false';
+                    const wasEnabled = localStorage.getItem('mye_user_enabled') !== 'false';
+                    
+                    localStorage.setItem('mye_user_enabled', isEnabled ? 'true' : 'false');
+                    window.mye_user_enabled_flag = isEnabled;
+                    
+                    if (isEnabled !== wasEnabled) {
+                        console.log('[MyEfrei ULTRA] Extension state changed from storage change, reloading page.');
+                        window.location.reload();
+                        return;
+                    }
+                }
+
+                if (localStorage.getItem('mye_user_enabled') === 'false') {
+                    return;
+                }
+
+                if (changes.mye_user_theme && changes.mye_user_theme.newValue) {
+                    const color = changes.mye_user_theme.newValue;
+                    localStorage.setItem('mye-dash-theme', color);
+                    if (typeof applyGlobalTheme === 'function') {
+                        applyGlobalTheme(color);
+                    }
+                    const dashboardEl = document.getElementById('mye-custom-dashboard');
+                    if (dashboardEl) {
+                        dashboardEl.setAttribute('data-mye-theme', color);
+                    }
+                    const themeMenu = document.getElementById('mye-dash-theme-menu');
+                    if (themeMenu) {
+                        themeMenu.querySelectorAll('.mye-color-option').forEach(o => o.classList.remove('active'));
+                        const activeOption = themeMenu.querySelector(`.mye-color-option[data-color="${color}"]`);
+                        if (activeOption) activeOption.classList.add('active');
+                    }
+                }
+                if (changes.mye_user_darkmode) {
+                    const isDark = String(changes.mye_user_darkmode.newValue) === 'true';
+                    localStorage.setItem('mye-theme', isDark ? 'dark' : 'light');
+                    document.documentElement.classList.toggle('dark-mode', isDark);
+                    if (document.body) {
+                        document.body.classList.toggle('dark-mode', isDark);
+                    }
+                    const themeSwitch = document.getElementById('mye-theme-switch');
+                    if (themeSwitch) {
+                        themeSwitch.classList.toggle('active', isDark);
+                    }
+                }
+                if (changes['mye-planning-settings']) {
+                    const newVal = changes['mye-planning-settings'].newValue;
+                    if (newVal !== undefined && newVal !== null) {
+                        localStorage.setItem('mye-planning-settings', newVal);
+                    } else {
+                        localStorage.removeItem('mye-planning-settings');
+                    }
+                    window.dispatchEvent(new CustomEvent('mye-planning-settings-updated'));
+                }
+                if (changes['mye-calendars-settings']) {
+                    const newVal = changes['mye-calendars-settings'].newValue;
+                    if (newVal !== undefined && newVal !== null) {
+                        localStorage.setItem('mye-calendars-settings', newVal);
+                    } else {
+                        localStorage.removeItem('mye-calendars-settings');
+                    }
+                    window.dispatchEvent(new CustomEvent('mye-calendars-settings-updated'));
+                }
+            }
+        });
+    }
+
+    if (!isEnabledSync) {
+        console.log('[MyEfrei ULTRA] Extension is disabled by user settings.');
+        return;
+    }
+
+    console.log("🚀 Extension MyEfrei v8 — Portail");
 
 // INITIALISATION DU THEME (OLED Black Dark Mode)
 const savedTheme = localStorage.getItem('mye-theme') || 'light';
@@ -423,59 +583,117 @@ function initCustomHeaderEvents() {
         });
     }
 
-    // Tâche de fond pour forcer la position des résultats de recherche sous la barre
-    // et repositionner les popups de notification/profil près des boutons custom
-    setInterval(() => {
-        const origSearchBar = document.querySelector('.searchBar.mye-search-active');
-        const popper = document.querySelector('.MuiAutocomplete-popper');
-        if (origSearchBar && popper) {
-            const rect = origSearchBar.getBoundingClientRect();
-            // On force Popper à s'afficher exactement sous notre barre
-            popper.style.setProperty('position', 'fixed', 'important');
-            popper.style.setProperty('top', `${rect.bottom + 5}px`, 'important');
-            popper.style.setProperty('left', `${rect.left}px`, 'important');
-            popper.style.setProperty('width', `${rect.width}px`, 'important');
-            popper.style.setProperty('transform', 'none', 'important');
-        }
+    // Tâche de fond optimisée pour forcer la position des résultats de recherche sous la barre
+    // et repositionner les popups de notification/profil près des boutons custom.
+    // L'intervalle de repositionnement ne tourne QUE lorsqu'une popup est visible à l'écran,
+    // ce qui élimine toute consommation de CPU lorsque le portail est inactif.
+    let positionInterval = null;
 
-        // Repositionner les popovers MUI ou Angular (profil) près du bouton profil custom
-        // On cible spécifiquement role="dropDownMenu" pour ne pas capturer l'autocomplete de la barre de recherche !
-        document.querySelectorAll('.MuiPopover-root, .cdk-overlay-pane, .MuiPopperUnstyled-root[role="dropDownMenu"]').forEach(popover => {
-            // Ignorer l'autocomplete de la recherche si jamais il est intercepté
-            if (popover.querySelector('[role="listbox"]') || popover.classList.contains('MuiAutocomplete-popper')) return;
+    const startPositioning = () => {
+        if (positionInterval) return;
 
-            const paper = popover.querySelector('.MuiPopover-paper, .MuiPaper-root, .mat-menu-panel') || popover;
-            if (paper && popover.style.display !== 'none' && popover.style.visibility !== 'hidden') {
-                const customProfileBtn = document.getElementById('mye-profile-btn');
-                if (customProfileBtn) {
-                    const btnRect = customProfileBtn.getBoundingClientRect();
-                    const paperWidth = paper.offsetWidth || 200;
-                    
-                    // Transmettre les coordonnées à nos variables CSS protégées au lieu du style en ligne
-                    document.body.style.setProperty('--mye-profile-top', `${btnRect.bottom}px`);
-                    document.body.style.setProperty('--mye-profile-left', `${Math.max(10, btnRect.right - paperWidth)}px`);
-                    
-                    // Optionnel: On peut garder le z-index en ligne au cas où, mais le CSS gère le reste
-                    popover.style.setProperty('z-index', '2147483649', 'important');
+        positionInterval = setInterval(() => {
+            let activePopups = 0;
+
+            // 1. Résultats de l'autocomplétion recherche
+            const popper = document.querySelector('.MuiAutocomplete-popper');
+            if (popper && popper.style.display !== 'none' && popper.style.visibility !== 'hidden') {
+                activePopups++;
+                const origSearchBar = document.querySelector('.searchBar.mye-search-active');
+                if (origSearchBar) {
+                    const rect = origSearchBar.getBoundingClientRect();
+                    popper.style.setProperty('position', 'fixed', 'important');
+                    popper.style.setProperty('top', `${rect.bottom + 5}px`, 'important');
+                    popper.style.setProperty('left', `${rect.left}px`, 'important');
+                    popper.style.setProperty('width', `${rect.width}px`, 'important');
+                    popper.style.setProperty('transform', 'none', 'important');
                 }
             }
-        });
 
-        // Repositionner le menu de notifications
-        const notifPopper = document.getElementById('simple-popper-efrei');
-        if (notifPopper && notifPopper.style.display !== 'none') {
-            const customNotifBtn = document.getElementById('mye-custom-notif-btn');
-            if (customNotifBtn) {
-                const btnRect = customNotifBtn.getBoundingClientRect();
-                
-                // Transmettre les coordonnées aux variables CSS protégées
-                document.body.style.setProperty('--mye-notif-top', `${btnRect.bottom}px`);
-                document.body.style.setProperty('--mye-notif-left', `${btnRect.left - 150}px`);
-                
-                notifPopper.style.setProperty('z-index', '2147483649', 'important');
+            // 2. Menu profil (bureau)
+            const popovers = document.querySelectorAll('.MuiPopover-root, .cdk-overlay-pane, .MuiPopperUnstyled-root[role="dropDownMenu"]');
+            if (popovers.length > 0) {
+                const customProfileBtn = document.getElementById('mye-profile-btn');
+                if (customProfileBtn) {
+                    let btnRect = null;
+                    popovers.forEach(popover => {
+                        if (popover.querySelector('[role="listbox"]') || popover.classList.contains('MuiAutocomplete-popper')) return;
+
+                        const paper = popover.querySelector('.MuiPopover-paper, .MuiPaper-root, .mat-menu-panel') || popover;
+                        if (paper && popover.style.display !== 'none' && popover.style.visibility !== 'hidden') {
+                            activePopups++;
+                            if (!btnRect) btnRect = customProfileBtn.getBoundingClientRect();
+                            const paperWidth = paper.offsetWidth || 200;
+                            
+                            document.body.style.setProperty('--mye-profile-top', `${btnRect.bottom}px`);
+                            document.body.style.setProperty('--mye-profile-left', `${Math.max(10, btnRect.right - paperWidth)}px`);
+                            popover.style.setProperty('z-index', '2147483649', 'important');
+                        }
+                    });
+                }
             }
+
+            // 3. Menu de notifications
+            const notifPopper = document.getElementById('simple-popper-efrei');
+            if (notifPopper && notifPopper.style.display !== 'none' && notifPopper.style.visibility !== 'hidden') {
+                activePopups++;
+                const customNotifBtn = document.getElementById('mye-custom-notif-btn');
+                if (customNotifBtn) {
+                    const btnRect = customNotifBtn.getBoundingClientRect();
+                    document.body.style.setProperty('--mye-notif-top', `${btnRect.bottom}px`);
+                    document.body.style.setProperty('--mye-notif-left', `${btnRect.left - 150}px`);
+                    notifPopper.style.setProperty('z-index', '2147483649', 'important');
+                }
+            }
+
+            // Si aucune popup n'est active, on coupe l'intervalle
+            if (activePopups === 0) {
+                clearInterval(positionInterval);
+                positionInterval = null;
+            }
+        }, 50);
+    };
+
+    // MutationObserver sur les enfants directs de document.body pour détecter les ouvertures de popup
+    const popupObserver = new MutationObserver((mutations) => {
+        let shouldStart = false;
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === 1) { // Element Node
+                    if (
+                        node.classList.contains('MuiPopover-root') ||
+                        node.classList.contains('cdk-overlay-pane') ||
+                        node.classList.contains('MuiAutocomplete-popper') ||
+                        node.id === 'simple-popper-efrei' ||
+                        node.querySelector('.MuiPopover-root, .cdk-overlay-pane, .MuiAutocomplete-popper, #simple-popper-efrei')
+                    ) {
+                        shouldStart = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldStart) break;
         }
-    }, 50);
+        if (shouldStart) {
+            startPositioning();
+        }
+    });
+
+    if (document.body) {
+        popupObserver.observe(document.body, { childList: true, subtree: false });
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            popupObserver.observe(document.body, { childList: true, subtree: false });
+        });
+    }
+
+    // Déclencher le repositionnement également sur click/focus (au cas où les popups sont déjà injectées mais rendues visibles)
+    document.addEventListener('click', () => {
+        setTimeout(startPositioning, 50);
+    });
+    document.addEventListener('focusin', () => {
+        setTimeout(startPositioning, 50);
+    });
 
     // Procuration de clics pour les Notifications
     const notifBtn = document.getElementById('mye-custom-notif-btn');
@@ -612,6 +830,9 @@ function initCustomHeaderEvents() {
             document.documentElement.classList.toggle('dark-mode', isDark);
             themeSwitch.classList.toggle('active', isDark);
             localStorage.setItem('mye-theme', isDark ? 'dark' : 'light');
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.set({ mye_user_darkmode: isDark });
+            }
         });
     }
 
@@ -631,6 +852,16 @@ function initCustomHeaderEvents() {
         deskLogoutBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             document.getElementById('mye-dropdown-profile').classList.remove('show');
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.remove([
+                    'mye_user_name',
+                    'mye_user_class',
+                    'mye_user_email',
+                    'mye_user_average',
+                    'mye_user_absences',
+                    'mye_user_retards'
+                ]);
+            }
             triggerOriginalProfileClick();
             setTimeout(() => clickOriginalByText("Se déconnecter"), 100);
         });
@@ -651,6 +882,16 @@ function initCustomHeaderEvents() {
         mobLogoutBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             closeDrawer();
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.remove([
+                    'mye_user_name',
+                    'mye_user_class',
+                    'mye_user_email',
+                    'mye_user_average',
+                    'mye_user_absences',
+                    'mye_user_retards'
+                ]);
+            }
             triggerOriginalProfileClick();
             setTimeout(() => clickOriginalByText("Se déconnecter"), 100);
         });
@@ -743,6 +984,20 @@ function updateCustomAvatar(src) {
     return updated;
 }
 
+function computeEfreiEmail(firstName, lastName) {
+    if (!firstName || !lastName) return '';
+    
+    const cleanPart = (str) => {
+        return str.trim()
+            .toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+            .replace(/\s+/g, '-') // replace spaces with hyphens
+            .replace(/[^a-z0-9-]/g, ''); // keep alphanumeric and hyphens
+    };
+    
+    return `${cleanPart(firstName)}.${cleanPart(lastName)}@efrei.net`;
+}
+
 function updateCustomName(firstName, lastName) {
     const myeFirstNameEl = document.getElementById('mye-first-name');
     const myeLastNameEl = document.getElementById('mye-last-name');
@@ -767,6 +1022,21 @@ function updateCustomName(firstName, lastName) {
             updated = true;
         }
     }
+
+    const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+    if (fullName) {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            const email = computeEfreiEmail(firstName || '', lastName || '');
+            const dataToSave = {
+                mye_user_name: fullName
+            };
+            if (email) {
+                dataToSave.mye_user_email = email;
+            }
+            chrome.storage.local.set(dataToSave);
+        }
+    }
+
     return updated;
 }
 
@@ -1186,4 +1456,6 @@ setInterval(() => {
         }
     }
 }, 300);
+
+})();
 

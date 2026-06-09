@@ -1,4 +1,8 @@
 (function() {
+  if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+    return;
+  }
+
   // Configuration
   const API_DOCS = '/api/rest/student/schooling/documents';
   const API_INVOICES = '/api/rest/student/schooling/invoices';

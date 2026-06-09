@@ -1,15 +1,20 @@
-// dashboard.js - Custom Dashboard Logic for myEfrei ULTRA
+(function() {
+    'use strict';
 
-const API_PERIODS = '/api/rest/student/periods?withHistory=true';
-const API_GRADES = '/api/rest/student/grades';
-const API_ABSENCES = '/api/rest/student/absences';
-const API_PLANNING = '/api/rest/student/planning';
-const API_SLIDES = '/api/rest/common/slides';
+    if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+        return;
+    }
 
-// Instantly prepare the document to prevent original UI from flashing
-if (window.location.pathname.includes('/portal/student/home')) {
-    document.documentElement.classList.add('mye-dashboard-active');
-}
+    const API_PERIODS = '/api/rest/student/periods?withHistory=true';
+    const API_GRADES = '/api/rest/student/grades';
+    const API_ABSENCES = '/api/rest/student/absences';
+    const API_PLANNING = '/api/rest/student/planning';
+    const API_SLIDES = '/api/rest/common/slides';
+
+    // Instantly prepare the document to prevent original UI from flashing
+    if (window.location.pathname.includes('/portal/student/home')) {
+        document.documentElement.classList.add('mye-dashboard-active');
+    }
 
 async function fetchDashboardData() {
     try {
@@ -37,6 +42,10 @@ async function fetchDashboardData() {
         const badgeEl = document.getElementById('mye-dash-period-badge-el');
         if (badgeEl) badgeEl.textContent = `${periodId} - ${sy}`;
 
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.set({ mye_user_class: `${periodId} - ${sy}` });
+        }
+
         // Retrieve selected semester from the portal selector if possible
 
         // 2. Fetch Grades
@@ -45,6 +54,9 @@ async function fetchDashboardData() {
             .then(raw => {
                 const average = parseGradesToAverage(raw);
                 if (average !== null) {
+                    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                        chrome.storage.local.set({ mye_user_average: average });
+                    }
                     const avgEl = document.getElementById('mye-dash-moyenne');
                     avgEl.textContent = average.toFixed(2).replace('.', ',');
                     avgEl.style.color = getDashGradeColor(average);
@@ -81,6 +93,13 @@ async function fetchDashboardData() {
                     if (isAbsence && !justified) absCountUnjustified++;
                     if (isRetard) totalRetards++;
                 });
+
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    chrome.storage.local.set({
+                        mye_user_absences: absCountUnjustified,
+                        mye_user_retards: totalRetards
+                    });
+                }
                 
                 const absEl = document.getElementById('mye-dash-absences');
                 absEl.textContent = absCountUnjustified;
@@ -1599,6 +1618,9 @@ function injectDashboard() {
                 
                 const selectedColor = option.getAttribute('data-color');
                 localStorage.setItem('mye-dash-theme', selectedColor);
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    chrome.storage.local.set({ mye_user_theme: selectedColor });
+                }
                 
                 // Apply theme
                 dashboardEl.setAttribute('data-mye-theme', selectedColor);
@@ -1626,3 +1648,5 @@ if (document.readyState === 'loading') {
 } else {
     setTimeout(injectDashboard, 500);
 }
+
+})();

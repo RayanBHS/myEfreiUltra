@@ -3,6 +3,16 @@
   "name": "MyEfrei ULTRA",
   "version": "1.0",
   "description": "Amélioration et personnalisation de l'interface de MyEfrei.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.efrei.fr/*",
+    "*://*.myefrei.fr/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -63,6 +73,17 @@
         "resources.js",
         "contacts.js"
       ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "file:///*",
+        "http://localhost/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1/*",
+        "http://127.0.0.1:*/*"
+      ],
+      "js": ["sync-portal.js"],
       "run_at": "document_start"
     }
   ],

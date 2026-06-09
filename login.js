@@ -114,9 +114,18 @@ function handleSubmit() {
         return;
     }
 
-    const realUser = document.querySelector('form input[type="text"], form input:not([type="password"]):not([type="hidden"])');
-    const realPass = document.querySelector('form input[type="password"]');
-    const realBtn  = document.querySelector('form button[type="submit"], form button');
+    // Specific selectors for username/email fields
+    let realUser = document.querySelector('form input#username, form input[name="username"], form input[name="login"], form input[type="email"], form input#login');
+    if (!realUser) {
+        // Exclude inputs that are likely tokens or state variables
+        realUser = document.querySelector('form input[type="text"]:not([name*="token"]):not([id*="token"]):not([name*="csrf"]):not([id*="csrf"]):not([name*="state"]):not([id*="state"]):not([name*="code"]):not([id*="code"]), form input:not([type="password"]):not([type="hidden"]):not([name*="token"]):not([id*="token"]):not([name*="csrf"]):not([id*="csrf"]):not([name*="state"]):not([id*="state"]):not([name*="code"]):not([id*="code"])');
+    }
+    if (!realUser) {
+        realUser = document.querySelector('form input[type="text"], form input:not([type="password"]):not([type="hidden"])');
+    }
+
+    const realPass = document.querySelector('form input[type="password"], form input#password, form input[name="password"]');
+    const realBtn  = document.querySelector('form button[type="submit"], form input[type="submit"], form button, form #kc-login');
 
     setReactInputValue(realUser, login);
     setReactInputValue(realPass, password);

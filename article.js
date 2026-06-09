@@ -5,6 +5,10 @@
 (function () {
   'use strict';
 
+  if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+    return;
+  }
+
   let currentArticleId = null;
 
   function getArticleId() {

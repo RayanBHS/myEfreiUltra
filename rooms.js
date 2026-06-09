@@ -1,6 +1,10 @@
-// rooms.js - Override for Salles de cours libres
+(function() {
+  'use strict';
+  if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+    return;
+  }
 
-document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', () => {
   if (window.location.pathname.includes('/available-rooms')) {
     // Clear everything
     document.body.innerHTML = '';
@@ -31,5 +35,5 @@ document.addEventListener('DOMContentLoaded', () => {
     container.appendChild(backBtn);
     
     document.body.appendChild(container);
-  }
-});
+  });
+})();

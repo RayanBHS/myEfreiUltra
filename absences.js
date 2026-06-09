@@ -5,6 +5,10 @@
 (function () {
   'use strict';
 
+  if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+    return;
+  }
+
   console.log('🛑 MyEfrei ULTRA — Module Absences (Chargé)');
 
   const CIRCLE_RADIUS = 90;
@@ -208,24 +212,40 @@
       </div>
     `;
 
+    let raw = null;
     try {
       const res = await fetch(`/api/rest/student/absences?schoolYear=${schoolYear}&period=${period}`, { credentials: 'include' });
-      let data = [];
-      if (res.ok) {
-          const raw = await res.json();
-          state.rawApiData = raw;
-          console.log('📦 RÉPONSE BRUTE API ABSENCES:', raw);
-          if (Array.isArray(raw)) data = raw;
-          else if (raw && Array.isArray(raw.data)) data = raw.data;
-          else if (raw && Array.isArray(raw.absences)) data = raw.absences;
+      if (!res.ok) {
+        throw new Error(`API Error ${res.status}: ${res.statusText}`);
       }
-      state.absencesData = data;
+      raw = await res.json();
     } catch(e) {
       console.error("Erreur API Absences", e);
       state.absencesData = [];
+      rightPanel.innerHTML = `
+        <div class="mye-absences-empty" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 3rem 2rem;">
+          <div style="font-size: 48px;">🔒</div>
+          <div style="font-size: 1.15rem; font-weight: 600; color: #1e293b; text-align: center;">Votre session a expiré ou vous n'êtes pas connecté à myEfrei.</div>
+          <a href="https://my.efrei.fr/" class="btn-mye-connect" style="display: inline-block; padding: 10px 24px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.2s ease;">Se connecter à myEfrei</a>
+        </div>
+      `;
+      return;
     }
-    
-    renderData();
+
+    try {
+      let data = [];
+      state.rawApiData = raw;
+      console.log('📦 RÉPONSE BRUTE API ABSENCES:', raw);
+      if (Array.isArray(raw)) data = raw;
+      else if (raw && Array.isArray(raw.data)) data = raw.data;
+      else if (raw && Array.isArray(raw.absences)) data = raw.absences;
+      state.absencesData = data;
+      renderData();
+    } catch(e) {
+      console.error("Erreur de traitement des absences", e);
+      state.absencesData = [];
+      renderData();
+    }
   }
 
   function renderData() {
@@ -364,6 +384,13 @@
     }
 
     if (rightPanel) rightPanel.innerHTML = html;
+
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({
+        mye_user_absences: absCountUnjustified,
+        mye_user_retards: retCount
+      });
+    }
 
     // Update Circles
     const absValue = document.getElementById('mye-abs-value');

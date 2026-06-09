@@ -5,6 +5,10 @@
 (function () {
   'use strict';
 
+  if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+    return;
+  }
+
   console.log('📊 MyEfrei ULTRA — Module Notes (Chargé)');
 
   // ──────────────────────────────────────────────
@@ -649,8 +653,23 @@
       </div>
     `;
 
+    let raw = null;
     try {
-      const raw = cachedData || await fetchGrades(schoolYear, period);
+      raw = cachedData || await fetchGrades(schoolYear, period);
+    } catch (fetchErr) {
+      console.error('📊 Erreur lors de la récupération des notes:', fetchErr);
+      rightPanel.innerHTML = `
+        <div class="mye-grades-error" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 3rem 2rem;">
+          <div class="mye-grades-error-icon">🔒</div>
+          <div class="mye-grades-error-text" style="font-size: 1.15rem; font-weight: 600; color: #1e293b; text-align: center;">Votre session a expiré ou vous n'êtes pas connecté à myEfrei.</div>
+          <a href="https://my.efrei.fr/" class="btn-mye-connect" style="display: inline-block; padding: 10px 24px; background-color: var(--mye-primary-color, #423ee2); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.2s ease;">Se connecter à myEfrei</a>
+        </div>
+      `;
+      updateCircle();
+      return;
+    }
+
+    try {
       const parsed = parseGradesResponse(raw);
 
       if (!parsed || !parsed.ues || parsed.ues.length === 0) {
@@ -677,15 +696,11 @@
       renderUEBlocks(parsed.ues, rightPanel);
 
     } catch (err) {
-      console.error('📊 Erreur lors du chargement des notes:', err);
+      console.error('📊 Erreur lors du parsing des notes:', err);
 
       let rawDataStr = "Non disponible";
       try {
-        if (cachedData) rawDataStr = JSON.stringify(cachedData, null, 2);
-        else {
-          const activeSem = state.semesters.find(s => s.period === state.currentPeriod && s.schoolYear === state.currentSchoolYear);
-          if (activeSem && activeSem.data) rawDataStr = JSON.stringify(activeSem.data, null, 2);
-        }
+        if (raw) rawDataStr = JSON.stringify(raw, null, 2);
       } catch (e) { }
 
       rightPanel.innerHTML = `
@@ -708,6 +723,12 @@
     if (!arc || !valueEl) return;
 
     const { realAverage, simulatedAverage, hasSimulation } = getGlobalAverages();
+
+    if (realAverage !== null && !isNaN(realAverage)) {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.set({ mye_user_average: realAverage });
+        }
+    }
 
     // Couleur selon la moyenne
     const getGradeColor = (val) => {

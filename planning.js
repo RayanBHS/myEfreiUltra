@@ -5,6 +5,10 @@
 (function () {
   'use strict';
 
+  if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+    return;
+  }
+
   console.log('📅 MyEfrei ULTRA — Module Planning (Chargé)');
 
   // ──────────────────────────────────────────────
@@ -55,7 +59,12 @@
   }
 
   function saveSettings() {
-    localStorage.setItem('mye-planning-settings', JSON.stringify(userSettings));
+    const valueStr = JSON.stringify(userSettings);
+    localStorage.setItem('mye-planning-settings', valueStr);
+    // Sync back to chrome.storage.local so Racywama portal picks up the change
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ 'mye-planning-settings': valueStr });
+    }
   }
 
   function applyColors() {
@@ -1676,6 +1685,21 @@
     console.log('📅 Initialisation de la page du planning…');
     loadSettings();
     applyColors();
+
+    window.addEventListener('mye-planning-settings-updated', () => {
+      const oldStart = userSettings.displayStart;
+      const oldEnd = userSettings.displayEnd;
+      loadSettings();
+      applyColors();
+      if (oldStart !== userSettings.displayStart || oldEnd !== userSettings.displayEnd) {
+        console.log('⏰ Amplitude changed, rebuilding planning container...');
+        const container = document.getElementById('mye-planning-container');
+        if (container) {
+          container.remove();
+          waitAndInit();
+        }
+      }
+    });
 
     const targetEventTime = sessionStorage.getItem('mye_open_event_time');
     if (targetEventTime) {

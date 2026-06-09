@@ -3,6 +3,11 @@
 // =============================================
 (function () {
     'use strict';
+
+    if (window.mye_user_enabled_flag === false || localStorage.getItem('mye_user_enabled') === 'false') {
+        return;
+    }
+
     let currentRoute = null;
     let currentId = null;
     function getLxpRoute() {
