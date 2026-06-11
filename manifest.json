@@ -3,6 +3,11 @@
   "name": "MyEfrei ULTRA",
   "version": "1.0",
   "description": "Amélioration et personnalisation de l'interface de MyEfrei.",
+  "icons": {
+    "16": "img/logoEfreiDepInf.png",
+    "48": "img/logoEfreiDepInf.png",
+    "128": "img/logoEfreiDepInf.png"
+  },
   "permissions": [
     "storage"
   ],
@@ -104,6 +109,11 @@
     }
   ],
   "action": {
-    "default_title": "MyEfrei Custom Interface"
+    "default_title": "MyEfrei Custom Interface",
+    "default_icon": {
+      "16": "img/logoEfreiDepInf.png",
+      "48": "img/logoEfreiDepInf.png",
+      "128": "img/logoEfreiDepInf.png"
+    }
   }
 }

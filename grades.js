@@ -1264,6 +1264,25 @@
         updateModalRequiredGrades(ueIdx, subIdx);
         updateMainPageGrades();
       });
+
+      const capValueDisplay = (e) => {
+        const valStr = e.target.value.trim();
+        const isHorsUE = input.getAttribute('data-is-hors-ue') === 'true';
+        if (!isHorsUE && valStr !== '') {
+          let val = parseFloat(valStr.replace(',', '.'));
+          if (!isNaN(val) && val > 20) {
+            e.target.value = '20';
+          }
+        }
+      };
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          capValueDisplay(e);
+        }
+      });
+
+      input.addEventListener('change', capValueDisplay);
     });
 
     const absBtns = overlay.querySelectorAll('.mye-sim-abs-btn');
