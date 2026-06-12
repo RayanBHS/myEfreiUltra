@@ -25,7 +25,7 @@
         "*://auth.myefrei.fr/*"
       ],
       "css": ["login.css"],
-      "js": ["fonts.js", "login.js"],
+      "js": ["fonts.js", "login.js", "gamepad.js"],
       "run_at": "document_end"
     },
     {
@@ -76,7 +76,8 @@
         "rooms.js",
         "guest.js",
         "resources.js",
-        "contacts.js"
+        "contacts.js",
+        "gamepad.js"
       ],
       "run_at": "document_start"
     },
@@ -88,7 +89,7 @@
         "http://127.0.0.1/*",
         "http://127.0.0.1:*/*"
       ],
-      "js": ["sync-portal.js"],
+      "js": ["sync-portal.js", "gamepad.js"],
       "run_at": "document_start"
     }
   ],
