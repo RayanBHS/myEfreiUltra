@@ -281,7 +281,7 @@
 /* =========================================================
    NETTOYAGE GLOBAL DE LA PAGE (Masquer l'ancien site)
    ========================================================= */
-body.mye-clean-screen > *:not(#mye-custom-header-wrapper):not(.mye-page-container):not(#mye-pdf-overlay):not(#mye-simulator-overlay):not(#mye-resource-modal-overlay):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper):not(.MuiPopperUnstyled-root):not(.cdk-overlay-container):not(.mat-menu-panel) {
+body.mye-clean-screen > *:not(#mye-custom-header-wrapper):not(.mye-page-container):not(#mye-pdf-overlay):not(#mye-simulator-overlay):not(#mye-resource-modal-overlay):not(#mye-virtual-numpad):not(#mye-gamepad-toast):not(#mye-virtual-cursor):not(script):not(style):not(link):not(.MuiPopover-root):not(.MuiPopper-root):not(.MuiModal-root):not(#simple-popper-efrei):not(.MuiAutocomplete-popper):not(.MuiPopperUnstyled-root):not(.cdk-overlay-container):not(.mat-menu-panel) {
   visibility: hidden !important;
   position: absolute !important;
   width: 0 !important;
