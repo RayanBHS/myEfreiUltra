@@ -437,10 +437,29 @@
     let animationFrameId = null;
 
     // Show/hide toast notifications
-    function showToast() {
+    function updateToastVisibility() {
         initDOM();
         if (!toast) return;
-        toast.classList.add('show');
+        
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        let anyConnected = false;
+        for (let i = 0; i < gamepads.length; i++) {
+            if (gamepads[i]) {
+                anyConnected = true;
+                break;
+            }
+        }
+        
+        if (anyConnected && window.location.pathname.includes('/portal/student/home')) {
+            toast.classList.add('show');
+        } else {
+            toast.classList.remove('show');
+        }
+    }
+
+    // Show/hide toast notifications
+    function showToast() {
+        updateToastVisibility();
     }
 
     // List of selector strings that define navigable elements
@@ -1325,4 +1344,13 @@
             updateGamepad();
         }
     }, 1000);
+
+    // Watch for route changes (Angular SPA) to show/hide the toast dynamically
+    let myeGamepadLastUrl = window.location.href;
+    setInterval(() => {
+        if (myeGamepadLastUrl !== window.location.href) {
+            myeGamepadLastUrl = window.location.href;
+            updateToastVisibility();
+        }
+    }, 500);
 })();

@@ -35,5 +35,6 @@
     container.appendChild(backBtn);
     
     document.body.appendChild(container);
+    }
   });
 })();
