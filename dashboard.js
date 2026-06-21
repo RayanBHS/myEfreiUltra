@@ -641,9 +641,9 @@ async function openSlideModal(slideCode) {
 }
 
 function buildDashboardHTML() {
-    // Attempt to get name from header if possible
-    const firstName = document.getElementById('mye-first-name')?.textContent || 'Prénom';
-    const lastName = document.getElementById('mye-last-name')?.textContent || 'Nom';
+    // Attempt to get name from header or localStorage if possible
+    const firstName = document.getElementById('mye-first-name')?.textContent || localStorage.getItem('mye_user_first_name') || 'Prénom';
+    const lastName = document.getElementById('mye-last-name')?.textContent || localStorage.getItem('mye_user_last_name') || 'Nom';
     
     return `
         <div id="mye-custom-dashboard" data-mye-theme="${localStorage.getItem('mye-dash-theme') || 'navy'}">

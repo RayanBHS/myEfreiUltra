@@ -12,7 +12,11 @@
             'mye_user_darkmode', 
             'mye_user_enabled',
             'mye-planning-settings',
-            'mye-calendars-settings'
+            'mye-calendars-settings',
+            'mye_user_first_name',
+            'mye_user_last_name',
+            'mye_user_name',
+            'mye_user_avatar'
         ], (data) => {
             const isEnabled = data.mye_user_enabled !== false && data.mye_user_enabled !== 'false';
             const wasEnabled = localStorage.getItem('mye_user_enabled') !== 'false';
@@ -24,6 +28,19 @@
                 console.log('[MyEfrei ULTRA] Extension state changed from storage get, reloading page.');
                 window.location.reload();
                 return;
+            }
+
+            if (data.mye_user_first_name !== undefined && data.mye_user_first_name !== null) {
+                localStorage.setItem('mye_user_first_name', data.mye_user_first_name);
+            }
+            if (data.mye_user_last_name !== undefined && data.mye_user_last_name !== null) {
+                localStorage.setItem('mye_user_last_name', data.mye_user_last_name);
+            }
+            if (data.mye_user_name !== undefined && data.mye_user_name !== null) {
+                localStorage.setItem('mye_user_name', data.mye_user_name);
+            }
+            if (data.mye_user_avatar !== undefined && data.mye_user_avatar !== null) {
+                localStorage.setItem('mye_user_avatar', data.mye_user_avatar);
             }
 
             if (data['mye-planning-settings'] !== undefined && data['mye-planning-settings'] !== null) {
@@ -42,6 +59,13 @@
 
             if (!isEnabled) {
                 return;
+            }
+
+            if (data.mye_user_first_name && data.mye_user_last_name) {
+                updateCustomName(data.mye_user_first_name, data.mye_user_last_name);
+            }
+            if (data.mye_user_avatar) {
+                updateCustomAvatar(data.mye_user_avatar);
             }
 
             // Initialize theme
@@ -201,6 +225,10 @@ const TOUR_ASSAS_URL = chrome.runtime.getURL('img/tourAssas.png');
 // HEADER PERSONNALISÉ
 // ──────────────────────────────────────────────
 function getHeaderHTML() {
+    const savedFirstName = localStorage.getItem('mye_user_first_name') || 'Prénom';
+    const savedLastName = localStorage.getItem('mye_user_last_name') || 'Nom';
+    const savedFullName = localStorage.getItem('mye_user_name') || 'Prénom Nom';
+
     return `
     <div id="mye-custom-header">
       <div class="mye-header-left">
@@ -220,11 +248,16 @@ function getHeaderHTML() {
       <div class="mye-header-right">
         <!-- RECHERCHE : Juste l'icône loupe -->
         <div class="mye-icon-btn" id="mye-custom-search-btn"></div>
+        <a href="/portal/racywama/ai" class="mye-icon-btn" id="mye-custom-ai-btn" title="Assistant IA">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2 Q12,12 22,12 Q12,12 12,22 Q12,12 2,12 Q12,12 12,2 Z"/>
+          </svg>
+        </a>
         <div class="mye-icon-btn" id="mye-custom-notif-btn"></div>
         <div class="mye-profile-pill mye-has-dropdown" id="mye-profile-btn" data-target="mye-dropdown-profile">
           <div class="mye-profile-info">
-            <span class="mye-profile-first" id="mye-first-name">Prénom</span>
-            <span class="mye-profile-last" id="mye-last-name">Nom</span>
+            <span class="mye-profile-first" id="mye-first-name">${savedFirstName}</span>
+            <span class="mye-profile-last" id="mye-last-name">${savedLastName}</span>
           </div>
           <div class="mye-profile-avatar-container" id="mye-custom-avatar"></div>
         </div>
@@ -364,7 +397,7 @@ function getHeaderHTML() {
       <div class="mye-drawer-collapsible">
         <div class="mye-drawer-profile mye-drawer-trigger" id="mye-drawer-profile-btn">
           <div class="mye-drawer-avatar" id="mye-drawer-avatar"></div>
-          <span class="mye-drawer-name" id="mye-drawer-name">Prénom Nom</span>
+          <span class="mye-drawer-name" id="mye-drawer-name">${savedFullName}</span>
           <svg class="mye-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
         <div class="mye-drawer-submenu">
@@ -855,6 +888,9 @@ function initCustomHeaderEvents() {
             if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
                 chrome.storage.local.remove([
                     'mye_user_name',
+                    'mye_user_first_name',
+                    'mye_user_last_name',
+                    'mye_user_avatar',
                     'mye_user_class',
                     'mye_user_email',
                     'mye_user_average',
@@ -862,6 +898,15 @@ function initCustomHeaderEvents() {
                     'mye_user_retards'
                 ]);
             }
+            localStorage.removeItem('mye_user_name');
+            localStorage.removeItem('mye_user_first_name');
+            localStorage.removeItem('mye_user_last_name');
+            localStorage.removeItem('mye_user_avatar');
+            localStorage.removeItem('mye_user_class');
+            localStorage.removeItem('mye_user_email');
+            localStorage.removeItem('mye_user_average');
+            localStorage.removeItem('mye_user_absences');
+            localStorage.removeItem('mye_user_retards');
             triggerOriginalProfileClick();
             setTimeout(() => clickOriginalByText("Se déconnecter"), 100);
         });
@@ -885,6 +930,9 @@ function initCustomHeaderEvents() {
             if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
                 chrome.storage.local.remove([
                     'mye_user_name',
+                    'mye_user_first_name',
+                    'mye_user_last_name',
+                    'mye_user_avatar',
                     'mye_user_class',
                     'mye_user_email',
                     'mye_user_average',
@@ -892,6 +940,15 @@ function initCustomHeaderEvents() {
                     'mye_user_retards'
                 ]);
             }
+            localStorage.removeItem('mye_user_name');
+            localStorage.removeItem('mye_user_first_name');
+            localStorage.removeItem('mye_user_last_name');
+            localStorage.removeItem('mye_user_avatar');
+            localStorage.removeItem('mye_user_class');
+            localStorage.removeItem('mye_user_email');
+            localStorage.removeItem('mye_user_average');
+            localStorage.removeItem('mye_user_absences');
+            localStorage.removeItem('mye_user_retards');
             triggerOriginalProfileClick();
             setTimeout(() => clickOriginalByText("Se déconnecter"), 100);
         });
@@ -951,6 +1008,13 @@ function updateCustomAvatar(src) {
     const avatarContainer = document.getElementById('mye-custom-avatar');
     const drawerAvatar = document.getElementById('mye-drawer-avatar');
     let updated = false;
+
+    if (src) {
+        localStorage.setItem('mye_user_avatar', src);
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.set({ mye_user_avatar: src });
+        }
+    }
 
     if (avatarContainer && src) {
         const currentImg = avatarContainer.querySelector('img');
@@ -1024,14 +1088,21 @@ function updateCustomName(firstName, lastName) {
     }
 
     const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+    if (firstName) localStorage.setItem('mye_user_first_name', firstName);
+    if (lastName) localStorage.setItem('mye_user_last_name', lastName);
+    if (fullName) localStorage.setItem('mye_user_name', fullName);
+
     if (fullName) {
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
             const email = computeEfreiEmail(firstName || '', lastName || '');
             const dataToSave = {
-                mye_user_name: fullName
+                mye_user_name: fullName,
+                mye_user_first_name: firstName || '',
+                mye_user_last_name: lastName || ''
             };
             if (email) {
                 dataToSave.mye_user_email = email;
+                localStorage.setItem('mye_user_email', email);
             }
             chrome.storage.local.set(dataToSave);
         }
@@ -1143,11 +1214,17 @@ function extractOriginalAssets() {
     const searchContainer = document.getElementById('mye-custom-search-btn');
     if (searchContainer && searchContainer.innerHTML === '') searchContainer.innerHTML = fallbackSearchIcon;
 
+    const savedAvatar = localStorage.getItem('mye_user_avatar');
+    let avatarHTML = fallbackAvatar;
+    if (savedAvatar) {
+        avatarHTML = `<img src="${savedAvatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />`;
+    }
+
     const avatarContainer = document.getElementById('mye-custom-avatar');
-    if (avatarContainer && avatarContainer.innerHTML === '') avatarContainer.innerHTML = fallbackAvatar;
+    if (avatarContainer && avatarContainer.innerHTML === '') avatarContainer.innerHTML = avatarHTML;
 
     const drawerAvatar = document.getElementById('mye-drawer-avatar');
-    if (drawerAvatar && drawerAvatar.innerHTML === '') drawerAvatar.innerHTML = fallbackAvatar;
+    if (drawerAvatar && drawerAvatar.innerHTML === '') drawerAvatar.innerHTML = avatarHTML;
 
     startDOMScraping();
     injectMainWorldBridge();

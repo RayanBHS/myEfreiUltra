@@ -13,6 +13,9 @@
 
     const keys = [
         'mye_user_name',
+        'mye_user_first_name',
+        'mye_user_last_name',
+        'mye_user_avatar',
         'mye_user_class',
         'mye_user_email',
         'mye_user_average',

@@ -44,6 +44,8 @@ async function checkEfreiSession() {
         
         const savedData = {
             mye_user_name: fullName,
+            mye_user_first_name: firstName,
+            mye_user_last_name: lastName,
             mye_user_email: email
         };
 
@@ -128,6 +130,9 @@ async function checkEfreiSession() {
             // Clear Efrei data from storage as we are logged out/disconnected
             const keysToClear = [
                 'mye_user_name',
+                'mye_user_first_name',
+                'mye_user_last_name',
+                'mye_user_avatar',
                 'mye_user_class',
                 'mye_user_email',
                 'mye_user_average',

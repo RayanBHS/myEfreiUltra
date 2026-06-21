@@ -865,7 +865,7 @@
 
     // Get all navigation elements inside the header
     function getHeaderItems() {
-        const items = Array.from(document.querySelectorAll('.mye-nav-item, #mye-custom-search-btn, #mye-custom-notif-btn, #mye-profile-btn'));
+        const items = Array.from(document.querySelectorAll('.mye-nav-item, #mye-custom-search-btn, #mye-custom-ai-btn, #mye-custom-notif-btn, #mye-profile-btn'));
         return items.filter(isVisible).sort((a, b) => {
             return a.getBoundingClientRect().left - b.getBoundingClientRect().left;
         });
