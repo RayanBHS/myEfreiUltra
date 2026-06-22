@@ -1,17 +1,195 @@
-body.mye-restricted-rooms {
-  background: radial-gradient(circle at center, #1a0505 0%, #000000 100%);
+/* =============================================
+   MYEFREI ULTRA — Salles Disponibles
+   ============================================= */
+
+/* ── Layout principal ── */
+#mye-rooms-container {
+  display: flex;
+  gap: 25px;
+  padding: 90px 25px 25px 25px; /* 90px top pour laisser l'espace du header fixe */
+  min-height: 100vh;
+  box-sizing: border-box;
+  font-family: 'Alliance No.2', 'Segoe UI', system-ui, sans-serif;
+  width: 100%;
+}
+
+body.mye-rooms-page {
+  background-color: #F0F0F0 !important;
   margin: 0;
   padding: 0;
-  height: 100vh;
+}
+
+/* ── Panneau gauche ── */
+.mye-rooms-left {
+  position: sticky;
+  top: 90px;
+  width: 340px;
+  min-width: 340px;
+  height: calc(100vh - 110px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  min-height: 0;
+}
+
+/* ── Sélecteur de bâtiment ── */
+.mye-rooms-selector {
+  position: relative;
+  width: 100%;
+}
+
+.mye-rooms-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 24px;
+  border: 2px solid var(--mye-primary-color, #163767);
+  border-radius: 999px;
+  background-color: white;
+  color: var(--mye-primary-color, #163767);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.mye-rooms-btn:hover {
+  background-color: #f0f4f8;
+}
+
+.mye-rooms-btn .mye-rooms-arrow {
+  font-size: 14px;
+  transition: transform 0.2s;
+  margin-left: 10px;
+}
+
+.mye-rooms-btn.open .mye-rooms-arrow {
+  transform: rotate(180deg);
+}
+
+.mye-rooms-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 2px solid var(--mye-primary-color, #163767);
+  border-radius: 20px;
+  padding: 10px 0;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease-out;
+  z-index: 999;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.mye-rooms-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.mye-rooms-option {
+  display: block;
+  width: 100%;
+  padding: 12px 25px;
+  border: none;
+  background: none;
+  color: #666;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  box-sizing: border-box;
+}
+
+.mye-rooms-option:hover {
+  background-color: #f0f4f8;
+  color: var(--mye-primary-color, #163767);
+}
+
+.mye-rooms-option.active {
+  background-color: var(--mye-primary-color, #163767);
+  color: white;
+}
+
+/* ── Carte "En construction" ── */
+.mye-rooms-construction-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  border-radius: 20px;
+  padding: 40px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 10px;
+  gap: 15px;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.mye-rooms-construction-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111;
+  text-align: center;
+}
+
+.mye-rooms-construction-status {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--mye-primary-color, #163767);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mye-rooms-construction-subtext {
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+  max-width: 260px;
+  line-height: 1.4;
+}
+
+/* ── Panneau droit (Général) ── */
+.mye-rooms-right {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Inter', 'Roboto', sans-serif;
-  color: #ff3333;
+  background: radial-gradient(circle at center, #1a0505 0%, #000000 100%);
+  border-radius: 20px;
   overflow: hidden;
+  min-height: calc(100vh - 115px);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+  box-sizing: border-box;
+  position: relative;
 }
 
-.mye-restricted-container {
+.mye-rooms-right.aquarium-mode {
+  background: radial-gradient(circle at center, #0c102b 0%, #020208 100%);
+  border-color: rgba(0, 255, 255, 0.2);
+}
+
+/* ── Panneau droit (Scary Warning) ── */
+.mye-rooms-right .mye-restricted-container {
   text-align: center;
   padding: 40px;
   background: rgba(20, 0, 0, 0.7);
@@ -20,24 +198,28 @@ body.mye-restricted-rooms {
   border-radius: 12px;
   backdrop-filter: blur(10px);
   animation: pulse-border 2s infinite alternate;
+  max-width: 500px;
+  width: 80%;
+  color: #ff3333;
 }
 
-.mye-restricted-title {
-  font-size: 3rem;
+.mye-rooms-right .mye-restricted-title {
+  font-size: 2.2rem;
   font-weight: 900;
   margin: 0 0 20px 0;
   text-transform: uppercase;
   letter-spacing: 2px;
   text-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.3);
+  line-height: 1.2;
 }
 
-.mye-restricted-subtitle {
-  font-size: 1.2rem;
+.mye-rooms-right .mye-restricted-subtitle {
+  font-size: 1.1rem;
   color: #ff9999;
   margin-bottom: 30px;
 }
 
-.mye-restricted-back {
+.mye-rooms-right .mye-restricted-back {
   display: inline-block;
   padding: 12px 30px;
   background: transparent;
@@ -51,7 +233,7 @@ body.mye-restricted-rooms {
   letter-spacing: 1px;
 }
 
-.mye-restricted-back:hover {
+.mye-rooms-right .mye-restricted-back:hover {
   background: rgba(255, 0, 0, 0.1);
   box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
   transform: translateY(-2px);
@@ -60,4 +242,464 @@ body.mye-restricted-rooms {
 @keyframes pulse-border {
   0% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.1), inset 0 0 10px rgba(255, 0, 0, 0.05); }
   100% { box-shadow: 0 0 60px rgba(255, 0, 0, 0.3), inset 0 0 30px rgba(255, 0, 0, 0.1); }
+}
+
+/* ==========================================================================
+   INTERACTIVE 3D PLAN FOR L'AQUARIUM
+   ========================================================================== */
+
+/* Viewport 3D */
+.mye-rooms-3d-viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  perspective: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+  background-image: 
+    linear-gradient(rgba(0, 242, 254, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 242, 254, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center;
+  box-sizing: border-box;
+}
+
+/* Grille holographique additionnelle */
+.mye-rooms-3d-viewport::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: radial-gradient(ellipse at bottom, rgba(0, 242, 254, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Building Wrapper 3D */
+.mye-rooms-3d-building {
+  position: relative;
+  width: 320px;
+  height: 520px;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rotate-x, 60deg)) rotateY(0deg) rotateZ(var(--rotate-z, -45deg));
+  transition: transform 0.1s ease-out;
+}
+
+/* Couches des étages */
+.mye-rooms-floor-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s;
+}
+
+/* Positions initiales des étages */
+.mye-rooms-floor-layer.layer-rdc {
+  transform: translateZ(0px);
+  z-index: 1;
+}
+
+.mye-rooms-floor-layer.layer-r1 {
+  transform: translateZ(160px);
+  z-index: 2;
+}
+
+/* États isolés des étages (Focus) */
+.mye-rooms-3d-building.focus-rdc .layer-rdc {
+  transform: translateZ(0px);
+  opacity: 1;
+}
+.mye-rooms-3d-building.focus-rdc .layer-r1 {
+  transform: translateZ(300px);
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.mye-rooms-3d-building.focus-r1 .layer-rdc {
+  transform: translateZ(-200px);
+  opacity: 0.05;
+  pointer-events: none;
+}
+.mye-rooms-3d-building.focus-r1 .layer-r1 {
+  transform: translateZ(0px);
+  opacity: 1;
+}
+
+/* SVG Style */
+.mye-rooms-floor-layer svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.4));
+}
+
+/* Contour de la plaque du bâtiment */
+.mye-building-slab {
+  fill: rgba(10, 20, 50, 0.4);
+  stroke: rgba(0, 242, 254, 0.3);
+  stroke-width: 2px;
+  stroke-dasharray: 4 2;
+  transition: all 0.3s;
+}
+
+.mye-building-wall-lines {
+  stroke: rgba(0, 242, 254, 0.15);
+  stroke-width: 1px;
+  stroke-dasharray: 2 4;
+  fill: none;
+}
+
+/* Salles - Formes */
+.mye-room-shape {
+  fill-opacity: 0.25;
+  stroke-width: 1.5px;
+  cursor: pointer;
+  transition: fill-opacity 0.2s, stroke-width 0.2s, fill 0.2s, stroke 0.2s, filter 0.2s;
+}
+
+.mye-room-shape:hover {
+  fill-opacity: 0.65;
+  stroke-width: 2.5px;
+}
+
+/* Statuts des salles */
+.mye-room-shape.status-orange {
+  fill: #f59e0b;
+  stroke: #f59e0b;
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.6));
+}
+.mye-room-shape.status-green {
+  fill: #10b981;
+  stroke: #10b981;
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.6));
+}
+.mye-room-shape.status-red {
+  fill: #ef4444;
+  stroke: #ef4444;
+  filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.6));
+}
+
+/* Highlight de la recherche */
+@keyframes neon-pulse-orange {
+  0% { fill-opacity: 0.25; stroke-width: 1.5px; filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.6)); }
+  50% { fill-opacity: 0.85; stroke-width: 4px; filter: drop-shadow(0 0 20px #f59e0b); }
+  100% { fill-opacity: 0.25; stroke-width: 1.5px; filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.6)); }
+}
+.mye-room-shape.mye-room-highlighted {
+  animation: neon-pulse-orange 1.2s infinite alternate;
+}
+
+/* Textes dans l'SVG */
+.mye-room-text {
+  fill: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  letter-spacing: 0.5px;
+}
+
+.mye-floor-label {
+  fill: rgba(0, 242, 254, 0.6);
+  font-size: 14px;
+  font-weight: 900;
+  pointer-events: none;
+  letter-spacing: 2px;
+}
+
+.mye-map-decorations {
+  fill: rgba(255, 255, 255, 0.35);
+  font-size: 9px;
+  pointer-events: none;
+}
+
+/* ── Panel d'instructions & contrôles de l'étage ── */
+.mye-rooms-3d-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
+
+.mye-rooms-3d-btn-group {
+  display: flex;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+}
+
+.mye-rooms-3d-ctrl-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.mye-rooms-3d-ctrl-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mye-rooms-3d-ctrl-btn.active {
+  color: #020208;
+  background: #00f2fe;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+}
+
+/* Reset View button */
+.mye-rooms-reset-btn {
+  align-self: flex-start;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+}
+
+.mye-rooms-reset-btn:hover {
+  color: white;
+  border-color: rgba(0, 242, 254, 0.5);
+  box-shadow: 0 0 8px rgba(0, 242, 254, 0.2);
+}
+
+/* ── Barre de recherche de salle ── */
+.mye-rooms-search-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  border-radius: 12px;
+  padding: 2px 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  width: 220px;
+  box-sizing: border-box;
+}
+
+.mye-rooms-search-input {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 8px 4px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+}
+
+.mye-rooms-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.mye-rooms-search-icon {
+  color: rgba(0, 242, 254, 0.6);
+  font-size: 14px;
+  pointer-events: none;
+  margin-left: 4px;
+}
+
+/* ── Légende 3D ── */
+.mye-rooms-legend {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mye-rooms-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.mye-rooms-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.mye-rooms-legend-dot.orange { background-color: #f59e0b; box-shadow: 0 0 5px #f59e0b; }
+.mye-rooms-legend-dot.green { background-color: #10b981; box-shadow: 0 0 5px #10b981; }
+.mye-rooms-legend-dot.red { background-color: #ef4444; box-shadow: 0 0 5px #ef4444; }
+
+/* ── Tooltip des salles ── */
+.mye-room-tooltip {
+  position: absolute;
+  background: rgba(10, 15, 30, 0.95);
+  border: 1px solid #00f2fe;
+  box-shadow: 0 8px 25px rgba(0, 242, 254, 0.25);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 1000;
+  display: none; /* Affiché via JS */
+  backdrop-filter: blur(8px);
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.mye-room-tooltip-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #00f2fe;
+  border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+.mye-room-tooltip-status {
+  font-weight: 600;
+}
+
+.mye-room-tooltip-status.orange { color: #f59e0b; }
+.mye-room-tooltip-status.green { color: #10b981; }
+.mye-room-tooltip-status.red { color: #ef4444; }
+
+.mye-room-tooltip-action {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+/* Indication interactive de glissement (Drag Indicator) */
+.mye-rooms-drag-hint {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   OLED BLACK DARK MODE
+   ========================================================================== */
+
+body.dark-mode #mye-rooms-container {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-rooms-btn {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+body.dark-mode .mye-rooms-btn:hover {
+  background-color: #333333 !important;
+}
+
+body.dark-mode .mye-rooms-dropdown {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+}
+
+body.dark-mode .mye-rooms-option {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-rooms-option:hover,
+body.dark-mode .mye-rooms-option.active {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .mye-rooms-construction-card {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .mye-rooms-construction-title {
+  color: #aaaaaa !important;
+}
+
+body.dark-mode .mye-rooms-construction-status {
+  color: #3b82f6 !important; /* Blue for dark mode accent */
+}
+
+body.dark-mode .mye-rooms-construction-subtext {
+  color: #888888 !important;
+}
+
+/* ==========================================================================
+   RESPONSIVE (Mobile)
+   ========================================================================== */
+@media (max-width: 900px) {
+  #mye-rooms-container {
+    flex-direction: column;
+    padding: 110px 15px 15px 15px;
+  }
+
+  .mye-rooms-left {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    max-height: none;
+    align-items: stretch;
+  }
+
+  .mye-rooms-right {
+    min-height: 550px;
+    height: auto;
+    padding: 0;
+  }
+
+  .mye-rooms-legend {
+    top: auto;
+    bottom: 80px;
+    left: 20px;
+  }
 }
