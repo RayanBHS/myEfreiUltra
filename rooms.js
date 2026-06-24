@@ -148,13 +148,22 @@
         <!-- Recherche de salle -->
         <div class="mye-rooms-search-container">
           <input type="text" class="mye-rooms-search-input" id="mye-rooms-search-input" placeholder="Rechercher une salle (ex: K103)..." />
-          <span class="mye-rooms-search-icon">🔍</span>
+          <svg class="mye-rooms-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--mye-primary-color, #163767); margin-left: 4px; pointer-events: none; flex-shrink: 0;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
         </div>
 
         <!-- Contrôleurs d'étages et angle -->
         <div class="mye-rooms-3d-controls">
-          <button class="mye-rooms-reset-btn" id="mye-rooms-reset-btn">Réinitialiser la vue</button>
-          <div class="mye-rooms-3d-btn-group">
+          <div class="mye-rooms-3d-row">
+            <button class="mye-rooms-reset-btn" id="mye-rooms-reset-btn">Réinitialiser la vue</button>
+            <div class="mye-rooms-3d-zoom-group">
+              <button class="mye-rooms-zoom-btn" id="mye-btn-3d-zoom-in" title="Zoom +">+</button>
+              <button class="mye-rooms-zoom-btn" id="mye-btn-3d-zoom-out" title="Zoom -">−</button>
+            </div>
+          </div>
+          <div class="mye-rooms-3d-btn-group floor-switcher">
             <button class="mye-rooms-3d-ctrl-btn active" id="mye-btn-3d-stack">Vue 3D</button>
             <button class="mye-rooms-3d-ctrl-btn" id="mye-btn-3d-rdc">RDC</button>
             <button class="mye-rooms-3d-ctrl-btn" id="mye-btn-3d-r1">R+1</button>
@@ -180,72 +189,90 @@
           <!-- ================= ÉTAGE RDC ================= -->
           <div class="mye-rooms-floor-layer layer-rdc">
             <svg viewBox="0 0 400 700" width="100%" height="100%">
-              <!-- Plaque de sol -->
-              <polygon class="mye-building-slab" points="15,120 385,120 385,570 290,660 110,660 15,570" />
+              <!-- Plaque de sol (biseauté bottom-right/left) -->
+              <polygon class="mye-building-slab" points="20,120 380,120 380,550 300,660 110,660 20,570" />
               
               <!-- Escalier Nord (Haut Droite) -->
-              <path d="M 290,140 L 375,140 M 290,150 L 375,150 M 290,160 L 375,160 M 290,170 L 375,170" stroke="rgba(0, 242, 254, 0.4)" stroke-width="2" />
+              <path d="M 295,138 L 370,138 M 295,144 L 370,144 M 295,150 L 370,150 M 295,156 L 370,156 M 295,162 L 370,162 M 295,168 L 370,168 M 295,174 L 370,174 M 295,180 L 370,180" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5" />
               <!-- Escalier Sud-Ouest (Bas Gauche) -->
-              <path d="M 30,500 L 75,500 M 30,510 L 75,510 M 30,520 L 75,520 M 30,530 L 75,530" stroke="rgba(0, 242, 254, 0.4)" stroke-width="2" />
+              <path d="M 27,559 L 68,559 M 27,563 L 68,563 M 27,567 L 68,567 M 27,571 L 68,571 M 27,575 L 68,575 M 27,579 L 68,579 M 27,583 L 68,583 M 27,587 L 68,587" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5" />
               
               <!-- Salles Colonne Gauche -->
-              <rect class="mye-room-shape status-orange" data-room="K004" data-floor="RDC" x="25" y="130" width="80" height="75" rx="6" />
-              <text x="65" y="167" class="mye-room-text">K004</text>
+              <rect class="mye-room-shape status-orange" data-room="K004" data-floor="RDC" x="25" y="130" width="85" height="80" rx="6" />
+              <text x="67.5" y="170" class="mye-room-text">K004</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K003" data-floor="RDC" x="25" y="215" width="80" height="75" rx="6" />
-              <text x="65" y="252" class="mye-room-text">K003</text>
+              <rect class="mye-room-shape status-orange" data-room="K003" data-floor="RDC" x="25" y="215" width="85" height="80" rx="6" />
+              <text x="67.5" y="255" class="mye-room-text">K003</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K002" data-floor="RDC" x="25" y="300" width="80" height="75" rx="6" />
-              <text x="65" y="337" class="mye-room-text">K002</text>
+              <rect class="mye-room-shape status-orange" data-room="K002" data-floor="RDC" x="25" y="300" width="85" height="80" rx="6" />
+              <text x="67.5" y="340" class="mye-room-text">K002</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K001" data-floor="RDC" x="25" y="385" width="80" height="95" rx="6" />
-              <text x="65" y="432" class="mye-room-text">K001</text>
+              <rect class="mye-room-shape status-orange" data-room="K001 (Cafétéria)" data-floor="RDC" x="25" y="385" width="85" height="110" rx="6" />
+              <text x="67.5" y="432" class="mye-room-text" style="font-size: 8.5px;">Cafétéria</text>
+              <text x="67.5" y="445" class="mye-room-text" style="font-size: 8.5px;">K001</text>
               
               <!-- Salles Colonne Milieu -->
-              <rect class="mye-room-shape status-orange" data-room="K005" data-floor="RDC" x="115" y="130" width="105" height="55" rx="6" />
-              <text x="167" y="157" class="mye-room-text">K005</text>
+              <rect class="mye-room-shape status-orange" data-room="K005" data-floor="RDC" x="120" y="130" width="100" height="60" rx="6" />
+              <text x="170" y="160" class="mye-room-text">K005</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K013" data-floor="RDC" x="120" y="215" width="150" height="120" rx="6" />
-              <text x="195" y="275" class="mye-room-text">K013</text>
+              <rect class="mye-room-shape status-orange" data-room="KOT4" data-floor="RDC" x="225" y="130" width="45" height="35" rx="4" />
+              <text x="247.5" y="147.5" class="mye-room-text" style="font-size: 7px;">KOT4</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K012" data-floor="RDC" x="120" y="345" width="150" height="60" rx="6" />
-              <text x="195" y="375" class="mye-room-text">K012</text>
+              <rect class="mye-room-shape status-orange" data-room="K013" data-floor="RDC" x="145" y="210" width="110" height="120" rx="6" />
+              <text x="200" y="270" class="mye-room-text">K013</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K011" data-floor="RDC" x="120" y="415" width="150" height="135" rx="6" />
-              <text x="195" y="482" class="mye-room-text">K011</text>
+              <rect class="mye-room-shape status-orange" data-room="K012" data-floor="RDC" x="145" y="335" width="110" height="60" rx="6" />
+              <text x="200" y="365" class="mye-room-text">K012</text>
+              
+              <rect class="mye-room-shape status-orange" data-room="K011" data-floor="RDC" x="145" y="400" width="110" height="120" rx="6" />
+              <text x="200" y="460" class="mye-room-text">K011</text>
               
               <!-- Salles Colonne Droite -->
-              <rect class="mye-room-shape status-orange" data-room="K006" data-floor="RDC" x="290" y="200" width="85" height="75" rx="6" />
-              <text x="332" y="237" class="mye-room-text">K006</text>
+              <rect class="mye-room-shape status-orange" data-room="K006" data-floor="RDC" x="290" y="200" width="85" height="80" rx="6" />
+              <text x="332.5" y="240" class="mye-room-text">K006</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K007" data-floor="RDC" x="290" y="285" width="85" height="75" rx="6" />
-              <text x="332" y="322" class="mye-room-text">K007</text>
+              <rect class="mye-room-shape status-orange" data-room="K007" data-floor="RDC" x="290" y="285" width="85" height="80" rx="6" />
+              <text x="332.5" y="325" class="mye-room-text">K007</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K008" data-floor="RDC" x="290" y="370" width="85" height="75" rx="6" />
-              <text x="332" y="407" class="mye-room-text">K008</text>
+              <rect class="mye-room-shape status-orange" data-room="K008" data-floor="RDC" x="290" y="370" width="85" height="80" rx="6" />
+              <text x="332.5" y="410" class="mye-room-text">K008</text>
               
-              <!-- Blocs W.C & Accueil & Gardien -->
-              <rect class="mye-room-shape status-orange" data-room="Sanitaires H" data-floor="RDC" x="290" y="465" width="85" height="55" rx="6" />
-              <text x="332" y="492" class="mye-room-text">WC 🚹</text>
+              <!-- Blocs W.C (Bas Droite, à côté de K011) -->
+              <rect class="mye-room-shape status-orange" data-room="WC Hommes" data-floor="RDC" x="290" y="460" width="85" height="40" rx="6" />
+              <text x="332.5" y="480" class="mye-room-text">WC 🚹</text>
               
-              <rect class="mye-room-shape status-orange" data-room="Sanitaires F" data-floor="RDC" x="290" y="530" width="85" height="55" rx="6" />
-              <text x="332" y="557" class="mye-room-text">WC 🚺</text>
+              <rect class="mye-room-shape status-orange" data-room="WC Femmes" data-floor="RDC" x="290" y="505" width="85" height="40" rx="6" />
+              <text x="332.5" y="525" class="mye-room-text">WC 🚺</text>
               
-              <circle class="mye-room-shape status-orange" data-room="ACCUEIL" data-floor="RDC" cx="200" cy="590" r="32" />
-              <text x="200" y="590" class="mye-room-text" style="font-size: 8px;">ACCUEIL</text>
+              <!-- Slanted Bottom Section -->
+              <!-- KOTs à gauche de l'accueil -->
+              <rect class="mye-room-shape status-orange" data-room="KOT3" data-floor="RDC" x="75" y="550" width="40" height="30" rx="4" />
+              <text x="95" y="565" class="mye-room-text" style="font-size: 7px;">KOT3</text>
               
-              <rect class="mye-room-shape status-orange" data-room="GARDIEN" data-floor="RDC" x="290" y="595" width="85" height="50" rx="6" />
-              <text x="332" y="620" class="mye-room-text" style="font-size: 9px;">GARDIEN</text>
+              <rect class="mye-room-shape status-orange" data-room="KOT2" data-floor="RDC" x="90" y="585" width="40" height="30" rx="4" />
+              <text x="110" y="600" class="mye-room-text" style="font-size: 7px;">KOT2</text>
               
-              <rect class="mye-room-shape status-orange" data-room="KOT4" data-floor="RDC" x="225" y="130" width="45" height="30" rx="4" />
-              <text x="247" y="145" class="mye-room-text" style="font-size: 8px;">KOT4</text>
+              <rect class="mye-room-shape status-orange" data-room="KOT1 (Repro)" data-floor="RDC" x="105" y="620" width="45" height="30" rx="4" />
+              <text x="127.5" y="631" class="mye-room-text" style="font-size: 6px;">KOT1</text>
+              <text x="127.5" y="639" class="mye-room-text" style="font-size: 5.5px;">REPRO</text>
+              
+              <!-- Accueil (Cercle central) -->
+              <circle class="mye-room-shape status-orange" data-room="ACCUEIL" data-floor="RDC" cx="200" cy="580" r="30" />
+              <text x="200" y="580" class="mye-room-text" style="font-size: 8px;">ACCUEIL</text>
+              
+              <!-- Gardien & KOT5 à droite de l'accueil -->
+              <rect class="mye-room-shape status-orange" data-room="GARDIEN" data-floor="RDC" x="250" y="585" width="50" height="40" rx="6" />
+              <text x="275" y="605" class="mye-room-text" style="font-size: 8px;">GARDIEN</text>
+              
+              <rect class="mye-room-shape status-orange" data-room="KOT5" data-floor="RDC" x="305" y="570" width="45" height="35" rx="4" />
+              <text x="327.5" y="587.5" class="mye-room-text" style="font-size: 7px;">KOT5</text>
               
               <!-- Ascenseur -->
-              <rect x="25" y="555" width="55" height="35" rx="4" fill="rgba(10,20,50,0.6)" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5" />
-              <text x="52" y="572" class="mye-room-text" style="font-size: 8px; fill:#00f2fe;">ASC ↕️</text>
+              <rect x="25" y="505" width="45" height="40" rx="4" fill="rgba(10,20,50,0.6)" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5" />
+              <text x="47.5" y="525" class="mye-room-text" style="font-size: 8px; fill:#00f2fe;">ASC ↕️</text>
               
               <!-- Textes de décors -->
-              <text x="200" y="660" class="mye-map-decorations" text-anchor="middle">ENTRÉE PRINCIPALE</text>
+              <text x="200" y="675" class="mye-map-decorations" text-anchor="middle">ENTRÉE PRINCIPALE</text>
               <text x="35" y="115" class="mye-floor-label">RDC</text>
             </svg>
           </div>
@@ -253,91 +280,107 @@
           <!-- ================= ÉTAGE R+1 ================= -->
           <div class="mye-rooms-floor-layer layer-r1">
             <svg viewBox="0 0 400 700" width="100%" height="100%">
-              <!-- Plaque de sol -->
-              <polygon class="mye-building-slab" points="15,120 385,120 385,570 290,660 110,660 15,570" />
+              <!-- Plaque de sol (biseauté bottom-right/left) -->
+              <polygon class="mye-building-slab" points="20,120 380,120 380,550 300,660 110,660 20,570" />
               
               <!-- Escalier Nord (Haut Droite) -->
-              <path d="M 290,140 L 375,140 M 290,150 L 375,150 M 290,160 L 375,160 M 290,170 L 375,170" stroke="rgba(0, 242, 254, 0.4)" stroke-width="2" />
+              <path d="M 295,138 L 370,138 M 295,144 L 370,144 M 295,150 L 370,150 M 295,156 L 370,156 M 295,162 L 370,162 M 295,168 L 370,168 M 295,174 L 370,174 M 295,180 L 370,180" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5" />
               <!-- Escalier Sud-Ouest (Bas Gauche) -->
-              <path d="M 30,540 L 75,540 M 30,550 L 75,550 M 30,560 L 75,560" stroke="rgba(0, 242, 254, 0.4)" stroke-width="2" />
+              <path d="M 27,559 L 68,559 M 27,563 L 68,563 M 27,567 L 68,567 M 27,571 L 68,571 M 27,575 L 68,575 M 27,579 L 68,579 M 27,583 L 68,583 M 27,587 L 68,587" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5" />
               
               <!-- Salles Colonne Gauche -->
-              <rect class="mye-room-shape status-orange" data-room="K103" data-floor="R+1" x="25" y="130" width="100" height="120" rx="6" />
-              <text x="75" y="190" class="mye-room-text">K103</text>
+              <rect class="mye-room-shape status-orange" data-room="K103" data-floor="R+1" x="25" y="130" width="85" height="120" rx="6" />
+              <text x="67.5" y="190" class="mye-room-text">K103</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K102" data-floor="R+1" x="25" y="260" width="100" height="125" rx="6" />
-              <text x="75" y="322" class="mye-room-text">K102</text>
+              <rect class="mye-room-shape status-orange" data-room="K102" data-floor="R+1" x="25" y="255" width="85" height="125" rx="6" />
+              <text x="67.5" y="317.5" class="mye-room-text">K102</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K101" data-floor="R+1" x="25" y="395" width="100" height="130" rx="6" />
-              <text x="75" y="460" class="mye-room-text">K101</text>
+              <rect class="mye-room-shape status-orange" data-room="K101" data-floor="R+1" x="25" y="385" width="85" height="120" rx="6" />
+              <text x="67.5" y="445" class="mye-room-text">K101</text>
               
               <!-- Salles Colonne Milieu (Rallongée) -->
-              <rect class="mye-room-shape status-orange" data-room="K121" data-floor="R+1" x="175" y="145" width="70" height="40" rx="4" />
-              <text x="210" y="165" class="mye-room-text">K121</text>
-
-              <rect class="mye-room-shape status-orange" data-room="K120" data-floor="R+1" x="175" y="195" width="70" height="40" rx="4" />
-              <text x="210" y="215" class="mye-room-text">K120</text>
+              <rect class="mye-room-shape status-orange" data-room="K1T2" data-floor="R+1" x="145" y="130" width="55" height="35" rx="4" />
+              <text x="172.5" y="147.5" class="mye-room-text" style="font-size: 7px;">K1T2</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K119" data-floor="R+1" x="175" y="245" width="70" height="40" rx="4" />
-              <text x="210" y="265" class="mye-room-text">K119</text>
+              <rect class="mye-room-shape status-orange" data-room="K121" data-floor="R+1" x="145" y="170" width="110" height="40" rx="4" />
+              <text x="200" y="190" class="mye-room-text">K121</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K118" data-floor="R+1" x="175" y="295" width="70" height="40" rx="4" />
-              <text x="210" y="315" class="mye-room-text">K118</text>
+              <rect class="mye-room-shape status-orange" data-room="K120" data-floor="R+1" x="145" y="215" width="110" height="40" rx="4" />
+              <text x="200" y="235" class="mye-room-text">K120</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K117" data-floor="R+1" x="175" y="345" width="70" height="30" rx="4" />
-              <text x="210" y="360" class="mye-room-text">K117</text>
+              <rect class="mye-room-shape status-orange" data-room="K119" data-floor="R+1" x="145" y="260" width="110" height="40" rx="4" />
+              <text x="200" y="280" class="mye-room-text">K119</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K116" data-floor="R+1" x="175" y="380" width="70" height="25" rx="4" />
-              <text x="210" y="392" class="mye-room-text">K116</text>
+              <rect class="mye-room-shape status-orange" data-room="K118" data-floor="R+1" x="145" y="305" width="110" height="40" rx="4" />
+              <text x="200" y="325" class="mye-room-text">K118</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K114" data-floor="R+1" x="175" y="415" width="32" height="25" rx="4" />
-              <text x="191" y="427" class="mye-room-text" style="font-size:7px;">K114</text>
+              <rect class="mye-room-shape status-orange" data-room="K117" data-floor="R+1" x="145" y="350" width="110" height="40" rx="4" />
+              <text x="200" y="370" class="mye-room-text">K117</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K115" data-floor="R+1" x="212" y="415" width="32" height="25" rx="4" />
-              <text x="228" y="427" class="mye-room-text" style="font-size:7px;">K115</text>
+              <rect class="mye-room-shape status-orange" data-room="K116" data-floor="R+1" x="145" y="395" width="110" height="30" rx="4" />
+              <text x="200" y="410" class="mye-room-text">K116</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K112" data-floor="R+1" x="175" y="450" width="70" height="70" rx="6" />
-              <text x="210" y="485" class="mye-room-text">K112</text>
+              <rect class="mye-room-shape status-orange" data-room="K114" data-floor="R+1" x="145" y="430" width="52" height="30" rx="4" />
+              <text x="171" y="445" class="mye-room-text" style="font-size: 7px;">K114</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K111" data-floor="R+1" x="175" y="530" width="32" height="25" rx="4" />
-              <text x="191" y="542" class="mye-room-text" style="font-size:7px;">K111</text>
+              <rect class="mye-room-shape status-orange" data-room="K115" data-floor="R+1" x="203" y="430" width="52" height="30" rx="4" />
+              <text x="229" y="445" class="mye-room-text" style="font-size: 7px;">K115</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K112" data-floor="R+1" x="212" y="530" width="32" height="25" rx="4" />
-              <text x="228" y="542" class="mye-room-text" style="font-size:7px;">K112</text>
+              <rect class="mye-room-shape status-orange" data-room="K112" data-floor="R+1" x="145" y="465" width="110" height="70" rx="6" />
+              <text x="200" y="500" class="mye-room-text">K112</text>
+              
+              <rect class="mye-room-shape status-orange" data-room="K111" data-floor="R+1" x="145" y="540" width="52" height="30" rx="4" />
+              <text x="171" y="555" class="mye-room-text" style="font-size: 7px;">K111</text>
+              
+              <rect class="mye-room-shape status-orange" data-room="K112" data-floor="R+1" x="203" y="540" width="52" height="30" rx="4" />
+              <text x="229" y="555" class="mye-room-text" style="font-size: 7px;">K112</text>
               
               <!-- Salles Colonne Droite -->
-              <rect class="mye-room-shape status-orange" data-room="K104" data-floor="R+1" x="290" y="125" width="85" height="75" rx="6" />
-              <text x="332" y="162" class="mye-room-text">K104</text>
+              <rect class="mye-room-shape status-orange" data-room="K104" data-floor="R+1" x="290" y="200" width="85" height="80" rx="6" />
+              <text x="332.5" y="240" class="mye-room-text">K104</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K105" data-floor="R+1" x="290" y="210" width="85" height="60" rx="6" />
-              <text x="332" y="240" class="mye-room-text">K105</text>
+              <rect class="mye-room-shape status-orange" data-room="K105" data-floor="R+1" x="290" y="285" width="85" height="60" rx="6" />
+              <text x="332.5" y="315" class="mye-room-text">K105</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K106" data-floor="R+1" x="290" y="280" width="85" height="60" rx="6" />
-              <text x="332" y="310" class="mye-room-text">K106</text>
+              <rect class="mye-room-shape status-orange" data-room="K106" data-floor="R+1" x="290" y="350" width="85" height="60" rx="6" />
+              <text x="332.5" y="380" class="mye-room-text">K106</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K107" data-floor="R+1" x="290" y="350" width="85" height="55" rx="6" />
-              <text x="332" y="377" class="mye-room-text">K107</text>
+              <rect class="mye-room-shape status-orange" data-room="K107" data-floor="R+1" x="290" y="415" width="85" height="55" rx="6" />
+              <text x="332.5" y="442.5" class="mye-room-text">K107</text>
               
-              <!-- Sanitaires R+1 -->
-              <rect class="mye-room-shape status-orange" data-room="Sanitaires R+1 H" data-floor="R+1" x="290" y="415" width="85" height="50" rx="6" />
-              <text x="332" y="440" class="mye-room-text">WC 🚹</text>
+              <!-- Sanitaires R+1 (Même emplacement qu'au RDC) -->
+              <rect class="mye-room-shape status-orange" data-room="WC Hommes" data-floor="R+1" x="290" y="475" width="85" height="40" rx="6" />
+              <text x="332.5" y="495" class="mye-room-text">WC 🚹</text>
               
-              <rect class="mye-room-shape status-orange" data-room="Sanitaires R+1 F" data-floor="R+1" x="290" y="475" width="85" height="50" rx="6" />
-              <text x="332" y="500" class="mye-room-text">WC 🚺</text>
+              <rect class="mye-room-shape status-orange" data-room="WC Femmes" data-floor="R+1" x="290" y="520" width="85" height="40" rx="6" />
+              <text x="332.5" y="540" class="mye-room-text">WC 🚺</text>
               
-              <!-- Bureaux Slant Bas -->
-              <rect class="mye-room-shape status-orange" data-room="K110" data-floor="R+1" x="25" y="560" width="80" height="45" rx="6" />
-              <text x="65" y="582" class="mye-room-text">K110</text>
+              <!-- Slanted Bottom Section -->
+              <!-- Bureaux & Salles techniques R+1 -->
+              <rect class="mye-room-shape status-orange" data-room="K110" data-floor="R+1" x="75" y="560" width="40" height="35" rx="6" />
+              <text x="95" y="577.5" class="mye-room-text">K110</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K109" data-floor="R+1" x="115" y="585" width="130" height="65" rx="6" />
-              <text x="180" y="617" class="mye-room-text" style="font-size: 9px;">BUREAU K109</text>
+              <rect class="mye-room-shape status-orange" data-room="K109" data-floor="R+1" x="120" y="590" width="115" height="55" rx="6" />
+              <text x="177.5" y="613" class="mye-room-text" style="font-size: 8px;">BUREAU</text>
+              <text x="177.5" y="623" class="mye-room-text" style="font-size: 8px;">K109</text>
               
-              <rect class="mye-room-shape status-orange" data-room="K108" data-floor="R+1" x="255" y="595" width="120" height="55" rx="6" />
-              <text x="315" y="622" class="mye-room-text" style="font-size: 9px;">BUREAU K108</text>
+              <rect class="mye-room-shape status-orange" data-room="K108" data-floor="R+1" x="240" y="595" width="70" height="50" rx="6" />
+              <text x="275" y="615" class="mye-room-text" style="font-size: 8px;">BUREAU</text>
+              <text x="275" y="625" class="mye-room-text" style="font-size: 8px;">K108</text>
+              
+              <!-- Salles K1Tx en bas à droite -->
+              <rect class="mye-room-shape status-orange" data-room="K1T3" data-floor="R+1" x="285" y="565" width="35" height="25" rx="4" />
+              <text x="302.5" y="577.5" class="mye-room-text" style="font-size: 6.5px;">K1T3</text>
+              
+              <rect class="mye-room-shape status-orange" data-room="K1T4" data-floor="R+1" x="325" y="565" width="35" height="25" rx="4" />
+              <text x="342.5" y="577.5" class="mye-room-text" style="font-size: 6.5px;">K1T4</text>
+              
+              <rect class="mye-room-shape status-orange" data-room="K1T5" data-floor="R+1" x="315" y="595" width="50" height="45" rx="4" />
+              <text x="340" y="617.5" class="mye-room-text" style="font-size: 7.5px;">K1T5</text>
               
               <!-- Ascenseur -->
-              <rect x="25" y="555" width="55" height="35" rx="4" fill="rgba(10,20,50,0.6)" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5" />
-              <text x="52" y="572" class="mye-room-text" style="font-size: 8px; fill:#00f2fe;">ASC ↕️</text>
+              <rect x="25" y="510" width="45" height="40" rx="4" fill="rgba(10,20,50,0.6)" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5" />
+              <text x="47.5" y="530" class="mye-room-text" style="font-size: 8px; fill:#00f2fe;">ASC ↕️</text>
               
               <text x="35" y="115" class="mye-floor-label">R+1</text>
             </svg>
@@ -360,11 +403,14 @@
     
     if (!viewport || !building) return;
 
-    // 1. Logique de drag rotation
+    // 1. Logique de drag rotation & zoom
     let rotateX = 60;
     let rotateZ = -45;
+    let zoom = 1.0;
     let isDragging = false;
     let startX, startY;
+    let initialTouchDist = null;
+    let initialZoom = 1.0;
 
     viewport.addEventListener('mousedown', (e) => {
       if (e.target.closest('.mye-rooms-3d-controls') || e.target.closest('.mye-rooms-search-container') || e.target.closest('.mye-room-shape')) {
@@ -398,7 +444,15 @@
       }
     });
 
-    // Touch Support
+    // Zoom via molette de la souris
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 0.05 : -0.05;
+      zoom = Math.max(0.4, Math.min(3.0, zoom + zoomFactor));
+      building.style.setProperty('--zoom', zoom);
+    }, { passive: false });
+
+    // Touch Support (Drag & Pinch-to-zoom)
     viewport.addEventListener('touchstart', (e) => {
       if (e.target.closest('.mye-rooms-3d-controls') || e.target.closest('.mye-rooms-search-container') || e.target.closest('.mye-room-shape')) {
         return;
@@ -407,33 +461,55 @@
         isDragging = true;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        initialTouchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialZoom = zoom;
       }
     });
 
     document.addEventListener('touchmove', (e) => {
-      if (!isDragging || e.touches.length !== 1) return;
-      const dx = e.touches[0].clientX - startX;
-      const dy = e.touches[0].clientY - startY;
+      if (e.touches.length === 2 && initialTouchDist !== null) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = dist / initialTouchDist;
+        zoom = Math.max(0.4, Math.min(3.0, initialZoom * factor));
+        building.style.setProperty('--zoom', zoom);
+      } else if (isDragging && e.touches.length === 1) {
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
 
-      rotateZ += dx * 0.5;
-      rotateX = Math.max(30, Math.min(85, rotateX - dy * 0.5));
+        rotateZ += dx * 0.5;
+        rotateX = Math.max(30, Math.min(85, rotateX - dy * 0.5));
 
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
 
-      building.style.setProperty('--rotate-x', `${rotateX}deg`);
-      building.style.setProperty('--rotate-z', `${rotateZ}deg`);
-    });
+        building.style.setProperty('--rotate-x', `${rotateX}deg`);
+        building.style.setProperty('--rotate-z', `${rotateZ}deg`);
+      }
+    }, { passive: false });
 
-    document.addEventListener('touchend', () => {
+    document.addEventListener('touchend', (e) => {
       isDragging = false;
+      if (e.touches.length < 2) {
+        initialTouchDist = null;
+      }
     });
 
-    // 2. Contrôles d'étage
+    // 2. Contrôles d'étage et zoom boutons
     const btnStack = document.getElementById('mye-btn-3d-stack');
     const btnRdc = document.getElementById('mye-btn-3d-rdc');
     const btnR1 = document.getElementById('mye-btn-3d-r1');
     const btnReset = document.getElementById('mye-rooms-reset-btn');
+    const btnZoomIn = document.getElementById('mye-btn-3d-zoom-in');
+    const btnZoomOut = document.getElementById('mye-btn-3d-zoom-out');
 
     const updateActiveBtn = (activeBtn) => {
       [btnStack, btnRdc, btnR1].forEach(b => b.classList.remove('active'));
@@ -461,12 +537,30 @@
       });
     }
 
+    if (btnZoomIn) {
+      btnZoomIn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        zoom = Math.min(3.0, zoom + 0.15);
+        building.style.setProperty('--zoom', zoom);
+      });
+    }
+
+    if (btnZoomOut) {
+      btnZoomOut.addEventListener('click', (e) => {
+        e.stopPropagation();
+        zoom = Math.max(0.4, zoom - 0.15);
+        building.style.setProperty('--zoom', zoom);
+      });
+    }
+
     if (btnReset) {
       btnReset.addEventListener('click', () => {
         rotateX = 60;
         rotateZ = -45;
+        zoom = 1.0;
         building.style.setProperty('--rotate-x', '60deg');
         building.style.setProperty('--rotate-z', '-45deg');
+        building.style.setProperty('--zoom', '1');
       });
     }
 
@@ -538,6 +632,11 @@
     if (searchInput) {
       searchInput.addEventListener('input', () => {
         const query = searchInput.value.trim().toUpperCase();
+        if (query) {
+          building.classList.add('searching');
+        } else {
+          building.classList.remove('searching');
+        }
         shapes.forEach(shape => {
           const roomName = shape.getAttribute('data-room').toUpperCase();
           if (query && roomName.includes(query)) {

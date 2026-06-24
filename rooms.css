@@ -287,7 +287,7 @@ body.mye-rooms-page {
   width: 320px;
   height: 520px;
   transform-style: preserve-3d;
-  transform: rotateX(var(--rotate-x, 60deg)) rotateY(0deg) rotateZ(var(--rotate-z, -45deg));
+  transform: scale(var(--zoom, 1)) rotateX(var(--rotate-x, 60deg)) rotateY(0deg) rotateZ(var(--rotate-z, -45deg));
   transition: transform 0.1s ease-out;
 }
 
@@ -430,26 +430,53 @@ body.mye-rooms-page {
   left: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   z-index: 10;
+}
+
+.mye-rooms-3d-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .mye-rooms-3d-btn-group {
   display: flex;
-  background: rgba(10, 15, 30, 0.85);
-  border: 1px solid rgba(0, 242, 254, 0.3);
-  border-radius: 12px;
-  padding: 4px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 3px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   backdrop-filter: blur(8px);
+  align-items: center;
+}
+
+body.dark-mode .mye-rooms-3d-btn-group {
+  background: rgba(26, 26, 26, 0.9);
+  border-color: #333333;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.mye-rooms-3d-btn-group.floor-switcher {
+  background: #e3e4e6; /* D.A. light track */
+  border: none;
+  padding: 4px;
+  gap: 2px;
+  width: 240px; /* Non-stretched width */
+  box-sizing: border-box;
+}
+
+body.dark-mode .mye-rooms-3d-btn-group.floor-switcher {
+  background: #1c1c1e; /* D.A. dark track */
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .mye-rooms-3d-ctrl-btn {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: #475569;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -457,36 +484,133 @@ body.mye-rooms-page {
   font-family: inherit;
 }
 
+.mye-rooms-3d-btn-group.floor-switcher .mye-rooms-3d-ctrl-btn {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  color: #48484a; /* D.A. label color */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .mye-rooms-3d-ctrl-btn:hover {
+  color: var(--mye-primary-color, #163767);
+  background: rgba(22, 55, 103, 0.05);
+}
+
+.mye-rooms-3d-btn-group.floor-switcher .mye-rooms-3d-ctrl-btn:hover {
+  color: #000000;
+  background: transparent;
+}
+
+body.dark-mode .mye-rooms-3d-ctrl-btn {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .mye-rooms-3d-btn-group.floor-switcher .mye-rooms-3d-ctrl-btn {
+  color: #98989f;
+}
+
+body.dark-mode .mye-rooms-3d-ctrl-btn:hover {
   color: white;
   background: rgba(255, 255, 255, 0.05);
 }
 
+body.dark-mode .mye-rooms-3d-btn-group.floor-switcher .mye-rooms-3d-ctrl-btn:hover {
+  color: #ffffff;
+  background: transparent;
+}
+
 .mye-rooms-3d-ctrl-btn.active {
-  color: #020208;
-  background: #00f2fe;
+  color: white !important;
+  background: #ff3385 !important;
   font-weight: 700;
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+  box-shadow: 0 0 12px rgba(255, 51, 133, 0.5) !important;
+}
+
+.mye-rooms-3d-btn-group.floor-switcher .mye-rooms-3d-ctrl-btn.active {
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.dark-mode .mye-rooms-3d-btn-group.floor-switcher .mye-rooms-3d-ctrl-btn.active {
+  background: #3a3a3c !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Zoom Group & Zoom Circle Buttons */
+.mye-rooms-3d-zoom-group {
+  display: flex;
+  gap: 8px;
+}
+
+.mye-rooms-zoom-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  outline: none;
+}
+
+.mye-rooms-zoom-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+body.dark-mode .mye-rooms-zoom-btn {
+  background: #1a1a1a;
+  border-color: #333333;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+body.dark-mode .mye-rooms-zoom-btn:hover {
+  background: #333333;
 }
 
 /* Reset View button */
 .mye-rooms-reset-btn {
   align-self: flex-start;
-  background: rgba(10, 15, 30, 0.85);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 8px 12px;
-  font-size: 12px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  color: #475569;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  backdrop-filter: blur(8px);
   transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
 .mye-rooms-reset-btn:hover {
-  color: white;
-  border-color: rgba(0, 242, 254, 0.5);
-  box-shadow: 0 0 8px rgba(0, 242, 254, 0.2);
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+body.dark-mode .mye-rooms-reset-btn {
+  background: #1a1a1a !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+body.dark-mode .mye-rooms-reset-btn:hover {
+  background: #333333 !important;
+  color: #ffffff !important;
 }
 
 /* ── Barre de recherche de salle ── */
@@ -497,20 +621,26 @@ body.mye-rooms-page {
   z-index: 10;
   display: flex;
   align-items: center;
-  background: rgba(10, 15, 30, 0.85);
-  border: 1px solid rgba(0, 242, 254, 0.3);
-  border-radius: 12px;
-  padding: 2px 10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 2px 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   backdrop-filter: blur(8px);
-  width: 220px;
+  width: 240px;
   box-sizing: border-box;
+}
+
+body.dark-mode .mye-rooms-search-container {
+  background: rgba(26, 26, 26, 0.9);
+  border-color: #333333;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
 }
 
 .mye-rooms-search-input {
   background: transparent;
   border: none;
-  color: white;
+  color: #1d1d1f;
   padding: 8px 4px;
   font-size: 13px;
   font-family: inherit;
@@ -518,15 +648,27 @@ body.mye-rooms-page {
   width: 100%;
 }
 
+body.dark-mode .mye-rooms-search-input {
+  color: white;
+}
+
 .mye-rooms-search-input::placeholder {
+  color: #8e8e93;
+}
+
+body.dark-mode .mye-rooms-search-input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
 
 .mye-rooms-search-icon {
-  color: rgba(0, 242, 254, 0.6);
+  color: var(--mye-primary-color, #163767);
   font-size: 14px;
   pointer-events: none;
   margin-left: 4px;
+}
+
+body.dark-mode .mye-rooms-search-icon {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* ── Légende 3D ── */
@@ -535,24 +677,34 @@ body.mye-rooms-page {
   top: 20px;
   left: 20px;
   z-index: 10;
-  background: rgba(10, 15, 30, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+body.dark-mode .mye-rooms-legend {
+  background: rgba(26, 26, 26, 0.9);
+  border-color: #333333;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
 .mye-rooms-legend-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  color: #475569;
   font-weight: 500;
+}
+
+body.dark-mode .mye-rooms-legend-item {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .mye-rooms-legend-dot {
@@ -568,13 +720,13 @@ body.mye-rooms-page {
 /* ── Tooltip des salles ── */
 .mye-room-tooltip {
   position: absolute;
-  background: rgba(10, 15, 30, 0.95);
-  border: 1px solid #00f2fe;
-  box-shadow: 0 8px 25px rgba(0, 242, 254, 0.25);
-  color: white;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid var(--mye-primary-color, #163767);
+  box-shadow: 0 8px 25px rgba(22, 55, 103, 0.15);
+  color: #1d1d1f;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
   pointer-events: none;
   z-index: 1000;
   display: none; /* Affiché via JS */
@@ -702,4 +854,23 @@ body.dark-mode .mye-rooms-construction-subtext {
     bottom: 80px;
     left: 20px;
   }
+}
+
+/* ==========================================================================
+   RECHERCHE - EFFET DE REPLI (GREY OUT)
+   ========================================================================== */
+
+/* Griser et atténuer toutes les salles qui ne correspondent pas à la recherche active */
+.mye-rooms-3d-building.searching .mye-room-shape:not(.mye-room-highlighted) {
+  fill: #374151 !important;
+  stroke: #4b5563 !important;
+  fill-opacity: 0.08 !important;
+  opacity: 0.2 !important;
+  filter: none !important; /* Enlever l'effet de lueur néon pour les salles grisées */
+}
+
+/* Atténuer également les étiquettes de texte des salles non correspondantes */
+.mye-rooms-3d-building.searching rect.mye-room-shape:not(.mye-room-highlighted) + text,
+.mye-rooms-3d-building.searching circle.mye-room-shape:not(.mye-room-highlighted) + text {
+  opacity: 0.15 !important;
 }
