@@ -1508,29 +1508,118 @@ function isCustomPage(path) {
 }
 
 let lastUrl = window.location.href;
-setInterval(() => {
-    const currentUrl = window.location.href;
-    if (lastUrl !== currentUrl) {
-        lastUrl = currentUrl;
-        // Si on navigue, on s'assure que le header est bien là s'il doit l'être
-        tryBuild();
-    }
+window.lastPathname = window.location.pathname;
 
-    // Gestion centralisée de mye-clean-screen :
-    // Si on est sur une page custom, on s'assure que la classe est présente
-    // Si on n'est pas sur une page custom (ex: dashboard/home), on la retire
+// Intercepter les changements d'URL instantanément pour éviter les flashs
+const originalPushState = history.pushState;
+history.pushState = function() {
+    originalPushState.apply(this, arguments);
+    handleUrlChange();
+};
+
+const originalReplaceState = history.replaceState;
+history.replaceState = function() {
+    originalReplaceState.apply(this, arguments);
+    handleUrlChange();
+};
+
+window.addEventListener('popstate', handleUrlChange);
+
+function handleUrlChange() {
+    lastUrl = window.location.href;
     const path = window.location.pathname;
+    
+    // Check if we actually changed the path
+    if (window.lastPathname !== path) {
+        window.lastPathname = path;
+        
+        // Remove all custom containers that do not belong to the new page
+        const newPageContainerId = getContainerIdForPath(path);
+        const activeContainers = document.querySelectorAll('[id^="mye-"][id$="-container"]');
+        activeContainers.forEach(container => {
+            if (container.id !== newPageContainerId) {
+                container.remove();
+            }
+        });
+        
+        // Remove specific custom classes on body
+        const classesToRemove = ['mye-rooms-page', 'mye-documents-active', 'mye-dashboard-active'];
+        const activeClass = getBodyClassForPath(path);
+        classesToRemove.forEach(cls => {
+            if (cls !== activeClass && document.body) {
+                document.body.classList.remove(cls);
+            }
+        });
+    }
+    
+    // Gestion centralisée de mye-clean-screen :
     if (isCustomPage(path)) {
-        if (!document.body.classList.contains('mye-clean-screen')) {
+        if (document.body) {
             document.body.classList.add('mye-clean-screen');
+        } else {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.body.classList.add('mye-clean-screen');
+            });
         }
     } else {
-        // Sur les pages non-custom (dashboard, landing), retirer clean-screen
-        // sauf si le body n'est pas encore chargé ou si on est sur un slide
         if (document.body && document.body.classList.contains('mye-clean-screen')
             && !path.includes('/portal/student/slides/')) {
             document.body.classList.remove('mye-clean-screen');
         }
+    }
+    
+    // S'assurer que le header est bien là s'il doit l'être
+    tryBuild();
+}
+
+function getContainerIdForPath(path) {
+    if (path.includes('/portal/student/grades')) return 'mye-grades-container';
+    if (path.includes('/portal/student/absences')) return 'mye-absences-container';
+    if (path.includes('/portal/student/guest')) return 'mye-guest-container';
+    if (path.includes('/portal/student/planning')) return 'mye-planning-container';
+    if (path.includes('/portal/student/lxp')) return 'mye-lxp-container';
+    if (path.includes('/portal/student/documents')) return 'mye-documents-container';
+    if (path.includes('/portal/student/moodle-courses')) return 'mye-moodle-container';
+    if (path.includes('/portal/student/campus')) return 'mye-campus-container';
+    if (path.includes('/portal/student/available-rooms')) return 'mye-rooms-container';
+    if (path.includes('/portal/common/news')) return 'mye-news-container';
+    if (path.includes('/portal/common/calendars')) return 'mye-calendars-container';
+    if (path.includes('/portal/common/resources')) return 'mye-resources-container';
+    if (path.includes('/portal/student/contacts')) return 'mye-contacts-container';
+    return null;
+}
+
+function getBodyClassForPath(path) {
+    if (path.includes('/portal/student/available-rooms')) return 'mye-rooms-page';
+    if (path.includes('/portal/student/documents')) return 'mye-documents-active';
+    if (path.includes('/portal/student/dashboard') || path === '/portal/' || path === '/portal/student/home') return 'mye-dashboard-active';
+    return null;
+}
+
+function createGlobalLoader() {
+    if (document.getElementById('mye-global-loader')) return;
+    const loader = document.createElement('div');
+    loader.id = 'mye-global-loader';
+    if (document.body) {
+        document.body.appendChild(loader);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!document.getElementById('mye-global-loader') && document.body) {
+                document.body.appendChild(loader);
+            }
+        });
+    }
+}
+
+// Lancer le loader global et la détection d'URL initiale
+createGlobalLoader();
+handleUrlChange();
+
+// Fallback interval pour les transitions asynchrones ou indirectes
+setInterval(() => {
+    const currentUrl = window.location.href;
+    if (lastUrl !== currentUrl) {
+        handleUrlChange();
     }
 }, 300);
 

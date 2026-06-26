@@ -406,11 +406,14 @@
     // 1. Logique de drag rotation & zoom
     let rotateX = 60;
     let rotateZ = -45;
-    let zoom = 1.0;
+    let zoom = window.innerWidth <= 900 ? 0.75 : 1.0;
     let isDragging = false;
     let startX, startY;
     let initialTouchDist = null;
     let initialZoom = 1.0;
+
+    // Appliquer le zoom initial
+    building.style.setProperty('--zoom', zoom);
 
     viewport.addEventListener('mousedown', (e) => {
       if (e.target.closest('.mye-rooms-3d-controls') || e.target.closest('.mye-rooms-search-container') || e.target.closest('.mye-room-shape')) {
@@ -557,10 +560,10 @@
       btnReset.addEventListener('click', () => {
         rotateX = 60;
         rotateZ = -45;
-        zoom = 1.0;
+        zoom = window.innerWidth <= 900 ? 0.75 : 1.0;
         building.style.setProperty('--rotate-x', '60deg');
         building.style.setProperty('--rotate-z', '-45deg');
-        building.style.setProperty('--zoom', '1');
+        building.style.setProperty('--zoom', zoom);
       });
     }
 
